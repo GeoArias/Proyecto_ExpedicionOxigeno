@@ -1,33 +1,103 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Expedición Oxígeno";
 }
 
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
+<main class="container py-4">
+    <section class="text-center mb-5">
+        <h1 class="display-4 text-success">Expedición Oxígeno</h1>
+        <p class="lead text-muted">¡Viví la experiencia favorita de los amantes de la adrenalina!</p>
     </section>
 
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
-    </div>
+    <!-- Carrusel de imágenes -->
+    <section class="mb-5">
+        <div id="expedicionCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner rounded shadow">
+                <div class="carousel-item active">
+                    <img src="~/Content/Images/Carrousel1.png" class="d-block w-100" alt="Expedición Imagen 1">
+                </div>
+                <div class="carousel-item">
+                    <img src="~/Content/Images/Carrousel2.png" class="d-block w-100" alt="Expedición Imagen 2">
+                </div>
+                <div class="carousel-item">
+                    <img src="~/Content/Images/Carrousel3.png" class="d-block w-100" alt="Expedición Imagen 3">
+                </div>
+                <div class="carousel-item">
+                    <img src="~/Content/Images/Carrousel4.png" class="d-block w-100" alt="Expedición Imagen 4">
+                </div>
+                <div class="carousel-item">
+                    <img src="~/Content/Images/Carrousel5.png" class="d-block w-100" alt="Expedición Imagen 5">
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#expedicionCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#expedicionCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#expedicionCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#expedicionCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#expedicionCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                <button type="button" data-bs-target="#expedicionCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                <button type="button" data-bs-target="#expedicionCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+            </div>
+        </div>
+    </section>
+
+    <section class="row text-center mb-4">
+        <div class="col-md-4">
+            <h3 class="text-warning">Pared de Escalada</h3>
+            <p>Estatura mínima: <strong>1,10 m</strong></p>
+        </div>
+        <div class="col-md-4">
+            <h3 class="text-warning">Parque de Cuerdas</h3>
+            <p>Estatura mínima: <strong>1,35 m</strong></p>
+        </div>
+        <div class="col-md-4">
+            <h3 class="text-warning">Roll Glider</h3>
+            <p>Estatura mínima: <strong>1,25 m</strong></p>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <h2 class="text-success">¿Qué incluye cada actividad?</h2>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <strong>Parque de Cuerdas:</strong> recorrido por 15 puentes colgantes en dos niveles (5 m y 9 m), diseñados para desafiar el equilibrio y la mente.
+            </li>
+            <li class="list-group-item">
+                <strong>Pared de Escalada:</strong> 6 líneas de escalada con diferentes dificultades, 12 m de alto, sistema automático de aseguramiento y descenso.
+            </li>
+            <li class="list-group-item">
+                <strong>Roll Glider:</strong> recorrido de 120 m a 60 km/h en un arnés tipo hamaca por un riel elevado. ¡Pura adrenalina!
+            </li>
+        </ul>
+    </section>
+
+    <section class="mb-4">
+        <h2 class="text-success">Paquetes disponibles</h2>
+        <ul class="list-group">
+            <li class="list-group-item">
+                <strong>Expedición Total:</strong> ₡7,000 p.p — Incluye las 3 actividades (Duración aprox. 1 hora).
+            </li>
+            <li class="list-group-item">
+                <strong>Expedición Dúo:</strong> ₡5,000 p.p — Incluye 2 actividades a escoger.
+            </li>
+            <li class="list-group-item">
+                <strong>Parque de Cuerdas:</strong> ₡3,000 p.p (30 minutos).
+            </li>
+            <li class="list-group-item">
+                <strong>Pared de Escalada:</strong> ₡3,000 p.p (30 minutos).
+            </li>
+            <li class="list-group-item">
+                <strong>Roll Glider:</strong> ₡3,000 p.p (1 turno).
+            </li>
+        </ul>
+    </section>
+
+    <section class="text-center mt-5">
+        <a href="#contacto" class="btn btn-success btn-lg">¡Reservá tu aventura ahora!</a>
+    </section>
 </main>
