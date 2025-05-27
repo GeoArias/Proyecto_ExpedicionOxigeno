@@ -1,19 +1,49 @@
 ﻿@{
-    ViewBag.Title = "Contact";
+    ViewBag.Title = "Contacto";
 }
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
 
-    <address>
-        One Microsoft Way<br />
-        Redmond, WA 98052-6399<br />
-        <abbr title="Phone">P:</abbr>
-        425.555.0100
-    </address>
+<main class="container py-4" aria-labelledby="title">
+    <h2 id="title" class="mb-4 text-success">Contáctanos</h2>
 
-    <address>
-        <strong>Support:</strong>   <a href="mailto:Support@example.com">Support@example.com</a><br />
-        <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
-    </address>
+    <section class="mb-4">
+        <h4 class="text-secondary">Ubicación:</h4>
+        <p><strong>O2</strong></p>
+
+        <h4 class="text-secondary">Horario:</h4>
+        <p>
+            <strong>Lunes a viernes:</strong> 1:00pm - 7:00pm<br />
+            <strong>Sábados y domingos:</strong> 12:00pm - 7:00pm
+        </p>
+
+        <h4 class="text-secondary">Teléfono:</h4>
+        <p><strong>Central de Oxígeno:</strong> 800-694-4366</p>
+    </section>
+
+    <section>
+        <h4 class="mb-3 text-secondary">Escríbenos tu consulta:</h4>
+
+        <form method="post" action="#">
+            <div class="mb-3">
+                <label for="consulta" class="form-label">Consulta</label>
+                <textarea class="form-control" id="consulta" name="consulta" rows="4" placeholder="Escribí aquí tu mensaje..."></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Tu nombre completo">
+            </div>
+
+            <div class="mb-3">
+                <label for="telefono" class="form-label">Número de teléfono</label>
+                <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="Ej. 8888-8888">
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo electrónico</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="correo@ejemplo.com">
+            </div>
+
+            <button type="submit" class="btn btn-success">Enviar consulta</button>
+        </form>
+    </section>
 </main>
