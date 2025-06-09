@@ -172,10 +172,20 @@
     <Compile Include="Migrations\202505270230133_IniciacionBaseDatos.Designer.cs">
       <DependentUpon>202505270230133_IniciacionBaseDatos.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202506082212231_CreateReviewTable.cs" />
+    <Compile Include="Migrations\202506082212231_CreateReviewTable.Designer.cs">
+      <DependentUpon>202506082212231_CreateReviewTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202506082224291_CreateReviewTable1.cs" />
+    <Compile Include="Migrations\202506082224291_CreateReviewTable1.Designer.cs">
+      <DependentUpon>202506082224291_CreateReviewTable1.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\ExpediCheckContext.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\Review.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -250,6 +260,7 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\Home\Resenas.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -284,6 +295,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202505270230133_IniciacionBaseDatos.resx">
       <DependentUpon>202505270230133_IniciacionBaseDatos.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202506082212231_CreateReviewTable.resx">
+      <DependentUpon>202506082212231_CreateReviewTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202506082224291_CreateReviewTable1.resx">
+      <DependentUpon>202506082224291_CreateReviewTable1.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
