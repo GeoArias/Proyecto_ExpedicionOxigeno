@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Net.Configuration;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
@@ -18,8 +22,36 @@ namespace Proyecto_ExpedicionOxigeno
     {
         public Task SendAsync(IdentityMessage message)
         {
-            // Conecte el servicio de correo electrónico aquí para enviar un correo electrónico.
-            return Task.FromResult(0);
+            // Leer configuraciones desde web.config
+            var smtpSection = ConfigurationManager.GetSection("system.net/mailSettings/smtp") as SmtpSection;
+
+            if (smtpSection == null)
+            {
+                throw new ConfigurationErrorsException("No se encontró la configuración SMTP en el archivo web.config.");
+            }
+
+            // Configurar el cliente SMTP
+            var client = new SmtpClient
+            {
+                Host = smtpSection.Network.Host,
+                Port = smtpSection.Network.Port,
+                EnableSsl = smtpSection.Network.EnableSsl,
+                Credentials = new NetworkCredential(smtpSection.Network.UserName, smtpSection.Network.Password)
+            };
+
+            // Crear el mensaje de correo
+            var mail = new MailMessage
+            {
+                From = new MailAddress(smtpSection.From),
+                Subject = message.Subject,
+                Body = message.Body,
+                IsBodyHtml = true
+            };
+
+            mail.To.Add(message.Destination);
+
+            // Enviar el correo
+            return client.SendMailAsync(mail);
         }
     }
 

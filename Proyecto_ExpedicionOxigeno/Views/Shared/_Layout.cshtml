@@ -1,62 +1,78 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@ViewBag.Title - ExpediCheck</title>
 
-    <!-- Estilo en línea basado en branding -->
     <style>
+        :root {
+            --verde-oscuro: #1C4800;
+            --verde-claro: #6AFF79;
+            --dorado: #D3901B;
+            --amarillo-suave: #BBB01B;
+            --gris-footer: #BDBCA0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             font-size: 16px;
             background-color: #FDFDFD;
+            margin: 0;
         }
 
         h1, .navbar-brand {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
-            color: #D3901B;
+            color: var(--dorado);
         }
 
         h2 {
-            font-size: 20px;
-            font-weight: bold;
-            color: #1C4800;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--verde-oscuro);
         }
-
-        a.nav-link {
-            font-style: italic;
-            color: #6AFF79 !important;
-            transition: color 0.3s;
-        }
-
-            a.nav-link:hover {
-                color: #ACF549 !important;
-            }
 
         .navbar {
-            background-color: #1C4800 !important;
+            background-color: var(--verde-oscuro) !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .navbar-brand img {
-            height: 45px;
+            height: 48px;
+            margin-right: 10px;
+        }
+
+        .nav-link {
+            color: white !important;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: background-color 0.3s, color 0.3s;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+
+        .nav-link:hover {
+            background-color: var(--verde-claro);
+            color: #1C1C1C !important;
         }
 
         footer {
-            background-color: #BDBCA0;
+            background-color: var(--verde-oscuro);
             text-align: center;
-            padding: 10px;
-            margin-top: 40px;
+            padding: 16px;
+            font-size: 14px;
+            color: white;
+            margin-top: 50px;
         }
 
-            footer p {
-                margin: 0;
-                color: #333;
-            }
-
         hr {
-            border-top: 2px solid #BBB01B;
+            border-top: 2px solid var(--amarillo-suave);
+        }
+
+        .container.body-content {
+            padding-top: 30px;
+            padding-bottom: 30px;
         }
     </style>
 
@@ -64,23 +80,23 @@
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark">
+    <nav class="navbar navbar-expand-sm navbar-dark sticky-top">
         <div class="container">
-            <!-- Logo de Expedición Oxígeno -->
-            <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+            <a class="navbar-brand d-flex align-items-center" href="@Url.Action("Index", "Home")">
                 <img src="@Url.Content("~/Content/Images/expedicion_logo.png")" alt="Expedición Oxígeno" />
+                ExpediCheck
             </a>
-
-            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Alternar navegación" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li>@Html.ActionLink("Inicio", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Acerca de", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Contacto", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+            <div class="collapse navbar-collapse justify-content-between" id="mainNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-sm-0">
+                    <li class="nav-item">@Html.ActionLink("Inicio", "Index", "Home", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Acerca de", "About", "Home", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Contacto", "Contact", "Home", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Reseñas", "Resenas", "Home", null, new { @class = "nav-link" })</li>
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>

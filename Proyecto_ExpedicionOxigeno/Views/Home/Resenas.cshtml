@@ -1,0 +1,86 @@
+﻿@{
+    ViewBag.Title = "Reseñas y Comentarios";
+}
+
+<main class="container py-4" aria-labelledby="title">
+    <h2 id="title" class="mb-4 text-success">Reseñas y Comentarios</h2>
+
+    <div class="row">
+        <!-- Columna de contenido -->
+        <div class="col-md-7">
+            <section class="mb-4">
+                <p class="text-muted">
+                    Leé lo que opinan nuestros visitantes y dejá tu comentario para seguir mejorando la experiencia.
+                </p>
+
+                <h4 class="text-secondary mt-4">Reseñas recientes:</h4>
+
+                <!-- Reseña 1 -->
+                <div class="border rounded p-3 mb-3 shadow-sm bg-light">
+                    <strong>María Fernández</strong>
+                    <div class="text-warning small mb-1">★★★★★</div>
+                    <p>Excelente atención y muy buen ambiente. ¡Volveré pronto!</p>
+                </div>
+
+                <!-- Reseña 2 -->
+                <div class="border rounded p-3 mb-3 shadow-sm bg-light">
+                    <strong>Daniel Soto</strong>
+                    <div class="text-warning small mb-1">★★★★☆</div>
+                    <p>Muy buena experiencia, aunque podría mejorar la señalización interna.</p>
+                </div>
+            </section>
+
+            <section class="mt-5">
+                <h4 class="mb-3 text-secondary">Dejanos tu reseña:</h4>
+
+                <form method="post" action="#">
+                    @Html.AntiForgeryToken() <!-- ⚠️ Token antifalsificación obligatorio -->
+
+                    <div class="mb-3">
+                        <label for="comentario" class="form-label">Comentario</label>
+                        <textarea class="form-control" id="comentario" name="comentario" rows="4" placeholder="¿Qué te pareció tu experiencia?"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Tu nombre completo">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="calificacion" class="form-label">Calificación</label>
+                        <select class="form-select" id="calificacion" name="calificacion">
+                            <option value="5">★★★★★ - Excelente</option>
+                            <option value="4">★★★★☆ - Muy bueno</option>
+                            <option value="3">★★★☆☆ - Bueno</option>
+                            <option value="2">★★☆☆☆ - Regular</option>
+                            <option value="1">★☆☆☆☆ - Malo</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Enviar reseña</button>
+                </form>
+            </section>
+        </div>
+
+        <!-- Imagen decorativa -->
+        <div class="col-md-5 d-none d-md-block">
+            <img src="~/Content/Images/resenas.jpg" alt="Opiniones de clientes" class="img-fluid rounded shadow-sm" style="max-height: 600px; object-fit: cover;">
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @if (TempData["ResenaGuardada"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Gracias por tu reseña!',
+                text: 'Una vez verificada, la agregaremos a la página principal.',
+                confirmButtonColor: '#198754'
+            });
+        </script>
+    }
+}

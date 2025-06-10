@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Proyecto_ExpedicionOxigeno.Models
 {
+    //prueba
     public class ExternalLoginConfirmationViewModel
     {
         [Required]
