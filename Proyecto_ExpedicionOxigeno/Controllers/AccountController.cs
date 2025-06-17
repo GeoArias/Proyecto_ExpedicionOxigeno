@@ -155,6 +155,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    // Asignar el rol "Usuario" automáticamente
+                    await UserManager.AddToRoleAsync(user.Id, "Usuario");
+
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
                     // Para obtener más información sobre cómo habilitar la confirmación de cuentas y el restablecimiento de contraseña, visite https://go.microsoft.com/fwlink/?LinkID=320771

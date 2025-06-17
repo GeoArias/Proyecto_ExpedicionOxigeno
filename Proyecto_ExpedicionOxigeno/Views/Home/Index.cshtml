@@ -3,7 +3,7 @@
 }
 
 <main class="container py-4">
-    <section class="text-center mb-5">
+    <section id="inicio" class="text-center mb-5">
         <h1 class="display-4 text-success">Expedición Oxígeno</h1>
         <p class="lead text-muted">¡Viví la experiencia favorita de los amantes de la adrenalina!</p>
     </section>
@@ -46,20 +46,27 @@
         </div>
     </section>
 
-    <section class="row text-center mb-4">
+    <section id="acerca" class="row text-center mb-4">
         <div class="col-md-4">
-            <h3 class="text-warning">Pared de Escalada</h3>
+            <h3 style="color: black;">Pared de Escalada</h3>
             <p>Estatura mínima: <strong>1,10 m</strong></p>
         </div>
         <div class="col-md-4">
-            <h3 class="text-warning">Parque de Cuerdas</h3>
+            <h3 style="color: black;">Parque de Cuerdas</h3>
             <p>Estatura mínima: <strong>1,35 m</strong></p>
         </div>
         <div class="col-md-4">
-            <h3 class="text-warning">Roll Glider</h3>
+            <h3 style="color: black;">Roll Glider</h3>
             <p>Estatura mínima: <strong>1,25 m</strong></p>
         </div>
     </section>
+
+    <style>
+        .list-group-item {
+            background-color: transparent !important;
+            border: none !important;
+        }
+    </style>
 
     <section class="mb-4">
         <h2 class="text-success">¿Qué incluye cada actividad?</h2>
@@ -75,6 +82,7 @@
             </li>
         </ul>
     </section>
+
 
     <section class="mb-4">
         <h2 class="text-success">Paquetes disponibles</h2>
@@ -97,7 +105,106 @@
         </ul>
     </section>
 
-    <section class="text-center mt-5">
-        <a href="#contacto" class="btn btn-success btn-lg">¡Reservá tu aventura ahora!</a>
+    <section id="resenas" class="mb-5">
+        <h2 class="text-success mb-4">Reseñas y Comentarios</h2>
+
+        <div class="row">
+            <div class="col-md-7">
+                <p class="text-muted">
+                    Leé lo que opinan nuestros visitantes y dejá tu comentario para seguir mejorando la experiencia.
+                </p>
+
+                <h4 class="text-secondary mt-4">Reseñas recientes:</h4>
+
+                <div class="border rounded p-3 mb-3 shadow-sm bg-light">
+                    <strong>María Fernández</strong>
+                    <div class="text-warning small mb-1">★★★★★</div>
+                    <p>Excelente atención y muy buen ambiente. ¡Volveré pronto!</p>
+                </div>
+
+                <div class="border rounded p-3 mb-3 shadow-sm bg-light">
+                    <strong>Daniel Soto</strong>
+                    <div class="text-warning small mb-1">★★★★☆</div>
+                    <p>Muy buena experiencia, aunque podría mejorar la señalización interna.</p>
+                </div>
+
+                <h4 class="mb-3 text-secondary">Dejanos tu reseña:</h4>
+
+                <form method="post" action="#">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="comentario" class="form-label">Comentario</label>
+                        <textarea class="form-control" id="comentario" name="comentario" rows="4" placeholder="¿Qué te pareció tu experiencia?"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Tu nombre completo">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="calificacion" class="form-label">Calificación</label>
+                        <select class="form-select" id="calificacion" name="calificacion">
+                            <option value="5">★★★★★ - Excelente</option>
+                            <option value="4">★★★★☆ - Muy bueno</option>
+                            <option value="3">★★★☆☆ - Bueno</option>
+                            <option value="2">★★☆☆☆ - Regular</option>
+                            <option value="1">★☆☆☆☆ - Malo</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Enviar reseña</button>
+                </form>
+            </div>
+
+            <div class="col-md-5 d-none d-md-block">
+                <img src="~/Content/Images/resenas.jpg" alt="Opiniones de clientes" class="img-fluid rounded shadow-sm" style="max-height: 600px; object-fit: cover;">
+            </div>
+        </div>
+    </section>
+
+    <section id="contacto" class="mt-5 mb-5">
+        <h2 class="text-success">Contacto</h2>
+        <p>
+            Ubicación: O2<br />
+            Horario: De lunes a viernes de 1:00pm a 7:00pm. <br />
+            Sábados y domingos de 12:00pm a 7:00pm.<br />
+            Número de la central de Oxígeno: 800-694-4366
+        </p>
+        <form>
+            <div class="mb-3">
+                <label for="mensaje" class="form-label">Escríbenos tu consulta:</label>
+                <textarea class="form-control" id="mensaje" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre:</label>
+                <input type="text" class="form-control" id="nombre">
+            </div>
+            <div class="mb-3">
+                <label for="telefono" class="form-label">Número de teléfono:</label>
+                <input type="tel" class="form-control" id="telefono">
+            </div>
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo electrónico:</label>
+                <input type="email" class="form-control" id="correo">
+            </div>
+            <button type="submit" class="btn btn-success">Enviar</button>
+        </form>
     </section>
 </main>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @if (TempData["ResenaGuardada"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Gracias por tu reseña!',
+                text: 'Una vez verificada, la agregaremos a la página principal.',
+                confirmButtonColor: '#198754'
+            });
+        </script>
+    }
+}

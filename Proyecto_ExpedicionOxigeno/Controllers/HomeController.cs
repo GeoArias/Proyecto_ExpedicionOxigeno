@@ -1,30 +1,49 @@
-﻿using System;
+﻿// HomeController.cs
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
+using Proyecto_ExpedicionOxigeno.Models;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
     public class HomeController : Controller
     {
+        private ExpediCheckContext db = new ExpediCheckContext();
+
+        // GET: Home/Index
+        [HttpGet]
         public ActionResult Index()
         {
-            return View();
+            var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
+            return View(reseñas);
         }
 
-        public ActionResult About()
+        // POST: Home/Index
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Index(Review review)
         {
-            ViewBag.Message = "Your application description page.";
+            if (ModelState.IsValid)
+            {
+                review.Fecha = DateTime.Now;
+                db.Reviews.Add(review);
+                db.SaveChanges();
+                TempData["ResenaGuardada"] = true;
+                return RedirectToAction("Index");
+            }
 
-            return View();
+            var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
+            return View(reseñas);
         }
 
-        public ActionResult Contact()
+        protected override void Dispose(bool disposing)
         {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }
