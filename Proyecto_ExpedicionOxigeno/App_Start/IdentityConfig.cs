@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
@@ -10,16 +11,41 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
+using Proyecto_ExpedicionOxigeno;
 using Proyecto_ExpedicionOxigeno.Models;
 
 namespace Proyecto_ExpedicionOxigeno
 {
     public class EmailService : IIdentityMessageService
     {
-        public Task SendAsync(IdentityMessage message)
+        public async Task SendAsync(IdentityMessage message)
         {
-            // Conecte el servicio de correo electrónico aquí para enviar un correo electrónico.
-            return Task.FromResult(0);
+            var mail = new MailMessage();
+            mail.To.Add(message.Destination);
+            mail.Subject = message.Subject;
+            mail.Body = message.Body;
+            mail.IsBodyHtml = true;
+
+            // Establecer el remitente desde Web.config
+            var fromAddress = System.Configuration.ConfigurationManager.AppSettings["mailFrom"]
+                              ?? System.Configuration.ConfigurationManager.AppSettings["mailSettings:from"]
+                              ?? "oxigeno.expedicion@gmail.com";
+            mail.From = new MailAddress(fromAddress);
+
+            using (var smtp = new SmtpClient())
+            {
+                // El SmtpClient leerá la configuración de <mailSettings> en Web.config automáticamente
+                try
+                {
+                    await smtp.SendMailAsync(mail);
+                }
+                catch (Exception ex)
+                {
+                    // Escribir en la consola el error
+                    Console.WriteLine($"Error al enviar el correo electrónico: {ex.Message}");
+                    throw; // Opcional: relanzar para depuración
+                }
+            }
         }
     }
 

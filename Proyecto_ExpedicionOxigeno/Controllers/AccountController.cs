@@ -17,9 +17,21 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private EmailService emailService = new EmailService();
+        string logoUrl;
 
         public AccountController()
         {
+            
+        }
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            base.OnActionExecuting(filterContext);
+            logoUrl = Url.Content("~/Resources/Images/logo.png");
+            if (!logoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                logoUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}{logoUrl}";
+            }
         }
 
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
@@ -51,6 +63,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 _userManager = value;
             }
         }
+        
 
         //
         // GET: /Account/Login
@@ -164,8 +177,26 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     // Enviar un correo electrónico con este vínculo
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    await UserManager.SendEmailAsync(user.Id, "Confirmar la cuenta", "Para confirmar su cuenta, haga clic <a href=\"" + callbackUrl + "\">aquí</a>");
-
+                    // Use the created SendAsync method to send the confirmation email
+                    await emailService.SendAsync(new IdentityMessage
+                    {
+                        Destination = user.Email,
+                        Subject = "Expedición Oxígeno - Confirma tu cuenta",
+                        Body = $@"
+        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
+            <div style='text-align:center; margin-bottom:24px;'>
+                <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
+            </div>
+            <h2 style='color: #2c3e50;'>¡Bienvenido a Expedición Oxígeno!</h2>
+            <p style='font-size: 16px; color: #333;'>Gracias por registrarte. Para confirmar tu cuenta, haz clic en el siguiente botón:</p>
+            <div style='text-align: center; margin: 32px 0;'>
+                <a href='{callbackUrl}' style='background: #27ae60; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-size: 16px; display: inline-block;'>Confirmar cuenta</a>
+            </div>
+            <p style='font-size: 14px; color: #888;'>Si no te registraste, puedes ignorar este correo.</p>
+            <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;' />
+            <p style='font-size: 12px; color: #bbb;'>Expedición Oxígeno</p>
+        </div>"
+                    });
                     return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
@@ -215,9 +246,27 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 // Para obtener más información sobre cómo habilitar la confirmación de cuentas y el restablecimiento de contraseña, visite https://go.microsoft.com/fwlink/?LinkID=320771
                 // Enviar un correo electrónico con este vínculo
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                await UserManager.SendEmailAsync(user.Id, "Restablecer contraseña", "Para restablecer la contraseña, haga clic <a href=\"" + callbackUrl + "\">aquí</a>");
-                return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                await emailService.SendAsync(new IdentityMessage
+                {
+                    Destination = user.Email,
+                    Subject = "Expedición Oxígeno - Restablece tu contraseña",
+                    Body = $@"
+        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
+            <div style='text-align:center; margin-bottom:24px;'>
+                <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
+            </div>
+            <h2 style='color: #c0392b;'>Solicitud de restablecimiento de contraseña</h2>
+            <p style='font-size: 16px; color: #333;'>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+            <div style='text-align: center; margin: 32px 0;'>
+                <a href='{callbackUrl}' style='background: #2980b9; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-size: 16px; display: inline-block;'>Restablecer contraseña</a>
+            </div>
+            <p style='font-size: 14px; color: #888;'>Si no solicitaste este cambio, puedes ignorar este correo.</p>
+            <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;' />
+            <p style='font-size: 12px; color: #bbb;'>Expedición Oxígeno</p>
+        </div>"
+                });
+                return RedirectToAction("Index", "Home");
             }
 
             // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario

@@ -200,6 +200,9 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Resources\Images\bannerExpedicion.png" />
+    <Content Include="Resources\Images\logo.png" />
+    <Content Include="Resources\Images\logoOxigeno.png" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
