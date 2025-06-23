@@ -35,7 +35,7 @@
             if (adminUser == null)
             {
                 adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-                userManager.Create(adminUser, "Admin123!"); // Cambia la contraseña si lo deseas  
+                userManager.Create(adminUser, "Admin123!"); 
                 userManager.AddToRole(adminUser.Id, "Administrador");
             }
 

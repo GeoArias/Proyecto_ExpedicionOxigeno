@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Proyecto_ExpedicionOxigeno.Models.ApplicationUser>
+@using Microsoft.AspNet.Identity
+@using Microsoft.AspNet.Identity.Owin
+@using Proyecto_ExpedicionOxigeno.Models
+
+@{
+    ViewBag.Title = "Administrar Usuarios";
+    var userManager = HttpContext.Current.GetOwinContext().GetUserManager<Proyecto_ExpedicionOxigeno.ApplicationUserManager>();
+}
+
+<h2>Administrar Usuarios</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Correo electrónico</th>
+            <th>Correo confirmado</th>
+            <th>Roles</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            var roles = userManager.GetRoles(user.Id);
+            <tr>
+                <td>@user.Email</td>
+                <td>
+                    @if (user.EmailConfirmed)
+                    {
+                        <span class="badge bg-success">Sí</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">No</span>
+                    }
+                </td>
+                <td>
+                    @string.Join(", ", roles)
+                    <a href="javascript:void(0);" title="Editar rol"
+                       class="ms-2 edit-role-link"
+                       data-userid="@user.Id"
+                       data-roles="@string.Join(",", roles)">
+                        <i class="bi bi-pencil-square" style="font-size: 1.2em; color: #007bff; vertical-align: middle;"></i>
+                    </a>
+                </td>
+                <td>
+                    <a href="@Url.Action("EliminarUsuario", "Account", new { id = user.Id })" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

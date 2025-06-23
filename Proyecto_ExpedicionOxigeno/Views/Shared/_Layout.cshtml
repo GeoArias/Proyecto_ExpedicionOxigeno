@@ -106,14 +106,14 @@
             position: absolute;
             top: 0;
             left: 0;
-            height: 100vh ;
-            width: 100vw ;
-            margin: 0 ;
-            padding: 0 ;
-            overflow: hidden ;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             z-index: 0;
         }
-        
+
         .body-content, main.container {
             position: relative;
             z-index: 1;
@@ -140,10 +140,12 @@
             text-align: center;
             z-index: 2;
         }
+
         .container.hero-container {
             padding-left: 0 !important;
             padding-right: 0 !important;
         }
+
         .hero-spacer {
             height: 100vh;
             width: 100vw;
@@ -153,19 +155,30 @@
             padding: 80px 0;
             border-bottom: 1px solid #eee;
         }
+
+        .navbar-nav .dropdown:hover .dropdown-menu {
+            display: block;
+            margin-top: 0;
+        }
+        }
     </style>
 
-    
-  
+
+
     @Styles.Render("~/Content/css")
 </head>
 <body>
+    @{
+        // Detecta si es la página principal (Home/Index)
+        bool esHomeIndex = (ViewContext.RouteData.Values["controller"].ToString().ToLower() == "home"
+            && ViewContext.RouteData.Values["action"].ToString().ToLower() == "index");
+    }
 
 
+    <nav class="navbar navbar-expand-sm navbar-dark sticky-top @(esHomeIndex ? "transparent" : "")" id="mainNavbar">
 
-    <nav class="navbar navbar-expand-sm navbar-dark sticky-top transparent" id="mainNavbar">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="#inicio">
+            <a class="navbar-brand d-flex align-items-center" href="/">
                 ExpediCheck
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbarContent"
@@ -176,9 +189,22 @@
             <div class="collapse navbar-collapse justify-content-between" id="mainNavbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-sm-0">
                     <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#acerca">Acerca</a></li>
                     <li class="nav-item"><a class="nav-link" href="#resenas">Reseñas</a></li>
                     <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
+                    @if (Request.IsAuthenticated && User.IsInRole("Administrador"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#administracion" id="administracionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Administración
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="administracionDropdown">
+                                <li><a class="dropdown-item" href="/Administracion/Usuarios">Usuarios</a></li>
+                                <li><a class="dropdown-item" href="/Administracion/Consultas">Consultas</a></li>
+                                <li><a class="dropdown-item" href="/Administracion/Reviews">Reviews</a></li>
+                            </ul>
+                        </li>
+                    }
+
                 </ul>
 
                 <ul class="navbar-nav">
@@ -197,33 +223,41 @@
                     }
                     else
                     {
+                        @*<li class="nav-item">
+                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
+            </li>*@
                         <li class="nav-item">
-                            <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
+                            <a class="nav-link nav-login" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
+                            <a class="nav-link nav-register" href="@Url.Action("Register", "Account")">Registrarse</a>
                         </li>
                     }
                 </ul>
             </div>
         </div>
     </nav>
-    </nav>
-    <script>
-        function updateNavbarTransparency() {
-            const nav = document.getElementById("mainNavbar");
-            // Si el scroll está en la parte superior, el Hero Banner está visible
-            if (window.scrollY < window.innerHeight - nav.offsetHeight) {
-                nav.classList.add("transparent");
-            } else {
-                nav.classList.remove("transparent");
+    @if (esHomeIndex)
+    {
+        <script>
+            function updateNavbarTransparency() {
+                const nav = document.getElementById("mainNavbar");
+                // Si el scroll está en la parte superior, el Hero Banner está visible
+                if (window.scrollY < window.innerHeight - nav.offsetHeight) {
+                    nav.classList.add("transparent");
+                } else {
+                    nav.classList.remove("transparent");
+                }
             }
-        }
+            window.addEventListener("scroll", updateNavbarTransparency);
+            window.addEventListener("resize", updateNavbarTransparency);
+            document.addEventListener("DOMContentLoaded", updateNavbarTransparency);
 
-        window.addEventListener("scroll", updateNavbarTransparency);
-        window.addEventListener("resize", updateNavbarTransparency);
-        document.addEventListener("DOMContentLoaded", updateNavbarTransparency);
-    </script>
+        </script>
+    }
     @RenderSection("HeroBanner", required: false)
     <div class="container body-content">
         @RenderBody()
@@ -293,16 +327,6 @@
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
-    <script>
-        window.addEventListener("scroll", function () {
-            const nav = document.getElementById("mainNavbar");
-            if (window.scrollY > 50) {
-                nav.classList.remove("transparent");
-            } else {
-                nav.classList.add("transparent");
-            }
-        });
-    </script>
     @RenderSection("scripts", required: false)
 </body>
 </html>

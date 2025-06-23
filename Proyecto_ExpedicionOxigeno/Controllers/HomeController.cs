@@ -11,7 +11,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 {
     public class HomeController : Controller
     {
-        private ExpediCheckContext db = new ExpediCheckContext();
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Home/Index
         [HttpGet]
