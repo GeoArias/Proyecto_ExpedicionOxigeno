@@ -30,6 +30,9 @@ namespace Proyecto_ExpedicionOxigeno.Models
 
         public DateTime Fecha { get; set; }
 
+        // Marca si ya está respondida la consulta o no
+        public bool Respondida { get; set; } = false;
+
         public Contacto()
         {
             Fecha = DateTime.Now;

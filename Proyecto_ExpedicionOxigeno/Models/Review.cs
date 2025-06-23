@@ -20,6 +20,8 @@ namespace Proyecto_ExpedicionOxigeno.Models
         public int Calificacion { get; set; }
 
         public DateTime Fecha { get; set; }
+        // Columna Mostrar en la página principal
+        public string Mostrar { get; set; }
 
         public Review()
         {

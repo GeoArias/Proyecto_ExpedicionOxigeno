@@ -30,6 +30,9 @@ namespace Proyecto_ExpedicionOxigeno.Models
             return new ApplicationDbContext();
         }
         public DbSet<Estado> Estados { get; set; }
-        
+        public DbSet<Contacto> Contactos { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<PuntosFidelidad> PuntosFidelidad { get; set; }
+
     }
 }
