@@ -298,5 +298,49 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         }
 
 
+
+
+        //
+        //      Reviews
+        //
+
+        // GET: Administracion/Reviews
+        [HttpGet]
+        public ActionResult Reviews()
+        {
+            // Verificar si el usuario es administrador
+            if (!User.IsInRole("Administrador"))
+            {
+                return new HttpUnauthorizedResult();
+            }
+            // Obtener la lista de reviews
+            using (var context = new Proyecto_ExpedicionOxigeno.Models.ApplicationDbContext())
+            {
+                var reviews = context.Reviews.ToList();
+                return View(reviews);
+            }
+
+        }
+
+        // POST: Administracion/CambiarMostrarReview/IdReview
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CambiarMostrarReview(int id)
+        {
+            using (var db = new Proyecto_ExpedicionOxigeno.Models.ApplicationDbContext())
+            {
+                var review = db.Reviews.Find(id);
+                if (review == null)
+                {
+                    return HttpNotFound();
+                }
+                review.Mostrar = !review.Mostrar;
+                db.SaveChanges();
+                TempData["Mensaje"] = "El estado de visibilidad de la reseña se ha actualizado.";
+            }
+            return RedirectToAction("Reviews");
+        }
+
+
     }
 }

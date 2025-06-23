@@ -21,7 +21,7 @@ namespace Proyecto_ExpedicionOxigeno.Models
 
         public DateTime Fecha { get; set; }
         // Columna Mostrar en la página principal
-        public string Mostrar { get; set; }
+        public bool Mostrar { get; set; }
 
         public Review()
         {

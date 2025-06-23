@@ -107,6 +107,49 @@
 
             context.SaveChanges();
 
+            //
+            //  Crear Reseñas de Ejemplos
+            //
+            var reseñas = new[]
+            {
+                new Review
+                {
+                    Id = 1,
+                    Nombre = "Geo Arias",
+                    Comentario = "¡Una experiencia increíble! Los guías son muy profesionales y la decoración es increíble",
+                    Fecha = DateTime.Now,
+                    Mostrar= true,
+                    Calificacion = 5
+                },
+                new Review
+                {
+                    Id = 2,
+                    Nombre = "Ana Gómez",
+                    Comentario = "Me encantó la experiencia, pero creo que deberían mejorar la señalización en algunas rutas.",
+                    Fecha = DateTime.Now,
+                    Mostrar= true,
+                    Calificacion = 4
+                },
+                new Review
+                {
+                    Id = 3,
+                    Nombre = "Carlos López",
+                    Comentario = "Excelente atención y servicio. Definitivamente volveré.",
+                    Fecha = DateTime.Now,
+                    Mostrar= false,
+                    Calificacion = 5
+                }
+            };
+            foreach (var reseña in reseñas)
+            {
+                if (!context.Reviews.Any(r => r.Id == reseña.Id))
+                {
+                    context.Reviews.Add(reseña);
+                }
+            }
+            context.SaveChanges();
+
+
 
 
             base.Seed(context);

@@ -184,6 +184,10 @@
     <Compile Include="Migrations\202506230743139_CreaciónTablas.Designer.cs">
       <DependentUpon>202506230743139_CreaciónTablas.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202506232318095_ModificacionReviews.cs" />
+    <Compile Include="Migrations\202506232318095_ModificacionReviews.Designer.cs">
+      <DependentUpon>202506232318095_ModificacionReviews.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Estado.cs" />
@@ -273,6 +277,7 @@
     <Content Include="Views\Home\Resenas.cshtml" />
     <Content Include="Views\Administracion\Usuarios.cshtml" />
     <Content Include="Views\Administracion\Consultas.cshtml" />
+    <Content Include="Views\Administracion\Reviews.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -316,6 +321,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202506230743139_CreaciónTablas.resx">
       <DependentUpon>202506230743139_CreaciónTablas.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202506232318095_ModificacionReviews.resx">
+      <DependentUpon>202506232318095_ModificacionReviews.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -17,9 +17,19 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
-            return View(reseñas);
+            using (var db = new ApplicationDbContext())
+            {
+                var reviews = db.Reviews
+                    .Where(r => r.Mostrar)
+                    .OrderByDescending(r => r.Fecha)
+                    .Take(5) // Opcional: solo las 5 más recientes
+                    .ToList();
+
+                ViewBag.Reviews = reviews;
+            }
+            return View();
         }
+
 
         // POST: Home/Index
         [HttpPost]
