@@ -192,25 +192,32 @@
                     Sábados y domingos de 12:00pm a 7:00pm.<br />
                     Número de la central de Oxígeno: 800-694-4366
                 </p>
-                <form>
+                <form method="post" action="/Home/GuardarContacto">
+                    @Html.AntiForgeryToken()
+
                     <div class="mb-3">
-                        <label for="mensaje" class="form-label">Escríbenos tu consulta:</label>
-                        <textarea class="form-control" id="mensaje" rows="3"></textarea>
+                        <label for="Consulta" class="form-label">Escríbenos tu consulta:</label>
+                        <textarea class="form-control" id="Consulta" name="Consulta" rows="3" placeholder="¿Cuál es tu consulta?"></textarea>
                     </div>
+
                     <div class="mb-3">
-                        <label for="nombre" class="form-label">Nombre:</label>
-                        <input type="text" class="form-control" id="nombre">
+                        <label for="Nombre" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="Nombre" name="Nombre" placeholder="Tu nombre completo">
                     </div>
+
                     <div class="mb-3">
-                        <label for="telefono" class="form-label">Número de teléfono:</label>
-                        <input type="tel" class="form-control" id="telefono">
+                        <label for="Telefono" class="form-label">Número de teléfono:</label>
+                        <input type="tel" class="form-control" id="Telefono" name="Telefono" placeholder="Ej: 8888-8888">
                     </div>
+
                     <div class="mb-3">
-                        <label for="correo" class="form-label">Correo electrónico:</label>
-                        <input type="email" class="form-control" id="correo">
+                        <label for="Email" class="form-label">Correo electrónico:</label>
+                        <input type="email" class="form-control" id="Email" name="Email" placeholder="correo@ejemplo.com">
                     </div>
+
                     <button type="submit" class="btn btn-success">Enviar</button>
                 </form>
+
             </div>
             <div class="col-md-5 d-none d-md-block">
                 <img src="/Content/Images/contacto.jpg"
@@ -231,6 +238,18 @@
                 icon: 'success',
                 title: '¡Gracias por tu reseña!',
                 text: 'Una vez verificada, la agregaremos a la página principal.',
+                confirmButtonColor: '#198754'
+            });
+        </script>
+    }
+
+    @if (TempData["MensajeEnviado"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Consulta enviada!',
+                text: 'Una vez revisada, te contactaremos al correo.',
                 confirmButtonColor: '#198754'
             });
         </script>
