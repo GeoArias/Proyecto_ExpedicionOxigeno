@@ -35,7 +35,7 @@
             if (adminUser == null)
             {
                 adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-                userManager.Create(adminUser, "Admin123!"); 
+                userManager.Create(adminUser, "Admin123!");
                 userManager.AddToRole(adminUser.Id, "Administrador");
             }
 
@@ -55,6 +55,53 @@
                 if (!context.Estados.Any(e => e.Id == estado.Id))
                 {
                     context.Estados.Add(estado);
+                }
+            }
+
+            context.SaveChanges();
+
+            //
+            //  Crear Consultas (Contactos) por defecto
+            //
+            var consultas = new[]
+            {
+                new Contacto
+                {
+                    Id = 1,
+                   Nombre = "Geo Arias",
+                   Consulta = "¿Cuáles son los horarios disponibles para escalar?",
+                   Telefono = "61426278",
+                   Email = "geoas121cr@gmail.com",
+                   Fecha = DateTime.Now,
+                   Respondida = false
+                },
+                new Contacto
+               {
+                   Id = 2,
+                   Nombre = "Ana Gómez",
+                   Consulta = "¿Es necesario llevar mi propio equipo de escalada?",
+                   Telefono = "0987654321",
+                   Email = "ana.gomez@example.com",
+                   Fecha = DateTime.Now,
+                   Respondida = false
+               },
+                new Contacto
+               {
+                   Id = 3,
+                   Nombre = "Carlos López",
+                   Consulta = "¿Cuánto cuesta una sesión de escalada?",
+                   Telefono = "1122334455",
+                   Email = "carlos.lopez@example.com",
+                   Fecha = DateTime.Now,
+                   Respondida = false
+               }
+                };
+
+            foreach (var consulta in consultas)
+            {
+                if (!context.Contactos.Any(c => c.Id == consulta.Id))
+                {
+                    context.Contactos.Add(consulta);
                 }
             }
 
