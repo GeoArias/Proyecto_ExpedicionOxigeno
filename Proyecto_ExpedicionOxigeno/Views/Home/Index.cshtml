@@ -1,5 +1,6 @@
 ﻿@{
     ViewBag.Title = "Expedición Oxígeno";
+    var reviews = ViewBag.Reviews as List<Proyecto_ExpedicionOxigeno.Models.Review>;
 }
 
 @section HeroBanner {
@@ -130,17 +131,23 @@
 
                 <h4 class="mt-4" style="color: #000;">Reseñas recientes:</h4>
 
-                <div class="border rounded p-3 mb-3 shadow-sm bg-light">
-                    <strong>María Fernández</strong>
-                    <div class="text-warning small mb-1">★★★★★</div>
-                    <p>Excelente atención y muy buen ambiente. ¡Volveré pronto!</p>
-                </div>
-
-                <div class="border rounded p-3 mb-3 shadow-sm bg-light">
-                    <strong>Daniel Cespedes</strong>
-                    <div class="text-warning small mb-1">★★★★☆</div>
-                    <p>Muy buena experiencia, aunque podría mejorar la señalización interna.</p>
-                </div>
+                @if (reviews != null && reviews.Any())
+                {
+                    foreach (var item in reviews)
+                    {
+                        <div class="border rounded p-3 mb-3 shadow-sm bg-light">
+                            <strong>@item.Nombre</strong>
+                            <div class="text-warning small mb-1">
+                                @Html.Raw(new string('★', item.Calificacion))@Html.Raw(new string('☆', 5 - item.Calificacion))
+                            </div>
+                            <p>@item.Comentario</p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">No hay reseñas aún.</p>
+                }
 
                 <h4 class="mb-3" style="color: #000;">Dejanos tu reseña:</h4>
 

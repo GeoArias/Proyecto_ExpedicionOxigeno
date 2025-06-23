@@ -35,7 +35,7 @@
             if (adminUser == null)
             {
                 adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-                userManager.Create(adminUser, "Admin123!"); 
+                userManager.Create(adminUser, "Admin123!");
                 userManager.AddToRole(adminUser.Id, "Administrador");
             }
 
@@ -59,6 +59,96 @@
             }
 
             context.SaveChanges();
+
+            //
+            //  Crear Consultas (Contactos) por defecto
+            //
+            var consultas = new[]
+            {
+                new Contacto
+                {
+                    Id = 1,
+                   Nombre = "Geo Arias",
+                   Consulta = "¿Cuáles son los horarios disponibles para escalar?",
+                   Telefono = "61426278",
+                   Email = "geoas121cr@gmail.com",
+                   Fecha = DateTime.Now,
+                   Respondida = false
+                },
+                new Contacto
+               {
+                   Id = 2,
+                   Nombre = "Ana Gómez",
+                   Consulta = "¿Es necesario llevar mi propio equipo de escalada?",
+                   Telefono = "0987654321",
+                   Email = "ana.gomez@example.com",
+                   Fecha = DateTime.Now,
+                   Respondida = false
+               },
+                new Contacto
+               {
+                   Id = 3,
+                   Nombre = "Carlos López",
+                   Consulta = "¿Cuánto cuesta una sesión de escalada?",
+                   Telefono = "1122334455",
+                   Email = "carlos.lopez@example.com",
+                   Fecha = DateTime.Now,
+                   Respondida = false
+               }
+                };
+
+            foreach (var consulta in consultas)
+            {
+                if (!context.Contactos.Any(c => c.Id == consulta.Id))
+                {
+                    context.Contactos.Add(consulta);
+                }
+            }
+
+            context.SaveChanges();
+
+            //
+            //  Crear Reseñas de Ejemplos
+            //
+            var reseñas = new[]
+            {
+                new Review
+                {
+                    Id = 1,
+                    Nombre = "Geo Arias",
+                    Comentario = "¡Una experiencia increíble! Los guías son muy profesionales y la decoración es increíble",
+                    Fecha = DateTime.Now,
+                    Mostrar= true,
+                    Calificacion = 5
+                },
+                new Review
+                {
+                    Id = 2,
+                    Nombre = "Ana Gómez",
+                    Comentario = "Me encantó la experiencia, pero creo que deberían mejorar la señalización en algunas rutas.",
+                    Fecha = DateTime.Now,
+                    Mostrar= true,
+                    Calificacion = 4
+                },
+                new Review
+                {
+                    Id = 3,
+                    Nombre = "Carlos López",
+                    Comentario = "Excelente atención y servicio. Definitivamente volveré.",
+                    Fecha = DateTime.Now,
+                    Mostrar= false,
+                    Calificacion = 5
+                }
+            };
+            foreach (var reseña in reseñas)
+            {
+                if (!context.Reviews.Any(r => r.Id == reseña.Id))
+                {
+                    context.Reviews.Add(reseña);
+                }
+            }
+            context.SaveChanges();
+
 
 
 

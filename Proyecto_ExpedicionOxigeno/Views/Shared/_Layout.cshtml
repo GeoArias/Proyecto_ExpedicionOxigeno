@@ -160,7 +160,7 @@
             display: block;
             margin-top: 0;
         }
-        }
+        
     </style>
 
 
@@ -189,6 +189,7 @@
             <div class="collapse navbar-collapse justify-content-between" id="mainNavbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-sm-0">
                     <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#acerca">Acerca</a></li>
                     <li class="nav-item"><a class="nav-link" href="#resenas">Reseñas</a></li>
                     <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
                     @if (Request.IsAuthenticated && User.IsInRole("Administrador"))
@@ -200,7 +201,7 @@
                             <ul class="dropdown-menu" aria-labelledby="administracionDropdown">
                                 <li><a class="dropdown-item" href="/Administracion/Usuarios">Usuarios</a></li>
                                 <li><a class="dropdown-item" href="/Administracion/Consultas">Consultas</a></li>
-                                <li><a class="dropdown-item" href="/Administracion/Reviews">Reviews</a></li>
+                                <li><a class="dropdown-item" href="/Administracion/Reviews">Reseñas</a></li>
                             </ul>
                         </li>
                     }
