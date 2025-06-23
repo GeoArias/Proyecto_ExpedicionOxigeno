@@ -1,9 +1,11 @@
 ﻿// HomeController.cs
+using Proyecto_ExpedicionOxigeno.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Web.Mvc;
-using Proyecto_ExpedicionOxigeno.Models;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
@@ -36,6 +38,25 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
             return View(reseñas);
         }
+        // POST: Home/GuardarContacto (guardar contacto)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult GuardarContacto(Contacto contacto)
+        {
+            if (ModelState.IsValid)
+            {
+                contacto.Fecha = DateTime.Now;
+                db.Contactos.Add(contacto);
+                db.SaveChanges();
+                TempData["MensajeEnviado"] = "¡Consulta enviada correctamente!";
+                return RedirectToAction("Index");
+            }
+
+            var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
+            return View("Index", reseñas);
+        }
+
+
 
         protected override void Dispose(bool disposing)
         {

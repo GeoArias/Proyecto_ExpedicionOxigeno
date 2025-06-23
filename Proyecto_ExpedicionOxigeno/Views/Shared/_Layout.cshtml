@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Francy&display=swap" rel="stylesheet">
 
+
+
     <style>
         :root {
             --cyan: #00ffff;
@@ -101,21 +103,33 @@
             }
 
         .hero-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100vh ;
+            width: 100vw ;
+            margin: 0 ;
+            padding: 0 ;
+            overflow: hidden ;
+            z-index: 0;
+        }
+        
+        .body-content, main.container {
             position: relative;
-            height: 100vh;
-            overflow: hidden;
-            margin-bottom: -4px;
+            z-index: 1;
+            padding-top: 90px; /* Ajusta este valor a la altura real de tu navbar */
         }
 
-            .hero-banner video {
-                position: absolute;
-                top: 0;
-                left: 0;
-                min-width: 100%;
-                min-height: 100%;
-                object-fit: cover;
-                z-index: -1;
-            }
+
+        .hero-banner video {
+            position: absolute;
+            top: -90px; /* igual a la altura de tu navbar */
+            left: 0;
+            min-width: 100vw;
+            min-height: calc(100vh + 90px); /* cubre el área extra */
+            object-fit: cover;
+            z-index: -1;
+        }
 
         .hero-content {
             position: absolute;
@@ -124,16 +138,16 @@
             transform: translate(-50%, -50%);
             color: white;
             text-align: center;
-            z-index: 1;
+            z-index: 2;
         }
-
-            .hero-content h1 {
-                font-size: 4rem;
-            }
-
-            .hero-content p {
-                font-size: 1.25rem;
-            }
+        .container.hero-container {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        .hero-spacer {
+            height: 100vh;
+            width: 100vw;
+        }
 
         section {
             padding: 80px 0;
@@ -141,21 +155,13 @@
         }
     </style>
 
+    
+  
     @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
-    <div class="hero-banner">
-        <video autoplay muted loop playsinline>
-            <source src="~/Content/Videos/Herobanner2.mp4" type="video/mp4">
-            Tu navegador no soporta la etiqueta de video.
-        </video>
-        <div class="hero-content">
-            <h1>Bienvenido a ExpediCheck</h1>
-            <p>La aventura comienza aquí</p>
-            <a href="#inicio" class="btn btn-outline-light btn-lg mt-4">Explorar</a>
-        </div>
-    </div>
+
+
 
     <nav class="navbar navbar-expand-sm navbar-dark sticky-top transparent" id="mainNavbar">
         <div class="container">
@@ -202,7 +208,23 @@
             </div>
         </div>
     </nav>
+    </nav>
+    <script>
+        function updateNavbarTransparency() {
+            const nav = document.getElementById("mainNavbar");
+            // Si el scroll está en la parte superior, el Hero Banner está visible
+            if (window.scrollY < window.innerHeight - nav.offsetHeight) {
+                nav.classList.add("transparent");
+            } else {
+                nav.classList.remove("transparent");
+            }
+        }
 
+        window.addEventListener("scroll", updateNavbarTransparency);
+        window.addEventListener("resize", updateNavbarTransparency);
+        document.addEventListener("DOMContentLoaded", updateNavbarTransparency);
+    </script>
+    @RenderSection("HeroBanner", required: false)
     <div class="container body-content">
         @RenderBody()
         <hr />
