@@ -1,10 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Proyecto_ExpedicionOxigeno.Models
 {
     public class Review
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]
@@ -17,6 +20,8 @@ namespace Proyecto_ExpedicionOxigeno.Models
         public int Calificacion { get; set; }
 
         public DateTime Fecha { get; set; }
+        // Columna Mostrar en la página principal
+        public bool Mostrar { get; set; }
 
         public Review()
         {

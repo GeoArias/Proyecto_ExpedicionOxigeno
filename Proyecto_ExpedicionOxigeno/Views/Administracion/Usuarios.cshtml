@@ -1,0 +1,119 @@
+﻿@model IEnumerable<Proyecto_ExpedicionOxigeno.Models.ApplicationUser>
+@using Microsoft.AspNet.Identity
+@using Microsoft.AspNet.Identity.Owin
+@using Proyecto_ExpedicionOxigeno.Models
+
+@{
+    ViewBag.Title = "Administrar Usuarios";
+    var userManager = HttpContext.Current.GetOwinContext().GetUserManager<Proyecto_ExpedicionOxigeno.ApplicationUserManager>();
+}
+
+<h2>Administrar Usuarios</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Correo electrónico</th>
+            <th>Correo confirmado</th>
+            <th>Roles</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            var roles = userManager.GetRoles(user.Id);
+            <tr>
+                <td>@user.Email</td>
+                <td>
+                    @if (user.EmailConfirmed)
+                    {
+                        <span class="badge bg-success">Sí</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">No</span>
+                    }
+                </td>
+                <td>
+                    <span>
+                        @string.Join(", ", roles)
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm ms-2 edit-role-link align-middle"
+                                title="Editar rol"
+                                data-userid="@user.Id"
+                                data-roles="@string.Join(",", roles)">
+                            <i class="bi bi-pencil-square"></i> Editar
+                        </button>
+
+                    </span>
+                </td>
+
+                <td>
+                    <a href="@Url.Action("EliminarUsuario", "Account", new { id = user.Id })" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!-- Modal para editar rol de usuario -->
+<div class="modal fade" id="editarRolModal" tabindex="-1" aria-labelledby="editarRolModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header text-white" style="background-color: #100b2c;">
+                <h5 class="modal-title" id="editarRolModalLabel">
+                    Editar rol de usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form method="post" action="@Url.Action("EditarRolUsuario", "Administracion")" autocomplete="off">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" name="UserId" id="modalUserId" />
+                    <div class="mb-3">
+                        <label for="modalSelectedRole" class="form-label fw-bold">Rol</label>
+                        <select class="form-select" id="modalSelectedRole" name="SelectedRole" required>
+                            <option value="">Selecciona un rol...</option>
+                            @foreach (var rol in ViewBag.Roles as List<string>)
+                            {
+                                <option value="@rol">@rol</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.edit-role-link').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var userId = btn.getAttribute('data-userid');
+                var roles = btn.getAttribute('data-roles').split(',');
+                document.getElementById('modalUserId').value = userId;
+
+                // Selecciona el primer rol del usuario (si tiene varios)
+                var select = document.getElementById('modalSelectedRole');
+                if (roles.length > 0 && roles[0]) {
+                    select.value = roles[0].trim();
+                } else {
+                    select.value = "";
+                }
+
+                var modal = new bootstrap.Modal(document.getElementById('editarRolModal'), { backdrop: false });
+                modal.show();
+            });
+        });
+    </script>
+    <!-- Si usas Bootstrap Icons, asegúrate de incluir su CDN en tu _Layout.cshtml -->
+}

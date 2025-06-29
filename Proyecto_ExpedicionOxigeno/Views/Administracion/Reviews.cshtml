@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Proyecto_ExpedicionOxigeno.Models.Review>
+
+@{
+    ViewBag.Title = "Reseñas";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<table class="table">
+    <tr>
+        <th>@Html.DisplayNameFor(model => model.Nombre)</th>
+        <th>@Html.DisplayNameFor(model => model.Comentario)</th>
+        <th>@Html.DisplayNameFor(model => model.Calificacion)</th>
+        <th>@Html.DisplayNameFor(model => model.Fecha)</th>
+        <th>Mostrado</th>
+        <th>Acciones</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
+            <td>@Html.DisplayFor(modelItem => item.Comentario)</td>
+            <td>@Html.DisplayFor(modelItem => item.Calificacion)</td>
+            <td>@Html.DisplayFor(modelItem => item.Fecha)</td>
+            <td>
+                @if (item.Mostrar)
+                {
+                    <span class="badge bg-success">Visible</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Oculta</span>
+                }
+            </td>
+            <td>
+                @using (Html.BeginForm("CambiarMostrarReview", "Administracion", FormMethod.Post, new { @class = "d-inline" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.Hidden("id", item.Id)
+                    <button type="submit" class="btn btn-sm @(item.Mostrar ? "btn-warning" : "btn-success")">
+                        @(item.Mostrar ? "Ocultar" : "Mostrar")
+                    </button>
+                }
+            </td>
+        </tr>
+    }
+</table>

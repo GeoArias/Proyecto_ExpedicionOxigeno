@@ -1,0 +1,118 @@
+﻿@model IEnumerable<Proyecto_ExpedicionOxigeno.Models.Contacto>
+@{
+    ViewBag.Title = "Consultas";
+}
+
+<h2>Consultas recibidas</h2>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<table class="table table-bordered table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Consulta</th>
+            <th>Respondida</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@c.Nombre</td>
+                <td>@c.Telefono</td>
+                <td>@c.Email</td>
+                <td>@c.Consulta</td>
+                <td>
+                    @if (c.Respondida)
+                    {
+                        <span class="badge bg-success">Sí</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">No</span>
+                    }
+                </td>
+                <td>
+                    @if (!c.Respondida)
+                    {
+                        <button type="button"
+                                class="btn btn-primary btn-sm btn-responder"
+                                data-id="@c.Id"
+                                data-email="@c.Email"
+                                data-nombre="@c.Nombre">
+                            Responder
+                        </button>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Respondida</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal para responder consulta -->
+<div class="modal fade" id="responderModal" tabindex="-1" aria-labelledby="responderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header text-white" style="background-color: #100b2c;">
+                <h5 class="modal-title" id="responderModalLabel">
+                    Responder consulta
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <form method="post" action="@Url.Action("ResponderConsulta", "Administracion")" autocomplete="off">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="consultaId" />
+                    <div class="mb-3">
+                        <label for="paraEmail" class="form-label fw-bold">Para</label>
+                        <input type="email" class="form-control-plaintext" id="paraEmail" name="ParaEmail" readonly tabindex="-1" style="font-weight: 500;" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="respuesta" class="form-label fw-bold">Respuesta</label>
+                        <textarea class="form-control" id="respuesta" name="Respuesta" rows="5" required placeholder="Escribe aquí tu respuesta..."></textarea>
+                        <div class="form-text text-muted">La respuesta será enviada al correo del contacto.</div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-send"></i> Enviar respuesta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.btn-responder').forEach(function (btn) {
+            btn.addEventListener('click', function (event) {
+                var id = btn.getAttribute('data-id');
+                var email = btn.getAttribute('data-email');
+                document.getElementById('consultaId').value = id;
+                document.getElementById('paraEmail').value = email;
+
+                var modal = new bootstrap.Modal(document.getElementById('responderModal'), { backdrop: false });
+                modal.show();
+            });
+        });
+    </script>
+    <!-- Si usas Bootstrap Icons, asegúrate de incluir su CDN en tu _Layout.cshtml -->
+}

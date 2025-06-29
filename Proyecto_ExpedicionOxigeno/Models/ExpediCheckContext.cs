@@ -10,7 +10,5 @@ namespace Proyecto_ExpedicionOxigeno.Models
         {
         }
 
-        // DbSet para la tabla de reseñas (reviews)
-        public DbSet<Review> Reviews { get; set; }
     }
 }

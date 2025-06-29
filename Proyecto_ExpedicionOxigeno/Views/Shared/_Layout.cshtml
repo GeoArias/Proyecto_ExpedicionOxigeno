@@ -5,38 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@ViewBag.Title - ExpediCheck</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Francy&display=swap" rel="stylesheet">
+
+
+
     <style>
         :root {
-            --verde-oscuro: #1C4800;
-            --verde-claro: #6AFF79;
-            --dorado: #D3901B;
-            --amarillo-suave: #BBB01B;
-            --gris-footer: #BDBCA0;
+            --cyan: #00ffff;
+            --azul-fondo: #100b2c;
+            --blanco: #ffffff;
         }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 16px;
-            background-color: #FDFDFD;
-            margin: 0;
+        html {
+            scroll-behavior: smooth;
         }
+
+        body, h1, h2, h3, h4, h5, h6, .navbar-brand {
+            font-family: 'Francy', sans-serif;
+            color: #111;
+        }
+
+            body::before {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-image: url('/Content/Images/BG.jpeg');
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center;
+                opacity: 0.08;
+                z-index: -10;
+            }
 
         h1, .navbar-brand {
-            font-size: 28px;
-            font-weight: bold;
-            color: var(--dorado);
+            font-size: 32px;
+            font-weight: 400;
+            color: #28a745;
         }
 
         h2 {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 600;
-            color: var(--verde-oscuro);
+            color: var(--azul-fondo);
         }
 
         .navbar {
-            background-color: var(--verde-oscuro) !important;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            background-color: var(--azul-fondo);
+            padding: 1rem 0;
+            transition: top 0.4s, background-color 0.3s;
         }
+
+            .navbar.hidden {
+                top: -100px;
+            }
+
+            .navbar.transparent {
+                background-color: transparent !important;
+            }
 
         .navbar-brand img {
             height: 48px;
@@ -44,71 +74,256 @@
         }
 
         .nav-link {
-            color: white !important;
+            color: var(--blanco) !important;
             font-weight: 500;
-            letter-spacing: 0.5px;
-            transition: background-color 0.3s, color 0.3s;
             padding: 8px 16px;
-            border-radius: 6px;
+            transition: all 0.3s ease-in-out;
+            border-radius: 8px;
         }
 
-        .nav-link:hover {
-            background-color: var(--verde-claro);
-            color: #1C1C1C !important;
+            .nav-link:hover {
+                color: #28a745 !important;
+            }
+
+        .nav-login,
+        .nav-register {
+            background-color: #28a745 !important;
+            color: #222 !important;
+            font-weight: 600;
+            border-radius: 8px;
+            margin-left: 8px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
         }
 
-        footer {
-            background-color: var(--verde-oscuro);
-            text-align: center;
-            padding: 16px;
-            font-size: 14px;
+            .nav-login:hover,
+            .nav-register:hover {
+                color: var(--blanco) !important;
+                transform: scale(1.05);
+            }
+
+        .hero-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .body-content, main.container {
+            position: relative;
+            z-index: 1;
+            padding-top: 90px; /* Ajusta este valor a la altura real de tu navbar */
+        }
+
+
+        .hero-banner video {
+            position: absolute;
+            top: -90px; /* igual a la altura de tu navbar */
+            left: 0;
+            min-width: 100vw;
+            min-height: calc(100vh + 90px); /* cubre el área extra */
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             color: white;
-            margin-top: 50px;
+            text-align: center;
+            z-index: 2;
         }
 
-        hr {
-            border-top: 2px solid var(--amarillo-suave);
+        .container.hero-container {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
         }
 
-        .container.body-content {
-            padding-top: 30px;
-            padding-bottom: 30px;
+        .hero-spacer {
+            height: 100vh;
+            width: 100vw;
         }
+
+        section {
+            padding: 80px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .navbar-nav .dropdown:hover .dropdown-menu {
+            display: block;
+            margin-top: 0;
+        }
+        
     </style>
 
+
+
     @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-dark sticky-top">
+    @{
+        // Detecta si es la página principal (Home/Index)
+        bool esHomeIndex = (ViewContext.RouteData.Values["controller"].ToString().ToLower() == "home"
+            && ViewContext.RouteData.Values["action"].ToString().ToLower() == "index");
+    }
+
+
+    <nav class="navbar navbar-expand-sm navbar-dark sticky-top @(esHomeIndex ? "transparent" : "")" id="mainNavbar">
+
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="@Url.Action("Index", "Home")">
-                <img src="@Url.Content("~/Content/Images/expedicion_logo.png")" alt="Expedición Oxígeno" />
+            <a class="navbar-brand d-flex align-items-center" href="/">
                 ExpediCheck
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbarContent"
+                    aria-controls="mainNavbarContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse justify-content-between" id="mainNavbar">
+            <div class="collapse navbar-collapse justify-content-between" id="mainNavbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-sm-0">
-                    <li class="nav-item">@Html.ActionLink("Inicio", "Index", "Home", null, new { @class = "nav-link" })</li>
-                    <li class="nav-item">@Html.ActionLink("Acerca de", "About", "Home", null, new { @class = "nav-link" })</li>
-                    <li class="nav-item">@Html.ActionLink("Contacto", "Contact", "Home", null, new { @class = "nav-link" })</li>
-                    <li class="nav-item">@Html.ActionLink("Reseñas", "Resenas", "Home", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#acerca">Acerca</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#resenas">Reseñas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
+                    @if (Request.IsAuthenticated && User.IsInRole("Administrador"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#administracion" id="administracionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Administración
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="administracionDropdown">
+                                <li><a class="dropdown-item" href="/Administracion/Usuarios">Usuarios</a></li>
+                                <li><a class="dropdown-item" href="/Administracion/Consultas">Consultas</a></li>
+                                <li><a class="dropdown-item" href="/Administracion/Reviews">Reseñas</a></li>
+                            </ul>
+                        </li>
+                    }
+
                 </ul>
-                @Html.Partial("_LoginPartial")
+
+                <ul class="navbar-nav">
+                    @if (Request.IsAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <span class="nav-link text-white">Hola, @User.Identity.Name</span>
+                        </li>
+                        <li class="nav-item">
+                            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="nav-link nav-login btn btn-link" style="color: #fff; text-decoration: none;">Cerrar sesión</button>
+                            }
+                        </li>
+                    }
+                    else
+                    {
+                        @*<li class="nav-item">
+                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
+            </li>*@
+                        <li class="nav-item">
+                            <a class="nav-link nav-login" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-register" href="@Url.Action("Register", "Account")">Registrarse</a>
+                        </li>
+                    }
+                </ul>
             </div>
         </div>
     </nav>
+    @if (esHomeIndex)
+    {
+        <script>
+            function updateNavbarTransparency() {
+                const nav = document.getElementById("mainNavbar");
+                // Si el scroll está en la parte superior, el Hero Banner está visible
+                if (window.scrollY < window.innerHeight - nav.offsetHeight) {
+                    nav.classList.add("transparent");
+                } else {
+                    nav.classList.remove("transparent");
+                }
+            }
+            window.addEventListener("scroll", updateNavbarTransparency);
+            window.addEventListener("resize", updateNavbarTransparency);
+            document.addEventListener("DOMContentLoaded", updateNavbarTransparency);
 
+        </script>
+    }
+    @RenderSection("HeroBanner", required: false)
     <div class="container body-content">
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - ExpediCheck</p>
+            <center>
+                <p>&copy; @DateTime.Now.Year - ExpediCheck</p>
+            </center>
         </footer>
+    </div>
+
+    <!-- Modal de Log in -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="loginModalLabel">Iniciar sesión</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/Account/Login">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label for="emailLogin" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="emailLogin" name="Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="passwordLogin" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="passwordLogin" name="Password" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Entrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="registerModalLabel">Crear cuenta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/Account/Register">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label for="emailRegister" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="emailRegister" name="Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="passwordRegister" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="passwordRegister" name="Password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Registrarme</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     @Scripts.Render("~/bundles/jquery")

@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data.Entity;
 using System.Linq;
-using System.Net;
-using System.Net.Configuration;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -14,44 +11,41 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
+using Proyecto_ExpedicionOxigeno;
 using Proyecto_ExpedicionOxigeno.Models;
 
 namespace Proyecto_ExpedicionOxigeno
 {
     public class EmailService : IIdentityMessageService
     {
-        public Task SendAsync(IdentityMessage message)
+        public async Task SendAsync(IdentityMessage message)
         {
-            // Leer configuraciones desde web.config
-            var smtpSection = ConfigurationManager.GetSection("system.net/mailSettings/smtp") as SmtpSection;
-
-            if (smtpSection == null)
-            {
-                throw new ConfigurationErrorsException("No se encontró la configuración SMTP en el archivo web.config.");
-            }
-
-            // Configurar el cliente SMTP
-            var client = new SmtpClient
-            {
-                Host = smtpSection.Network.Host,
-                Port = smtpSection.Network.Port,
-                EnableSsl = smtpSection.Network.EnableSsl,
-                Credentials = new NetworkCredential(smtpSection.Network.UserName, smtpSection.Network.Password)
-            };
-
-            // Crear el mensaje de correo
-            var mail = new MailMessage
-            {
-                From = new MailAddress(smtpSection.From),
-                Subject = message.Subject,
-                Body = message.Body,
-                IsBodyHtml = true
-            };
-
+            var mail = new MailMessage();
             mail.To.Add(message.Destination);
+            mail.Subject = message.Subject;
+            mail.Body = message.Body;
+            mail.IsBodyHtml = true;
 
-            // Enviar el correo
-            return client.SendMailAsync(mail);
+            // Establecer el remitente desde Web.config
+            var fromAddress = System.Configuration.ConfigurationManager.AppSettings["mailFrom"]
+                              ?? System.Configuration.ConfigurationManager.AppSettings["mailSettings:from"]
+                              ?? "oxigeno.expedicion@gmail.com";
+            mail.From = new MailAddress(fromAddress);
+
+            using (var smtp = new SmtpClient())
+            {
+                // El SmtpClient leerá la configuración de <mailSettings> en Web.config automáticamente
+                try
+                {
+                    await smtp.SendMailAsync(mail);
+                }
+                catch (Exception ex)
+                {
+                    // Escribir en la consola el error
+                    Console.WriteLine($"Error al enviar el correo electrónico: {ex.Message}");
+                    throw; // Opcional: relanzar para depuración
+                }
+            }
         }
     }
 
