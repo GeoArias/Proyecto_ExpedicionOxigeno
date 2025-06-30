@@ -12,6 +12,7 @@
 
 
     <style>
+
         :root {
             --cyan: #00ffff;
             --azul-fondo: #100b2c;
@@ -120,7 +121,6 @@
             padding-top: 90px; /* Ajusta este valor a la altura real de tu navbar */
         }
 
-
         .hero-banner video {
             position: absolute;
             top: -90px; /* igual a la altura de tu navbar */
@@ -160,7 +160,182 @@
             display: block;
             margin-top: 0;
         }
-        
+
+        /* ===== ESTILOS DEL FOOTER ===== */
+        footer {
+            background-color: var(--azul-fondo);
+            color: var(--blanco);
+            padding: 50px 20px 20px;
+            font-family: 'Francy', sans-serif;
+            margin-top: 50px;
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 12px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+            footer h3 {
+                font-size: 20px;
+                font-weight: 600;
+                color: #28a745;
+                margin-bottom: 20px;
+                font-family: 'Francy', sans-serif;
+                border-bottom: 2px solid #28a745;
+                padding-bottom: 8px;
+                display: inline-block;
+            }
+
+            footer h5 {
+                font-family: 'Francy', sans-serif;
+                color: var(--blanco) !important;
+                margin-top: 20px;
+                margin-bottom: 15px;
+            }
+
+            footer p {
+                font-family: 'Francy', sans-serif;
+                color: #ccc;
+                line-height: 1.6;
+                margin-bottom: 15px;
+            }
+
+        .column.contact-about img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .column.contact-about ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+            .column.contact-about ul li {
+                margin-bottom: 15px;
+                font-family: 'Francy', sans-serif;
+            }
+
+                .column.contact-about ul li p {
+                    margin: 0;
+                    color: #ccc;
+                    font-size: 16px;
+                }
+
+                .column.contact-about ul li a {
+                    color: #28a745;
+                    text-decoration: none;
+                    transition: color 0.3s ease;
+                }
+
+                    .column.contact-about ul li a:hover {
+                        color: var(--blanco);
+                    }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+            .social-icons a {
+                display: inline-block;
+                transition: transform 0.3s ease;
+                border-radius: 50%;
+                padding: 5px;
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+                .social-icons a:hover {
+                    transform: translateY(-3px);
+                    background-color: #28a745;
+                }
+
+            .social-icons img {
+                border-radius: 50%;
+            }
+
+        .column.address {
+            text-align: center;
+            background: rgba(40, 167, 69, 0.1);
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px solid rgba(40, 167, 69, 0.3);
+        }
+
+            .column.address h3 {
+                font-size: 22px;
+                margin-bottom: 15px;
+                color: var(--blanco);
+                border-bottom: 2px solid #28a745;
+            }
+
+            .column.address p {
+                font-size: 20px;
+                font-weight: 600;
+                color: var(--blanco);
+                margin-bottom: 20px;
+                font-family: 'Francy', sans-serif;
+            }
+
+            .column.address iframe {
+                width: 100%;
+                height: 200px;
+                border: 2px solid #28a745;
+                border-radius: 8px;
+                margin-top: 15px;
+            }
+
+        footer center {
+            grid-column: 1 / -1;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 25px;
+            margin-top: 20px;
+        }
+
+            footer center p {
+                color: #ccc;
+                font-size: 14px;
+                font-family: 'Francy', sans-serif;
+                margin: 0;
+            }
+
+        /* Responsive para móviles */
+        @@media (max-width: 768px) {
+            footer {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 40px 15px 20px;
+            }
+
+            .column.address p {
+                font-size: 18px;
+            }
+
+            .social-icons {
+                justify-content: center;
+            }
+
+            .column.address {
+                padding: 25px 15px;
+            }
+
+            .column.contact-about img {
+                display: block;
+                margin: 0 auto 20px auto;
+            }
+        }
     </style>
 
 
@@ -225,11 +400,11 @@
                     else
                     {
                         @*<li class="nav-item">
-                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
-            </li>*@
+                                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
+                            </li>*@
                         <li class="nav-item">
                             <a class="nav-link nav-login" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
                         </li>
@@ -264,6 +439,33 @@
         @RenderBody()
         <hr />
         <footer>
+            <div class="column contact-about">
+                <img src="~/Resources/Images/logo.png" alt="Expedición Oxígeno Logo" 
+                <h3>Contáctanos</h3>
+                <ul>
+                    <li><p>Correo: <a href="mailto:expedicion@gmail.com?subject=Consulta%20-%20Expedici%C3%B3n%20Ox%C3%ADgeno">expedicion@gmail.com</a></p></li>
+                    <li><p>Teléfono: <a href="tel:+50625202100">2520 2100</a></p></li>
+                </ul>
+                <h5 style="color: #000;">También podés encontrarnos en redes sociales:</h5>
+                <div class="d-flex justify-content-center gap-4 mt-3">
+                    <div class="social-icons">
+
+                        <a href="https://www.facebook.com/OxigenoCostaRica" target="_blank">
+                            <img src="~/Content/Images/icon_Facebook.png" alt="Facebook" width="40" height="40" />
+                        </a>
+                        <a href="https://www.instagram.com/oxigenocr/" target="_blank">
+                            <img src="~/Content/Images/icon_Instagram.png" alt="Instagram" width="40" height="40" />
+                        </a>
+                        <h3>¿Quiénes somos?</h3>
+                        <p>Expedición Oxígeno es una atracción de aventura ubicada en el O2 de Oxígeno, la cual alberga 3 actividades cuyo propósito es proveer diversión y adrenalina a un público de todas las edades. Lo único que necesitás es cumplir con la estatura mínima para cada una de las actividades</p>
+                    </div>
+                </div>
+            </div>
+            <div class="column address">
+                <h3>Dirección</h3>
+                <p>Heredia, San Francisco</p>
+                <iframe src="https://embed.waze.com/iframe?zoom=16&amp;lat=9.994234&amp;lon=-84.131155&amp;ct=livemap&amp;pin=1" allowfullscreen="true"></iframe>
+            </div>
             <center>
                 <p>&copy; @DateTime.Now.Year - ExpediCheck</p>
             </center>
