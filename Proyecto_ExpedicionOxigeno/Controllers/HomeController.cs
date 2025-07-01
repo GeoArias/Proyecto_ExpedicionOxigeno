@@ -33,6 +33,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
         // POST: Home/Index
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public ActionResult Index(Review review)
         {
@@ -48,8 +49,10 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
             return View(reseñas);
         }
+
         // POST: Home/GuardarContacto (guardar contacto)
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public ActionResult GuardarContacto(Contacto contacto)
         {
@@ -64,7 +67,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
             return View("Index", reseñas);
-        }
+        } 
 
 
 

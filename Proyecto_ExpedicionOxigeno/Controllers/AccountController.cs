@@ -22,7 +22,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
         public AccountController()
         {
-            
+
         }
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
@@ -34,7 +34,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -46,9 +46,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -63,10 +63,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 _userManager = value;
             }
         }
-        
 
-        //
-        // GET: /Account/Login
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
@@ -74,8 +71,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return View();
         }
 
-        //
-        // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -86,8 +81,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 return View(model);
             }
 
-            // No cuenta los errores de inicio de sesión para el bloqueo de la cuenta
-            // Para permitir que los errores de contraseña desencadenen el bloqueo de la cuenta, cambie a shouldLockout: true
             var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
             switch (result)
             {
@@ -104,12 +97,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
         }
 
-        //
-        // GET: /Account/VerifyCode
         [AllowAnonymous]
         public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
         {
-            // Requerir que el usuario haya iniciado sesión con nombre de usuario y contraseña o inicio de sesión externo
             if (!await SignInManager.HasBeenVerifiedAsync())
             {
                 return View("Error");
@@ -117,8 +107,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
 
-        //
-        // POST: /Account/VerifyCode
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -129,11 +117,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 return View(model);
             }
 
-            // El código siguiente protege de los ataques por fuerza bruta a los códigos de dos factores. 
-            // Si un usuario introduce códigos incorrectos durante un intervalo especificado de tiempo, la cuenta del usuario 
-            // se bloqueará durante un período de tiempo especificado. 
-            // Puede configurar el bloqueo de la cuenta en IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -147,16 +131,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
         }
 
-        //
-        // GET: /Account/Register
         [AllowAnonymous]
         public ActionResult Register()
         {
             return View();
         }
 
-        //
-        // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -168,46 +148,44 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    // Asignar el rol "Usuario" automáticamente
                     await UserManager.AddToRoleAsync(user.Id, "Usuario");
 
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
-                    // Para obtener más información sobre cómo habilitar la confirmación de cuentas y el restablecimiento de contraseña, visite https://go.microsoft.com/fwlink/?LinkID=320771
-                    // Enviar un correo electrónico con este vínculo
+                    // Generar token de confirmación
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // Use the created SendAsync method to send the confirmation email
+
+                    // Enviar correo de confirmación
                     await emailService.SendAsync(new IdentityMessage
                     {
                         Destination = user.Email,
                         Subject = "Expedición Oxígeno - Confirma tu cuenta",
                         Body = $@"
-        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
-            <div style='text-align:center; margin-bottom:24px;'>
-                <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
-            </div>
-            <h2 style='color: #2c3e50;'>¡Bienvenido a Expedición Oxígeno!</h2>
-            <p style='font-size: 16px; color: #333;'>Gracias por registrarte. Para confirmar tu cuenta, haz clic en el siguiente botón:</p>
-            <div style='text-align: center; margin: 32px 0;'>
-                <a href='{callbackUrl}' style='background: #27ae60; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-size: 16px; display: inline-block;'>Confirmar cuenta</a>
-            </div>
-            <p style='font-size: 14px; color: #888;'>Si no te registraste, puedes ignorar este correo.</p>
-            <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;' />
-            <p style='font-size: 12px; color: #bbb;'>Expedición Oxígeno</p>
-        </div>"
+                    <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
+                        <div style='text-align:center; margin-bottom:24px;'>
+                            <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
+                        </div>
+                        <h2 style='color: #2c3e50;'>¡Bienvenido a Expedición Oxígeno!</h2>
+                        <p style='font-size: 16px; color: #333;'>Gracias por registrarte. Para confirmar tu cuenta, hacé clic en el siguiente botón:</p>
+                        <div style='text-align: center; margin: 32px 0;'>
+                            <a href='{callbackUrl}' style='background: #27ae60; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-size: 16px; display: inline-block;'>Confirmar cuenta</a>
+                        </div>
+                        <p style='font-size: 14px; color: #888;'>Si no te registraste, podés ignorar este correo.</p>
+                    </div>"
                     });
+
+                    // Enviamos señal al Home para mostrar modal
+                    TempData["RegistroExitoso"] = true;
+
                     return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
             }
 
-            // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario
+            // Si llegamos acá es que hubo un error
             return View(model);
         }
 
-        //
-        // GET: /Account/ConfirmEmail
+
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(string userId, string code)
         {
@@ -219,16 +197,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
-        //
-        // GET: /Account/ForgotPassword
         [AllowAnonymous]
         public ActionResult ForgotPassword()
         {
             return View();
         }
 
-        //
-        // POST: /Account/ForgotPassword
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -239,58 +213,35 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 var user = await UserManager.FindByNameAsync(model.Email);
                 if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
                 {
-                    // No revelar que el usuario no existe o que no está confirmado
                     return View("ForgotPasswordConfirmation");
                 }
 
-                // Para obtener más información sobre cómo habilitar la confirmación de cuentas y el restablecimiento de contraseña, visite https://go.microsoft.com/fwlink/?LinkID=320771
-                // Enviar un correo electrónico con este vínculo
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                 await emailService.SendAsync(new IdentityMessage
                 {
                     Destination = user.Email,
                     Subject = "Expedición Oxígeno - Restablece tu contraseña",
-                    Body = $@"
-        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
-            <div style='text-align:center; margin-bottom:24px;'>
-                <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
-            </div>
-            <h2 style='color: #c0392b;'>Solicitud de restablecimiento de contraseña</h2>
-            <p style='font-size: 16px; color: #333;'>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
-            <div style='text-align: center; margin: 32px 0;'>
-                <a href='{callbackUrl}' style='background: #2980b9; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-size: 16px; display: inline-block;'>Restablecer contraseña</a>
-            </div>
-            <p style='font-size: 14px; color: #888;'>Si no solicitaste este cambio, puedes ignorar este correo.</p>
-            <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;' />
-            <p style='font-size: 12px; color: #bbb;'>Expedición Oxígeno</p>
-        </div>"
+                    Body = $@"<!-- contenido del correo -->"
                 });
                 return RedirectToAction("Index", "Home");
             }
 
-            // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario
             return View(model);
         }
 
-        //
-        // GET: /Account/ForgotPasswordConfirmation
         [AllowAnonymous]
         public ActionResult ForgotPasswordConfirmation()
         {
             return View();
         }
 
-        //
-        // GET: /Account/ResetPassword
         [AllowAnonymous]
         public ActionResult ResetPassword(string code)
         {
             return code == null ? View("Error") : View();
         }
 
-        //
-        // POST: /Account/ResetPassword
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -303,7 +254,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             var user = await UserManager.FindByNameAsync(model.Email);
             if (user == null)
             {
-                // No revelar que el usuario no existe
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
             }
             var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
@@ -315,27 +265,20 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return View();
         }
 
-        //
-        // GET: /Account/ResetPasswordConfirmation
         [AllowAnonymous]
         public ActionResult ResetPasswordConfirmation()
         {
             return View();
         }
 
-        //
-        // POST: /Account/ExternalLogin
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
-            // Solicitar redireccionamiento al proveedor de inicio de sesión externo
             return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
 
-        //
-        // GET: /Account/SendCode
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(string returnUrl, bool rememberMe)
         {
@@ -349,8 +292,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
 
-        //
-        // POST: /Account/SendCode
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -361,7 +302,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 return View();
             }
 
-            // Generar el token y enviarlo
             if (!await SignInManager.SendTwoFactorCodeAsync(model.SelectedProvider))
             {
                 return View("Error");
@@ -369,8 +309,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return RedirectToAction("VerifyCode", new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
         }
 
-        //
-        // GET: /Account/ExternalLoginCallback
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
@@ -380,7 +318,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Si el usuario ya tiene un inicio de sesión, iniciar sesión del usuario con este proveedor de inicio de sesión externo
             var result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: false);
             switch (result)
             {
@@ -392,15 +329,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = false });
                 case SignInStatus.Failure:
                 default:
-                    // Si el usuario no tiene ninguna cuenta, solicitar que cree una
                     ViewBag.ReturnUrl = returnUrl;
                     ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
                     return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
             }
         }
 
-        //
-        // POST: /Account/ExternalLoginConfirmation
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -413,7 +347,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             if (ModelState.IsValid)
             {
-                // Obtener datos del usuario del proveedor de inicio de sesión externo
                 var info = await AuthenticationManager.GetExternalLoginInfoAsync();
                 if (info == null)
                 {
@@ -437,8 +370,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return View(model);
         }
 
-        //
-        // POST: /Account/LogOff
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
@@ -447,8 +378,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        //
-        // GET: /Account/ExternalLoginFailure
         [AllowAnonymous]
         public ActionResult ExternalLoginFailure()
         {
@@ -476,7 +405,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         }
 
         #region Aplicaciones auxiliares
-        // Se usa para la protección XSRF al agregar inicios de sesión externos
         private const string XsrfKey = "XsrfId";
 
         private IAuthenticationManager AuthenticationManager

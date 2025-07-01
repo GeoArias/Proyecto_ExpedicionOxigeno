@@ -38,7 +38,7 @@
                 background-size: cover;
                 background-repeat: no-repeat;
                 background-position: center;
-                opacity: 0.08;
+                opacity: 0.17;
                 z-index: -10;
             }
 
@@ -55,9 +55,14 @@
         }
 
         .navbar {
+            position: fixed !important; /* Always fixed at the top */
+            top: 0;
+            left: 0;
+            width: 100%; /* Full width */
             background-color: var(--azul-fondo);
             padding: 1rem 0;
-            transition: top 0.4s, background-color 0.3s;
+            z-index: 1030; /* On top of other elements */
+            transition: none; /* No transition needed */
         }
 
             .navbar.hidden {
@@ -153,7 +158,7 @@
 
         section {
             padding: 80px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #111;
         }
 
         .navbar-nav .dropdown:hover .dropdown-menu {
@@ -264,6 +269,36 @@
         @RenderBody()
         <hr />
         <footer>
+<<<<<<< Updated upstream
+=======
+            <div class="column contact-about">
+                <img src="~/Resources/Images/logo.png" alt="Expedición Oxígeno Logo"
+                <h3>Contáctanos</h3>
+                <ul>
+                    <li><p>Correo: <a href="mailto:expedicion@gmail.com?subject=Consulta%20-%20Expedici%C3%B3n%20Ox%C3%ADgeno">expedicion@gmail.com</a></p></li>
+                    <li><p>Teléfono: <a href="tel:+50625202100">2520 2100</a></p></li>
+                </ul>
+                <h5 style="color: #000;">También podés encontrarnos en redes sociales:</h5>
+                <div class="d-flex justify-content-center gap-4 mt-3">
+                    <div class="social-icons">
+
+                        <a href="https://www.facebook.com/OxigenoCostaRica" target="_blank">
+                            <img src="~/Content/Images/icon_Facebook.png" alt="Facebook" width="40" height="40" />
+                        </a>
+                        <a href="https://www.instagram.com/oxigenocr/" target="_blank">
+                            <img src="~/Content/Images/icon_Instagram.png" alt="Instagram" width="40" height="40" />
+                        </a>
+                        <h3>¿Quiénes somos?</h3>
+                        <p>Expedición Oxígeno es una atracción de aventura ubicada en el O2 de Oxígeno, la cual alberga 3 actividades cuyo propósito es proveer diversión y adrenalina a un público de todas las edades. Lo único que necesitás es cumplir con la estatura mínima para cada una de las actividades</p>
+                    </div>
+                </div>
+            </div>
+            <div class="column address">
+                <h3>Dirección</h3>
+                <p>Heredia, San Francisco</p>
+                <iframe src="https://embed.waze.com/iframe?zoom=16&amp;lat=9.994234&amp;lon=-84.131155&amp;ct=livemap&amp;pin=1" allowfullscreen="true"></iframe>
+            </div>
+>>>>>>> Stashed changes
             <center>
                 <p>&copy; @DateTime.Now.Year - ExpediCheck</p>
             </center>
@@ -325,6 +360,41 @@
             </div>
         </div>
     </div>
+    <!-- Modal de Confirmación de Registro -->
+    <div class="modal fade" id="registroExitosoModal" tabindex="-1" aria-labelledby="registroExitosoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="registroExitosoModalLabel">Registro Exitoso</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center">
+                    ¡Gracias por registrarte!<br />
+                    Te llegará un correo a la dirección brindada para confirmar tu cuenta.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal: Debes iniciar sesión -->
+    <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="loginRequiredModalLabel">Inicio de sesión requerido</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center">
+                    Debes iniciar sesión para dejar una reseña o consulta.
+                    <div class="mt-3">
+                        <a href="@Url.Action("Login", "Account", new { ReturnUrl = Request.RawUrl })" class="btn btn-success">
+                            Iniciar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
