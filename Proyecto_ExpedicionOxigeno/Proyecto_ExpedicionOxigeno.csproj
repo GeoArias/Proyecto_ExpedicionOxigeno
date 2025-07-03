@@ -278,9 +278,11 @@
     <Compile Include="Controllers\AdministracionController.cs" />
     <Compile Include="Controllers\BookingsAppointmentController.cs" />
     <Compile Include="Controllers\BookingsBusinessController.cs" />
-    <Compile Include="Controllers\BookingsServiceController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\MSBookings_Actions.cs" />
+    <Compile Include="Controllers\Reserva.cs" />
+    <Compile Include="Controllers\ServiciosController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -314,8 +316,12 @@
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Contacto.cs" />
+    <Compile Include="Models\MSBookings_Appointment.cs" />
     <Compile Include="Models\MSBookings_Business.cs" />
     <Compile Include="Models\MSBookings_Businesses.cs" />
+    <Compile Include="Models\MSBookings_Common\MSBookings_Address.cs" />
+    <Compile Include="Models\MSBookings_Common\MSBookings_SchedulingPolicy.cs" />
+    <Compile Include="Models\MSBookings_Service.cs" />
     <Compile Include="Models\Review.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -400,9 +406,13 @@
     <Content Include="Views\Administracion\Consultas.cshtml" />
     <Content Include="Views\Administracion\Reviews.cshtml" />
     <Content Include="Views\BookingsBusiness\index.cshtml" />
+    <Content Include="Views\Reserva\index.cshtml" />
+    <Content Include="Views\Servicios\index.cshtml" />
+    <Content Include="Views\Servicios\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\MSBookings_Actions\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

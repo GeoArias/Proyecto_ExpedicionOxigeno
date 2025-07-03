@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
+using Newtonsoft.Json.Linq;
+using Proyecto_ExpedicionOxigeno.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -340,6 +344,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
             return RedirectToAction("Reviews");
         }
+
+        
 
 
     }

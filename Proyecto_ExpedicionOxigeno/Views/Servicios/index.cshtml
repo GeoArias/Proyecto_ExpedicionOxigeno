@@ -1,0 +1,46 @@
+﻿@model List<Proyecto_ExpedicionOxigeno.Models.MSBookings_Service>
+@{
+    ViewBag.Title = "Servicios";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>ID</th>
+            <th>Duración</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.DisplayName)</td>
+                <td>@Html.DisplayFor(modelItem => item.Id)</td>
+                <td>@(Html.DisplayFor(modelItem => item.DefaultDurationTimeSpan.TotalMinutes)) minutos</td>
+                <td>@string.Format("{0:C}", item.DefaultPrice)</td>
+                <td>
+                    <a href="@Url.Action("Details", "Servicios", new { id = item.Id })" class="btn btn-sm btn-primary">
+                        <i class="bi bi-eye"></i> Ver detalles
+                    </a>
+                    <a href="@Url.Action("Edit", "Servicios", new { id = item.Id })" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                    <a href="@Url.Action("Delete", "Servicios", new { id = item.Id })" class="btn btn-sm btn-danger"
+                       onclick="return confirm('¿Seguro que deseas eliminar este servicio?');">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

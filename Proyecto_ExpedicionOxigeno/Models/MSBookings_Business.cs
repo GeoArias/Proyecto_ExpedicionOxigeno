@@ -10,7 +10,7 @@
                 [Key]
                 [Column("id")]
                 [Required]
-                public string Id { get; set; }
+                public Guid Id { get; set; }
 
                 [Column("displayName")]
                 [Required]
@@ -67,23 +67,6 @@
                 public MSBookings_BookingPageSettings BookingPageSettings { get; set; }
             }
     
-            public class MSBookings_Address
-            {
-                [Column("street")]
-                public string Street { get; set; }
-
-                [Column("city")]
-                public string City { get; set; }
-
-                [Column("state")]
-                public string State { get; set; }
-
-                [Column("countryOrRegion")]
-                public string CountryOrRegion { get; set; }
-
-                [Column("postalCode")]
-                public string PostalCode { get; set; }
-            }
 
             public class MSBookings_BusinessHour
             {
@@ -101,33 +84,6 @@
 
                 [Column("endTime")]
                 public string EndTime { get; set; }
-            }
-
-            public class MSBookings_SchedulingPolicy
-            {
-                [Column("timeSlotInterval")]
-                public string TimeSlotInterval { get; set; }
-
-                [Column("minimumLeadTime")]
-                public string MinimumLeadTime { get; set; }
-
-                [Column("maximumAdvance")]
-                public string MaximumAdvance { get; set; }
-
-                [Column("sendConfirmationsToOwner")]
-                public bool? SendConfirmationsToOwner { get; set; }
-
-                [Column("allowStaffSelection")]
-                public bool? AllowStaffSelection { get; set; }
-
-                [Column("isMeetingInviteToCustomersEnabled")]
-                public bool? IsMeetingInviteToCustomersEnabled { get; set; }
-
-                [Column("generalAvailability")]
-                public MSBookings_GeneralAvailability GeneralAvailability { get; set; }
-
-                [Column("customAvailabilities")]
-                public List<object> CustomAvailabilities { get; set; }
             }
 
             public class MSBookings_GeneralAvailability
