@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
@@ -11,6 +12,52 @@ namespace Proyecto_ExpedicionOxigeno
 {
     public partial class Startup
     {
+        // Traer los datos para conexión a Graph
+        private static string appId = ConfigurationManager.AppSettings["ida:AppId"];
+        private static string appSecret = ConfigurationManager.AppSettings["ida:AppSecret"];
+        private static string tenantId = ConfigurationManager.AppSettings["ida:TenantId"];
+        private static string redirectUri = ConfigurationManager.AppSettings["ida:RedirectUri"];
+        private static string graphScopes = "https://graph.microsoft.com/.default";
+
+
+        public void ConectionGraph()
+        {
+            // La lógica implementada es:
+            // 1. Crear un objeto ConfidentialClientApplication usando appId, appSecret, redirectUri y tenantId.
+            // 2. Definir los scopes separando graphScopes por espacio o coma.
+            // 3. Intentar adquirir un token para la aplicación (client credentials flow).
+            // 4. Manejar excepciones si la autenticación falla.
+
+            try
+            {
+                var authority = $"https://login.microsoftonline.com/{tenantId}";
+
+                var app = Microsoft.Identity.Client.ConfidentialClientApplicationBuilder
+                    .Create(appId)
+                    .WithClientSecret(appSecret)
+                    .WithRedirectUri(redirectUri)
+                    .WithAuthority(authority)
+                    .Build();
+
+                string[] scopes = graphScopes.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // Adquirir token para la aplicación (client credentials)
+                var result = app.AcquireTokenForClient(scopes)
+                                .ExecuteAsync().GetAwaiter().GetResult();
+
+                // Puedes almacenar el token en una variable estática o en caché según tus necesidades
+                GraphTokenCache.Token = result.AccessToken;
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores de autenticación
+                // Puedes registrar el error o lanzar una excepción personalizada
+                System.Diagnostics.Debug.WriteLine("Error al conectar a Microsoft Graph: " + ex.Message);
+                throw;
+            }
+        }
+
+
         // Para obtener más información sobre cómo configurar la autenticación, visite https://go.microsoft.com/fwlink/?LinkId=301864
         public void ConfigureAuth(IAppBuilder app)
         {
@@ -18,6 +65,7 @@ namespace Proyecto_ExpedicionOxigeno
             app.CreatePerOwinContext(ApplicationDbContext.Create);
             app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
             app.CreatePerOwinContext<ApplicationSignInManager>(ApplicationSignInManager.Create);
+
 
             // Permitir que la aplicación use una cookie para almacenar información para el usuario que inicia sesión
             // y una cookie para almacenar temporalmente información sobre un usuario que inicia sesión con un proveedor de inicio de sesión de terceros
