@@ -9,6 +9,8 @@ namespace Proyecto_ExpedicionOxigeno
         public void Configuration(IAppBuilder app)
         {
             ConfigureAuth(app);
+            // Iniciar conexión con Graph
+            ConectionGraph();
         }
     }
 }

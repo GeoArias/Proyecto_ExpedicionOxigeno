@@ -177,6 +177,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                         </div>"
                     });
 
+                    // Crear Staff en Microsoft Bookings
+
+                    // Enviamos señal al Home para mostrar modal
                     TempData["RegistroExitoso"] = true;
 
                     return RedirectToAction("Index", "Home");

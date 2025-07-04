@@ -1,0 +1,40 @@
+﻿@model Newtonsoft.Json.Linq.JArray
+
+@{
+    ViewBag.Title = "Businesses";
+}
+
+<h2>Businesses</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <p>No businesses found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>DisplayName</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var business in Model)
+            {
+                <tr>
+                    <td>@business["id"]</td>
+                    <td>@business["displayName"]</td>
+                    <td>
+                        @Html.ActionLink("Details", "Details", new { id = business["id"] }) |
+                        @Html.ActionLink("Edit", "Edit", new { id = business["id"] }) |
+                        @using (Html.BeginForm("Delete", "BookingsBusiness", new { id = business["id"] }, FormMethod.Post, new { style = "display:inline", onsubmit = "return confirm('Are you sure you want to delete this business?');" }))
+                        {
+                            <button type="submit" class="btn btn-link">Delete</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
