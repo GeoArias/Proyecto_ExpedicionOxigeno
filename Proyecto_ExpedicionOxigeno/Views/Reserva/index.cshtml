@@ -1,9 +1,57 @@
-﻿
+﻿@model IEnumerable<Microsoft.Graph.Models.BookingService>
+
 @{
     ViewBag.Title = "Nueva reserva";
 }
 
 <h2>@ViewBag.Title</h2>
 
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Selecciona un servicio</h4>
+            </div>
+            <div class="card-body">
+                @if (Model != null && Model.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var service in Model)
+                        {
+                            <a href="@Url.Action("SeleccionarServicio", "Reserva", new { id = service.Id })" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">@service.DisplayName</h5>
+                                    <small>@service.DefaultPrice?.Amount @service.DefaultPrice?.Currency</small>
+                                </div>
+                                <p class="mb-1">@service.Description</p>
+                                <small>Duración: @(service.DefaultDuration != null ? service.DefaultDuration.ToString() : "No especificada")</small>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p>No hay servicios disponibles en este momento.</p>
+                }
+            </div>
+        </div>
+    </div>
 
-
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Información</h4>
+            </div>
+            <div class="card-body">
+                <p>Selecciona uno de nuestros servicios para continuar con la reserva.</p>
+                <p>Una vez seleccionado, podrás elegir la fecha y hora que más te convenga.</p>
+                <hr>
+                <h5>Nuestros horarios:</h5>
+                <ul>
+                    <li>Lunes a viernes: 1:00 pm - 7:00 pm</li>
+                    <li>Sábados y domingos: 12:00 pm - 7:00 pm</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

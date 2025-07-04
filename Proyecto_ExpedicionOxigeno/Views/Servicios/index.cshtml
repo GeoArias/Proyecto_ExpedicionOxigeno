@@ -1,4 +1,5 @@
-﻿@model List<Proyecto_ExpedicionOxigeno.Models.MSBookings_Service>
+﻿@using Microsoft.Graph.Models
+@model List<BookingService>
 @{
     ViewBag.Title = "Servicios";
 }
@@ -26,7 +27,16 @@
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.DisplayName)</td>
                 <td>@Html.DisplayFor(modelItem => item.Id)</td>
-                <td>@(Html.DisplayFor(modelItem => item.DefaultDurationTimeSpan.TotalMinutes)) minutos</td>
+                <td>
+                    @if (item.DefaultDuration.Value.TotalHours >= 1)
+                    {
+                        @($"{Math.Floor(item.DefaultDuration.Value.TotalHours)} horas {item.DefaultDuration.Value.Minutes} minutos")
+                    }
+                    else
+                    {
+                        @($"{item.DefaultDuration.Value.Minutes} minutos")
+                    }
+                </td>
                 <td>@string.Format("{0:C}", item.DefaultPrice)</td>
                 <td>
                     <a href="@Url.Action("Details", "Servicios", new { id = item.Id })" class="btn btn-sm btn-primary">

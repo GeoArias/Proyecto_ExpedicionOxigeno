@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Graph.Models;
+using Newtonsoft.Json.Linq;
 using Proyecto_ExpedicionOxigeno.Helpers;
 using Proyecto_ExpedicionOxigeno.Models;
 using System;
@@ -65,7 +66,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
         // POST : Servicios/Edit/{ID}
         [HttpPost]
-        public async Task<ActionResult> Edit(string id, MSBookings_Service service)
+        public async Task<ActionResult> Edit(string id, BookingService service)
         {
             if (id == null)
             {

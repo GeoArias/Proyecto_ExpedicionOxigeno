@@ -1,4 +1,5 @@
-﻿@model Proyecto_ExpedicionOxigeno.Models.MSBookings_Service
+﻿@using Microsoft.Graph.Models
+@model BookingService
 
 @{
     ViewBag.Title = "Edit";
@@ -11,7 +12,7 @@
     @Html.AntiForgeryToken()
     
 <div class="form-horizontal">
-    <h4>MSBookings_Service</h4>
+    <h4>BookingService</h4>
     <hr />
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     @Html.HiddenFor(model => model.Id)

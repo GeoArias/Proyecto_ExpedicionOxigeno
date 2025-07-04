@@ -1,4 +1,5 @@
 ﻿using Microsoft.Graph.Models;
+using Newtonsoft.Json.Linq;
 using Proyecto_ExpedicionOxigeno.Models;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         public async Task<ActionResult> Index()
         {
             // Cargar todos los servicios disponibles
-            List<MSBookings_Service> services = await MSBookings_Actions.Get_MSBookingsServices();
+            List<BookingService> services = await MSBookings_Actions.Get_MSBookingsServices();
             ViewBag.Services = services;
             return View();
         }
