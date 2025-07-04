@@ -320,6 +320,10 @@
     <Compile Include="Migrations\202507010214027_AddNombreTelefonoToUser.Designer.cs">
       <DependentUpon>202507010214027_AddNombreTelefonoToUser.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202507041603158_RemoveRequiredNombreFields.cs" />
+    <Compile Include="Migrations\202507041603158_RemoveRequiredNombreFields.Designer.cs">
+      <DependentUpon>202507041603158_RemoveRequiredNombreFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Estado.cs" />
@@ -406,7 +410,6 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
     <Content Include="Views\Account\ConfirmEmail.cshtml" />
@@ -428,7 +431,6 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\Home\Resenas.cshtml" />
     <Content Include="Views\Administracion\Usuarios.cshtml" />
     <Content Include="Views\Administracion\Consultas.cshtml" />
     <Content Include="Views\Administracion\Reviews.cshtml" />
@@ -464,6 +466,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202507010214027_AddNombreTelefonoToUser.resx">
       <DependentUpon>202507010214027_AddNombreTelefonoToUser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507041603158_RemoveRequiredNombreFields.resx">
+      <DependentUpon>202507041603158_RemoveRequiredNombreFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

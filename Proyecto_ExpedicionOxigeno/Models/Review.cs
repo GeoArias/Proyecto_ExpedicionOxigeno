@@ -10,7 +10,6 @@ namespace Proyecto_ExpedicionOxigeno.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "El nombre es obligatorio.")]
         public string Nombre { get; set; }
 
         [Required(ErrorMessage = "El comentario es obligatorio.")]
@@ -20,7 +19,7 @@ namespace Proyecto_ExpedicionOxigeno.Models
         public int Calificacion { get; set; }
 
         public DateTime Fecha { get; set; }
-        // Columna Mostrar en la página principal
+
         public bool Mostrar { get; set; }
 
         public Review()
