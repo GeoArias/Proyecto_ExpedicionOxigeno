@@ -15,8 +15,6 @@ namespace Proyecto_ExpedicionOxigeno.Models
         [StringLength(1000, ErrorMessage = "La consulta no puede superar los 1000 caracteres.")]
         public string Consulta { get; set; }
 
-        [Required(ErrorMessage = "El nombre es obligatorio.")]
-        [StringLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres.")]
         public string Nombre { get; set; }
 
         [Required(ErrorMessage = "El número de teléfono es obligatorio.")]
@@ -30,7 +28,6 @@ namespace Proyecto_ExpedicionOxigeno.Models
 
         public DateTime Fecha { get; set; }
 
-        // Marca si ya está respondida la consulta o no
         public bool Respondida { get; set; } = false;
 
         public Contacto()

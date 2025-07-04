@@ -1,10 +1,8 @@
-﻿// HomeController.cs
-using Proyecto_ExpedicionOxigeno.Models;
+﻿using Proyecto_ExpedicionOxigeno.Models;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Security.Claims;
 using System.Web.Mvc;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
@@ -13,25 +11,19 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
     {
         private ApplicationDbContext db = new ApplicationDbContext();
 
-        // GET: Home/Index
         [HttpGet]
         public ActionResult Index()
         {
-            using (var db = new ApplicationDbContext())
-            {
-                var reviews = db.Reviews
-                    .Where(r => r.Mostrar)
-                    .OrderByDescending(r => r.Fecha)
-                    .Take(5) // Opcional: solo las 5 más recientes
-                    .ToList();
+            var reviews = db.Reviews
+                .Where(r => r.Mostrar)
+                .OrderByDescending(r => r.Fecha)
+                .Take(5)
+                .ToList();
 
-                ViewBag.Reviews = reviews;
-            }
+            ViewBag.Reviews = reviews;
             return View();
         }
 
-
-        // POST: Home/Index
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -39,18 +31,29 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             if (ModelState.IsValid)
             {
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var nombre = claimsIdentity.FindFirst("Nombre")?.Value ?? "Anónimo";
+
+                review.Nombre = nombre;
                 review.Fecha = DateTime.Now;
+                review.Mostrar = false;
+
                 db.Reviews.Add(review);
                 db.SaveChanges();
+
                 TempData["ResenaGuardada"] = true;
                 return RedirectToAction("Index");
             }
 
-            var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
-            return View(reseñas);
+            ViewBag.Reviews = db.Reviews
+                .Where(r => r.Mostrar)
+                .OrderByDescending(r => r.Fecha)
+                .Take(5)
+                .ToList();
+
+            return View();
         }
 
-        // POST: Home/GuardarContacto (guardar contacto)
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -58,18 +61,27 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             if (ModelState.IsValid)
             {
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+                var nombre = claimsIdentity.FindFirst("Nombre")?.Value ?? "Anónimo";
+
+                contacto.Nombre = nombre;
                 contacto.Fecha = DateTime.Now;
+
                 db.Contactos.Add(contacto);
                 db.SaveChanges();
+
                 TempData["MensajeEnviado"] = "¡Consulta enviada correctamente!";
                 return RedirectToAction("Index");
             }
 
-            var reseñas = db.Reviews.OrderByDescending(r => r.Fecha).ToList();
-            return View("Index", reseñas);
-        } 
+            ViewBag.Reviews = db.Reviews
+                .Where(r => r.Mostrar)
+                .OrderByDescending(r => r.Fecha)
+                .Take(5)
+                .ToList();
 
-
+            return View("Index");
+        }
 
         protected override void Dispose(bool disposing)
         {
