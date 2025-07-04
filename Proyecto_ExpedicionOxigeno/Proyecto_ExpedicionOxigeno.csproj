@@ -188,6 +188,10 @@
     <Compile Include="Migrations\202506232318095_ModificacionReviews.Designer.cs">
       <DependentUpon>202506232318095_ModificacionReviews.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202507010214027_AddNombreTelefonoToUser.cs" />
+    <Compile Include="Migrations\202507010214027_AddNombreTelefonoToUser.Designer.cs">
+      <DependentUpon>202507010214027_AddNombreTelefonoToUser.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Estado.cs" />
@@ -324,6 +328,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202506232318095_ModificacionReviews.resx">
       <DependentUpon>202506232318095_ModificacionReviews.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507010214027_AddNombreTelefonoToUser.resx">
+      <DependentUpon>202507010214027_AddNombreTelefonoToUser.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

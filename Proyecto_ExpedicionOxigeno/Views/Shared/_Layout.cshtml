@@ -392,7 +392,14 @@
                     @if (Request.IsAuthenticated)
                     {
                         <li class="nav-item">
-                            <span class="nav-link text-white">Hola, @User.Identity.Name</span>
+                            @{
+                                var nombre = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("Nombre")?.Value;
+                            }
+                        <li class="nav-item">
+                            <span class="nav-link text-white">Hola, @nombre</span>
+                        </li>
+
+
                         </li>
                         <li class="nav-item">
                             @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
@@ -405,11 +412,11 @@
                     else
                     {
                         @*<li class="nav-item">
-                                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
-                            </li>*@
+                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
+            </li>*@
                         <li class="nav-item">
                             <a class="nav-link nav-login" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
                         </li>

@@ -81,20 +81,20 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 return View(model);
             }
 
-            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
-            switch (result)
+            var user = await UserManager.FindByEmailAsync(model.Email);
+            if (user != null)
             {
-                case SignInStatus.Success:
-                    return RedirectToLocal(returnUrl);
-                case SignInStatus.LockedOut:
-                    return View("Lockout");
-                case SignInStatus.RequiresVerification:
-                    return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
-                case SignInStatus.Failure:
-                default:
-                    ModelState.AddModelError("", "Intento de inicio de sesión no válido.");
-                    return View(model);
+                var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
+                identity.AddClaim(new Claim("Nombre", user.Nombre ?? ""));
+
+                AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+                AuthenticationManager.SignIn(new AuthenticationProperties { IsPersistent = model.RememberMe }, identity);
+
+                return RedirectToLocal(returnUrl);
             }
+
+            ModelState.AddModelError("", "Intento de inicio de sesión no válido.");
+            return View(model);
         }
 
         [AllowAnonymous]
@@ -144,36 +144,39 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    Nombre = model.Nombre,
+                    Telefono = model.Telefono
+                };
+
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     await UserManager.AddToRoleAsync(user.Id, "Usuario");
 
-                    // Generar token de confirmación
                     string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
 
-                    // Enviar correo de confirmación
                     await emailService.SendAsync(new IdentityMessage
                     {
                         Destination = user.Email,
                         Subject = "Expedición Oxígeno - Confirma tu cuenta",
-                        Body = $@"
-                    <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
-                        <div style='text-align:center; margin-bottom:24px;'>
-                            <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
-                        </div>
-                        <h2 style='color: #2c3e50;'>¡Bienvenido a Expedición Oxígeno!</h2>
-                        <p style='font-size: 16px; color: #333;'>Gracias por registrarte. Para confirmar tu cuenta, hacé clic en el siguiente botón:</p>
-                        <div style='text-align: center; margin: 32px 0;'>
-                            <a href='{callbackUrl}' style='background: #27ae60; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-size: 16px; display: inline-block;'>Confirmar cuenta</a>
-                        </div>
-                        <p style='font-size: 14px; color: #888;'>Si no te registraste, podés ignorar este correo.</p>
-                    </div>"
+                        Body = $@"<div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
+                            <div style='text-align:center; margin-bottom:24px;'>
+                                <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
+                            </div>
+                            <h2 style='color: #2c3e50;'>¡Bienvenido a Expedición Oxígeno!</h2>
+                            <p style='font-size: 16px; color: #333;'>Gracias por registrarte. Para confirmar tu cuenta, hacé clic en el siguiente botón:</p>
+                            <div style='text-align: center; margin: 32px 0;'>
+                                <a href='{callbackUrl}' style='background: #27ae60; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-size: 16px; display: inline-block;'>Confirmar cuenta</a>
+                            </div>
+                            <p style='font-size: 14px; color: #888;'>Si no te registraste, podés ignorar este correo.</p>
+                        </div>"
                     });
 
-                    // Enviamos señal al Home para mostrar modal
                     TempData["RegistroExitoso"] = true;
 
                     return RedirectToAction("Index", "Home");
@@ -181,7 +184,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 AddErrors(result);
             }
 
-            // Si llegamos acá es que hubo un error
             return View(model);
         }
 

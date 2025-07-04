@@ -66,6 +66,14 @@ namespace Proyecto_ExpedicionOxigeno.Models
     public class RegisterViewModel
     {
         [Required]
+        [Display(Name = "Nombre completo")]
+        public string Nombre { get; set; }
+
+        [Required]
+        [Display(Name = "Teléfono")]
+        [Phone]
+        public string Telefono { get; set; }
+        [Required]
         [EmailAddress]
         [Display(Name = "Correo electrónico")]
         public string Email { get; set; }
