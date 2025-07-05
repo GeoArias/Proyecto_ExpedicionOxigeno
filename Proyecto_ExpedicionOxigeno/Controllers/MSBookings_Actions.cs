@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Services.Description;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
@@ -26,7 +27,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
 
         //
-        // Microsoft Bookings: Servicios
+        //  Microsoft Bookings: Servicios
         //
 
         // GET: Servicios
@@ -126,7 +127,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
 
         //
-        // Microsoft Bookings: Staff/People
+        //  Microsoft Bookings: Staff/People
         //
         public static async Task<List<BookingStaffMember>> Get_MSBookingsStaff()
         {
@@ -156,6 +157,80 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 throw new Exception($"Error inesperado: {ex.Message}", ex);
             }
         }
+
+
+
+        //
+        //  Microsoft Bookings: Staff/Availability
+        //      https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/Contosolunchdelivery@contoso.com/getStaffAvailability
+        //
+        public static async Task<BookingStaffAvailabilityCollectionResponse> Get_MSBookingsStaffAvailability(List<string> staffIds, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                // Validate input parameters
+                if (staffIds == null || !staffIds.Any())
+                {
+                    throw new ArgumentException("Staff IDs list cannot be empty or null");
+                }
+
+                string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/getStaffAvailability";
+
+                // Ensure dates are in UTC and properly formatted for Graph API
+                string startDateFormatted = startDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                string endDateFormatted = endDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
+                // Create request object with proper naming
+                var requestObject = new
+                {
+                    staffIds = staffIds,
+                    startDateTime = startDateFormatted,
+                    endDateTime = endDateFormatted
+                };
+
+                // Serialize with indented formatting for better debugging
+                string jsonContent = JsonConvert.SerializeObject(requestObject, Formatting.Indented);
+                
+                // Create the request content
+                HttpContent requestBody = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+                // Log or debug the request content
+                System.Diagnostics.Debug.WriteLine($"Request JSON: {jsonContent}");
+
+                // Send the request with the serialized JSON content
+                var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Post, requestBody);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    // Log the response for debugging
+                    System.Diagnostics.Debug.WriteLine($"Response: {content}");
+                    
+                    var jsonObject = JObject.Parse(content);
+                    var availabilityArray = jsonObject["value"] as JArray;
+
+                    // Convert JArray to BookingStaffAvailabilityCollectionResponse
+                    var availabilityList = availabilityArray.ToObject<BookingStaffAvailabilityCollectionResponse>();
+                    return availabilityList;
+                }
+                else
+                {
+                    // Log error response
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"Error response: {errorContent}");
+                    return null;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
+        }
+
 
     }
 }
