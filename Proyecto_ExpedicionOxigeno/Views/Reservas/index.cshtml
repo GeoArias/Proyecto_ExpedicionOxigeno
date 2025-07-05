@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Microsoft.Graph.Models.BookingService>
+﻿@model IEnumerable<Microsoft.Graph.Models.BookingAppointment>
 
 @{
     ViewBag.Title = "Nueva reserva";
@@ -13,10 +13,10 @@
                 <h4>Selecciona un servicio</h4>
             </div>
             <div class="card-body">
-                @if (Model != null && Model.Any())
+                @if (ViewBag.Services != null)
                 {
                     <div class="list-group">
-                        @foreach (var service in Model)
+                        @foreach (var service in ViewBag.Services)
                         {
                             <a href="@Url.Action("SeleccionarServicio", "Reserva", new { id = service.Id })" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
