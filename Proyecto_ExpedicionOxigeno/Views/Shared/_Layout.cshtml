@@ -258,6 +258,8 @@
                 display: inline-block;
                 transition: transform 0.3s ease;
                 border-radius: 50%;
+                width: 70px;
+                height: 70px;
                 padding: 5px;
                 background-color: rgba(255, 255, 255, 0.1);
             }
@@ -368,10 +370,17 @@
 
             <div class="collapse navbar-collapse justify-content-between" id="mainNavbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-sm-0">
-                    <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#acerca">Acerca</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Reservas">Reservas</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#nosotros" id="nosotrosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Nosotros
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="nosotrosDropdown">
+                            <li><a class="dropdown-item" href="#acerca">Acerca</a></li>
+                            <li><a class="dropdown-item" href="#contacto">Contacto</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item"><a class="nav-link" href="#resenas">Reseñas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
                     @if (Request.IsAuthenticated && User.IsInRole("Administrador"))
                     {
                         <li class="nav-item dropdown">
@@ -413,11 +422,11 @@
                     else
                     {
                         @*<li class="nav-item">
-                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
-            </li>*@
+                                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
+                            </li>*@
                         <li class="nav-item">
                             <a class="nav-link nav-login" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
                         </li>
@@ -464,10 +473,10 @@
                     <div class="social-icons">
 
                         <a href="https://www.facebook.com/OxigenoCostaRica" target="_blank">
-                            <img src="~/Content/Images/icon_Facebook.png" alt="Facebook" width="40" height="40" />
+                            <img src="~/Content/Images/icon_Facebook.png" alt="Facebook" />
                         </a>
-                        <a href="https://www.instagram.com/oxigenocr/" target="_blank">
-                            <img src="~/Content/Images/icon_Instagram.png" alt="Instagram" width="40" height="40" />
+                        <a href="https://www.instagram.com/oxigenocr/" target="_blank" >
+                            <img src="~/Content/Images/icon_Instagram.png" alt="Instagram"/>
                         </a>
                         <h3>¿Quiénes somos?</h3>
                         <p>Expedición Oxígeno es una atracción de aventura ubicada en el O2 de Oxígeno, la cual alberga 3 actividades cuyo propósito es proveer diversión y adrenalina a un público de todas las edades. Lo único que necesitás es cumplir con la estatura mínima para cada una de las actividades</p>
@@ -479,9 +488,6 @@
                 <p>Heredia, San Francisco</p>
                 <iframe src="https://embed.waze.com/iframe?zoom=16&amp;lat=9.994234&amp;lon=-84.131155&amp;ct=livemap&amp;pin=1" allowfullscreen="true"></iframe>
             </div>
-            <center>
-                <p>&copy; @DateTime.Now.Year - ExpediCheck</p>
-            </center>
         </footer>
     </div>
 

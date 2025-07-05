@@ -21,10 +21,9 @@
                             <a href="@Url.Action("SeleccionarServicio", "Reserva", new { id = service.Id })" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">@service.DisplayName</h5>
-                                    <small>@service.DefaultPrice?.Amount @service.DefaultPrice?.Currency</small>
+                                    <small>@service.DefaultDuration.Minutes Minutos</small>
                                 </div>
                                 <p class="mb-1">@service.Description</p>
-                                <small>Duración: @(service.DefaultDuration != null ? service.DefaultDuration.ToString() : "No especificada")</small>
                             </a>
                         }
                     </div>

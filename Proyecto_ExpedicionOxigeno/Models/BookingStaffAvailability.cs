@@ -18,6 +18,7 @@ public class BookingStaffAvailability
 // Specific time slots
 public class BookingStaffAvailabilityItem
 {
+    public string StaffId { get; set; }
     public DateTimeOffset StartDateTime { get; set; }
     public DateTimeOffset EndDateTime { get; set; }
     public string Status { get; set; }
