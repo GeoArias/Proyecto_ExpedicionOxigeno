@@ -22,6 +22,8 @@ namespace Proyecto_ExpedicionOxigeno.Models
 
         public bool Mostrar { get; set; }
 
+        public string Servicio { get; set; } // ✅ NUEVO CAMPO
+
         public Review()
         {
             Fecha = DateTime.Now;

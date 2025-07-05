@@ -1,22 +1,27 @@
 ﻿@{
     ViewBag.Title = "Expedición Oxígeno";
     var reviews = ViewBag.Reviews as List<Proyecto_ExpedicionOxigeno.Models.Review>;
+    var hasFilters = !string.IsNullOrEmpty(Request["servicio"]) || !string.IsNullOrEmpty(Request["calificacionMinima"]);
 }
 
-@section HeroBanner {
-    <div class="hero-banner">
-        <video autoplay muted loop playsinline>
-            <source src="~/Content/Videos/Herobanner2.mp4" type="video/mp4">
-            Tu navegador no soporta la etiqueta de video.
-        </video>
-        <div class="hero-content">
-            <h1>Bienvenido a ExpediCheck</h1>
-            <p>La aventura comienza aquí</p>
-            <a href="#inicio" class="btn btn-outline-light btn-lg mt-4">Explorar</a>
+@if (!hasFilters)
+{
+    @section HeroBanner {
+        <div class="hero-banner">
+            <video autoplay muted loop playsinline>
+                <source src="~/Content/Videos/Herobanner2.mp4" type="video/mp4">
+                Tu navegador no soporta la etiqueta de video.
+            </video>
+            <div class="hero-content">
+                <h1>Bienvenido a ExpediCheck</h1>
+                <p>La aventura comienza aquí</p>
+                <a href="#inicio" class="btn btn-outline-light btn-lg mt-4">Explorar</a>
+            </div>
         </div>
-    </div>
-    <div class="hero-spacer"></div>
+        <div class="hero-spacer"></div>
+    }
 }
+
 
 <main class="container py-4">
     <section id="inicio" class="text-center mb-5">
@@ -129,6 +134,35 @@
                     Leé lo que opinan nuestros visitantes y dejá tu comentario para seguir mejorando la experiencia.
                 </p>
 
+                <h4 class="mt-4" style="color: #000;">Filtrar reseñas:</h4>
+
+                <form method="get" action="/Home/Index#resenas" class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="calificacionFiltro" class="form-label">Calificación mínima</label>
+                        <select id="calificacionFiltro" name="calificacion" class="form-select">
+                            <option value="">Todas</option>
+                            <option value="5">★★★★★</option>
+                            <option value="4">★★★★☆ o más</option>
+                            <option value="3">★★★☆☆ o más</option>
+                            <option value="2">★★☆☆☆ o más</option>
+                            <option value="1">★☆☆☆☆ o más</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="servicioFiltro" class="form-label">Tipo de servicio</label>
+                        <select id="servicioFiltro" name="servicio" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="Parque de Cuerdas">Parque de Cuerdas</option>
+                            <option value="Pared de Escalada">Pared de Escalada</option>
+                            <option value="Roll Glider">Roll Glider</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <button type="submit" class="btn btn-outline-success">Aplicar filtros</button>
+                    </div>
+
+                </form>
+
                 <h4 class="mt-4" style="color: #000;">Reseñas recientes:</h4>
 
                 @if (reviews != null && reviews.Any())
@@ -140,13 +174,14 @@
                             <div class="text-warning small mb-1">
                                 @Html.Raw(new string('★', item.Calificacion))@Html.Raw(new string('☆', 5 - item.Calificacion))
                             </div>
+                            <p class="mb-1"><strong>Servicio:</strong> @item.Servicio</p>
                             <p>@item.Comentario</p>
                         </div>
                     }
                 }
                 else
                 {
-                    <p class="text-muted">No hay reseñas aún.</p>
+                    <p class="text-muted">No hay reseñas con los filtros seleccionados.</p>
                 }
 
                 <h4 class="mb-3" style="color: #000;">Dejanos tu reseña:</h4>
@@ -178,6 +213,15 @@
                             </select>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="Servicio" class="form-label">Tipo de servicio</label>
+                            <select class="form-select" id="Servicio" name="Servicio">
+                                <option value="Parque de Cuerdas">Parque de Cuerdas</option>
+                                <option value="Pared de Escalada">Pared de Escalada</option>
+                                <option value="Roll Glider">Roll Glider</option>
+                            </select>
+                        </div>
+
                         <button type="submit" class="btn btn-success">Enviar reseña</button>
                     </form>
                 }
@@ -188,6 +232,7 @@
             </div>
         </div>
     </section>
+
 
     <section id="contacto" class="mt-5 mb-5">
         <h2 class="text-center" style="color: #000;">Contacto</h2>
@@ -275,4 +320,19 @@
             });
         </script>
     }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const hash = window.location.hash;
+            if (hash === "#resenas") {
+                // Previene el scroll automático al inicio
+                setTimeout(function () {
+                    const seccion = document.querySelector(hash);
+                    if (seccion) {
+                        seccion.scrollIntoView({ behavior: "instant", block: "start" });
+                    }
+                }, 100); // Espera que cargue todo el layout
+            }
+        });
+    </script>
 }

@@ -12,10 +12,21 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         [HttpGet]
-        public ActionResult Index()
+        public ActionResult Index(int? calificacion, string servicio)
         {
-            var reviews = db.Reviews
-                .Where(r => r.Mostrar)
+            var reviewsQuery = db.Reviews.Where(r => r.Mostrar);
+
+            if (calificacion.HasValue)
+            {
+                reviewsQuery = reviewsQuery.Where(r => r.Calificacion >= calificacion.Value);
+            }
+
+            if (!string.IsNullOrEmpty(servicio))
+            {
+                reviewsQuery = reviewsQuery.Where(r => r.Servicio == servicio);
+            }
+
+            var reviews = reviewsQuery
                 .OrderByDescending(r => r.Fecha)
                 .Take(5)
                 .ToList();
@@ -45,6 +56,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 return RedirectToAction("Index");
             }
 
+            // Si el modelo no es válido, volver a cargar las reseñas mostradas
             ViewBag.Reviews = db.Reviews
                 .Where(r => r.Mostrar)
                 .OrderByDescending(r => r.Fecha)

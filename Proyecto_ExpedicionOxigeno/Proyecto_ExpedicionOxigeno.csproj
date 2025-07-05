@@ -324,6 +324,10 @@
     <Compile Include="Migrations\202507041603158_RemoveRequiredNombreFields.Designer.cs">
       <DependentUpon>202507041603158_RemoveRequiredNombreFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202507050332505_AddServicioToReview.cs" />
+    <Compile Include="Migrations\202507050332505_AddServicioToReview.Designer.cs">
+      <DependentUpon>202507050332505_AddServicioToReview.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\BookingStaffAvailability.cs" />
@@ -470,6 +474,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202507041603158_RemoveRequiredNombreFields.resx">
       <DependentUpon>202507041603158_RemoveRequiredNombreFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507050332505_AddServicioToReview.resx">
+      <DependentUpon>202507050332505_AddServicioToReview.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
