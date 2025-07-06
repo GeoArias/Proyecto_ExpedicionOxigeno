@@ -6,27 +6,71 @@
 
 <h2>@ViewBag.Title</h2>
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
 <div class="row">
     <div class="col-md-8">
         <div class="card mb-4">
             <div class="card-header">
-                <h4>Selecciona un servicio</h4>
+                <h4>Selecciona un servicio y fecha</h4>
             </div>
             <div class="card-body">
                 @if (ViewBag.Services != null)
                 {
-                    <div class="list-group">
-                        @foreach (var service in ViewBag.Services)
-                        {
-                            <a href="@Url.Action("SeleccionarServicio", "Reserva", new { id = service.Id })" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">@service.DisplayName</h5>
-                                    <small>@service.DefaultDuration.Minutes Minutos</small>
+                    <form action="@Url.Action("SeleccionarServicio", "Reservas")" method="get">
+                        <div class="form-group mb-4">
+                            <label for="fecha" class="form-label">Selecciona la fecha deseada:</label>
+                            <input type="date" id="fecha" name="fecha" class="form-control"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   max="@DateTime.Today.AddMonths(3).ToString("yyyy-MM-dd")"
+                                   value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            <small class="form-text text-muted">Selecciona la fecha para ver la disponibilidad.</small>
+                        </div>
+
+                        <h5 class="mb-3">Selecciona un servicio:</h5>
+                        <div class="list-group">
+                            @foreach (var service in ViewBag.Services)
+                            {
+                                <div class="list-group-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <input class="form-check-input" type="radio" name="id"
+                                                   id="service-@service.Id" value="@service.Id" required>
+                                        </div>
+                                        <div class="col">
+                                            <label class="form-check-label w-100" for="service-@service.Id">
+                                                <span class="d-block fw-bold">@service.DisplayName</span>
+                                            </label>
+                                            <p class="mb-1">@service.Description</p>
+                                            <small>
+                                                @if (service.DefaultDuration.TotalHours >= 1)
+                                                {
+                                                    @($"{Math.Floor(service.DefaultDuration.TotalHours)} horas {service.DefaultDuration.Minutes} minutos")
+                                                }
+                                                else
+                                                {
+                                                    @($"{service.DefaultDuration.Minutes} minutos")
+                                                }
+                                                | @string.Format("{0:C}", service.DefaultPrice)
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="mb-1">@service.Description</p>
-                            </a>
-                        }
-                    </div>
+                            }
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Ver disponibilidad</button>
+                        </div>
+                    </form>
                 }
                 else
                 {
@@ -42,8 +86,8 @@
                 <h4>Información</h4>
             </div>
             <div class="card-body">
-                <p>Selecciona uno de nuestros servicios para continuar con la reserva.</p>
-                <p>Una vez seleccionado, podrás elegir la fecha y hora que más te convenga.</p>
+                <p>Selecciona uno de nuestros servicios y la fecha deseada para continuar con la reserva.</p>
+                <p>Una vez seleccionados, podrás elegir el horario que más te convenga.</p>
                 <hr>
                 <h5>Nuestros horarios:</h5>
                 <ul>

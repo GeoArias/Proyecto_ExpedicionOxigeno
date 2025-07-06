@@ -16,7 +16,8 @@ namespace Proyecto_ExpedicionOxigeno.Helpers
                 var request = new HttpRequestMessage(method, url);
                 if (content != null)
                     request.Content = content;
-                return await client.SendAsync(request);
+                var result = await client.SendAsync(request);
+                return result;
             }
         }
     }

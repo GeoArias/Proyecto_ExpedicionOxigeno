@@ -294,37 +294,38 @@
     </Compile>
     <Compile Include="GraphTokenCache.cs" />
     <Compile Include="Helpers\GraphApiHelper.cs" />
+    <Compile Include="Helpers\GraphTimeConverter.cs" />
+    <Compile Include="Helpers\GraphTimeSpanConverter.cs" />
     <Compile Include="Helpers\GraphTokenProvider.cs" />
-    <Compile Include="Helpers\IsoTimeSpanConverter.cs" />
-    <Compile Include="Migrations\202506170558195_MigracionInicial.cs" />
-    <Compile Include="Migrations\202506170558195_MigracionInicial.Designer.cs">
+    <Compile Include="Models\Migrations\202506170558195_MigracionInicial.cs" />
+    <Compile Include="Models\Migrations\202506170558195_MigracionInicial.Designer.cs">
       <DependentUpon>202506170558195_MigracionInicial.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202506180811217_AddEstados.cs" />
-    <Compile Include="Migrations\202506180811217_AddEstados.Designer.cs">
+    <Compile Include="Models\Migrations\202506180811217_AddEstados.cs" />
+    <Compile Include="Models\Migrations\202506180811217_AddEstados.Designer.cs">
       <DependentUpon>202506180811217_AddEstados.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202506230728561_CreaciónTablas.cs" />
-    <Compile Include="Migrations\202506230728561_CreaciónTablas.Designer.cs">
+    <Compile Include="Models\Migrations\202506230728561_CreaciónTablas.cs" />
+    <Compile Include="Models\Migrations\202506230728561_CreaciónTablas.Designer.cs">
       <DependentUpon>202506230728561_CreaciónTablas.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202506230743139_CreaciónTablas.cs" />
-    <Compile Include="Migrations\202506230743139_CreaciónTablas.Designer.cs">
+    <Compile Include="Models\Migrations\202506230743139_CreaciónTablas.cs" />
+    <Compile Include="Models\Migrations\202506230743139_CreaciónTablas.Designer.cs">
       <DependentUpon>202506230743139_CreaciónTablas.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202506232318095_ModificacionReviews.cs" />
-    <Compile Include="Migrations\202506232318095_ModificacionReviews.Designer.cs">
+    <Compile Include="Models\Migrations\202506232318095_ModificacionReviews.cs" />
+    <Compile Include="Models\Migrations\202506232318095_ModificacionReviews.Designer.cs">
       <DependentUpon>202506232318095_ModificacionReviews.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202507010214027_AddNombreTelefonoToUser.cs" />
-    <Compile Include="Migrations\202507010214027_AddNombreTelefonoToUser.Designer.cs">
+    <Compile Include="Models\Migrations\202507010214027_AddNombreTelefonoToUser.cs" />
+    <Compile Include="Models\Migrations\202507010214027_AddNombreTelefonoToUser.Designer.cs">
       <DependentUpon>202507010214027_AddNombreTelefonoToUser.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202507041603158_RemoveRequiredNombreFields.cs" />
-    <Compile Include="Migrations\202507041603158_RemoveRequiredNombreFields.Designer.cs">
+    <Compile Include="Models\Migrations\202507041603158_RemoveRequiredNombreFields.cs" />
+    <Compile Include="Models\Migrations\202507041603158_RemoveRequiredNombreFields.Designer.cs">
       <DependentUpon>202507041603158_RemoveRequiredNombreFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\BookingStaffAvailability.cs" />
     <Compile Include="Models\Estado.cs" />
@@ -439,6 +440,8 @@
     <Content Include="Views\Servicios\index.cshtml" />
     <Content Include="Views\Servicios\Edit.cshtml" />
     <Content Include="Views\Reservas\index.cshtml" />
+    <Content Include="Views\Reservas\SeleccionarServicio.cshtml" />
+    <Content Include="Views\Reservas\ConfirmarHorario.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -450,25 +453,25 @@
     <Content Include="Scripts\jquery-3.7.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202506170558195_MigracionInicial.resx">
+    <EmbeddedResource Include="Models\Migrations\202506170558195_MigracionInicial.resx">
       <DependentUpon>202506170558195_MigracionInicial.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202506180811217_AddEstados.resx">
+    <EmbeddedResource Include="Models\Migrations\202506180811217_AddEstados.resx">
       <DependentUpon>202506180811217_AddEstados.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202506230728561_CreaciónTablas.resx">
+    <EmbeddedResource Include="Models\Migrations\202506230728561_CreaciónTablas.resx">
       <DependentUpon>202506230728561_CreaciónTablas.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202506230743139_CreaciónTablas.resx">
+    <EmbeddedResource Include="Models\Migrations\202506230743139_CreaciónTablas.resx">
       <DependentUpon>202506230743139_CreaciónTablas.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202506232318095_ModificacionReviews.resx">
+    <EmbeddedResource Include="Models\Migrations\202506232318095_ModificacionReviews.resx">
       <DependentUpon>202506232318095_ModificacionReviews.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202507010214027_AddNombreTelefonoToUser.resx">
+    <EmbeddedResource Include="Models\Migrations\202507010214027_AddNombreTelefonoToUser.resx">
       <DependentUpon>202507010214027_AddNombreTelefonoToUser.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202507041603158_RemoveRequiredNombreFields.resx">
+    <EmbeddedResource Include="Models\Migrations\202507041603158_RemoveRequiredNombreFields.resx">
       <DependentUpon>202507041603158_RemoveRequiredNombreFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

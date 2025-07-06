@@ -1,0 +1,97 @@
+@using Proyecto_ExpedicionOxigeno.Controllers
+@{
+    ViewBag.Title = "Seleccionar horario";
+    var servicio = ViewBag.Servicio as Microsoft.Graph.Models.BookingService;
+    var availableSlots = ViewBag.AvailableSlots as List<TimeSlot>;
+    var fechaSeleccionada = (DateTime)ViewBag.FechaSeleccionada;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4>@servicio.DisplayName</h4>
+                    <p class="text-muted mb-0">
+                        Duración:
+                        @if (servicio.DefaultDuration.Value.TotalHours >= 1)
+                        {
+                            @($"{Math.Floor(servicio.DefaultDuration.Value.TotalHours)} horas {servicio.DefaultDuration.Value.Minutes} minutos")
+                        }
+                        else
+                        {
+                            @($"{servicio.DefaultDuration.Value.Minutes} minutos")
+                        }
+                        | Precio: @string.Format("{0:C}", servicio.DefaultPrice)
+                    </p>
+                </div>
+                <div>
+                    <span class="badge bg-primary">@fechaSeleccionada.ToString("dd/MM/yyyy")</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p>@servicio.Description</p>
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["Error"]</div>
+                }
+
+                <h5 class="mt-4">Selecciona un horario disponible:</h5>
+
+                @if (availableSlots != null && availableSlots.Any())
+                {
+                    <div class="row">
+                        @foreach (var slot in availableSlots)
+                        {
+                            <div class="col-md-4 col-sm-6 mb-3">
+                                <form action="@Url.Action("ElegirHorario", "Reservas")" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="serviceId" value="@servicio.Id" />
+                                    <input type="hidden" name="slotStart" value="@slot.StartTime" />
+                                    <input type="hidden" name="slotEnd" value="@slot.EndTime" />
+                                    <button type="submit" class="btn btn-outline-primary w-100">
+                                        @slot.StartTime.ToString("HH:mm") - @slot.EndTime.ToString("HH:mm")
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        No hay horarios disponibles para este servicio en la fecha seleccionada.
+                        <a href="@Url.Action("Index", "Reservas")" class="alert-link">Selecciona otra fecha</a> o contacta directamente con nosotros.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Información</h4>
+            </div>
+            <div class="card-body">
+                <p>Selecciona el horario que más te convenga para tu reserva.</p>
+                <hr>
+                <h5>Nuestros horarios:</h5>
+                <ul>
+                    <li>Lunes a viernes: 1:00 pm - 7:00 pm</li>
+                    <li>Sábados y domingos: 12:00 pm - 7:00 pm</li>
+                </ul>
+                <hr>
+                <p>Si necesitas cancelar o modificar tu reserva, contáctanos con al menos 24 horas de anticipación.</p>
+                <div class="mt-3">
+                    <a href="@Url.Action("Index", "Reservas")" class="btn btn-outline-secondary">
+                        Cambiar servicio o fecha
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

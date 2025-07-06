@@ -23,7 +23,47 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         private static string GetServicesUrl(string businessId) =>
             $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/services";
 
+        private static BookingBusiness bookingBusiness;
 
+        //
+        // Microsoft Bookings: Business
+        //
+        public static async Task<BookingBusiness> Get_MSBookingsBusiness()
+        {
+            try
+            {
+                if (bookingBusiness == null)
+                {
+                    var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}", HttpMethod.Get);
+                    if (response.IsSuccessStatusCode)
+                    {
+
+                    }
+                    var content = await response.Content.ReadAsStringAsync();
+                    var settings = new JsonSerializerSettings
+                    {
+                        Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter()
+                        },
+                        NullValueHandling = NullValueHandling.Ignore
+                    };
+                    
+                    bookingBusiness = JObject.Parse(content).ToObject<BookingBusiness>(
+                        JsonSerializer.Create(settings));
+                }
+                return bookingBusiness;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
+            
+        }
 
 
         //
@@ -39,21 +79,24 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var jsonObject = JObject.Parse(content);
+                    var content = response.Content;
+                    var jsonString = await content.ReadAsStringAsync();
+                    // Parse the JSON string to a JArray
+                    var jsonObject = JObject.Parse(jsonString);
                     var servicesArray = jsonObject["value"] as JArray;
 
-                    // Configure JsonSerializer with our custom converters
+                    // Convert JArray to List<BookingService> with our custom settings
                     var settings = new JsonSerializerSettings
                     {
                         Converters = new List<JsonConverter> { 
-                            new IsoTimeSpanConverter(),
-                            new KiotaTimeConverter()
-                        }
+                            new GraphTimeSpanConverter(), 
+                            new GraphTimeConverter() 
+                        },
+                        NullValueHandling = NullValueHandling.Ignore
                     };
-
-                    // Convert JArray to List<BookingService> with our custom settings
-                    List<BookingService> servicesList = servicesArray.ToObject<List<BookingService>>(JsonSerializer.Create(settings));
+                    
+                    List<BookingService> servicesList = servicesArray.ToObject<List<BookingService>>(
+                        JsonSerializer.Create(settings));
                     return servicesList;
                 }
                 else
@@ -83,11 +126,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     var settings = new JsonSerializerSettings
                     {
                         Converters = new List<JsonConverter> { 
-                            new IsoTimeSpanConverter(),
-                            new KiotaTimeConverter()
-                        }
+                            new GraphTimeSpanConverter(), 
+                            new GraphTimeConverter() 
+                        },
+                        NullValueHandling = NullValueHandling.Ignore
                     };
-                    return JObject.Parse(content).ToObject<BookingService>(JsonSerializer.Create(settings));
+                    return JObject.Parse(content).ToObject<BookingService>(
+                        JsonSerializer.Create(settings));
                 }
                 else
                 {
@@ -109,7 +154,15 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             try
             {
-                string jsonData = Newtonsoft.Json.JsonConvert.SerializeObject(service);
+                var settings = new JsonSerializerSettings
+                {
+                    Converters = new List<JsonConverter> { 
+                        new GraphTimeSpanConverter(), 
+                        new GraphTimeConverter() 
+                    },
+                    NullValueHandling = NullValueHandling.Ignore
+                };
+                string jsonData = JsonConvert.SerializeObject(service, settings);
                 var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
                 var response = await GraphApiHelper.SendGraphRequestAsync($"{GetServicesUrl(businessId)}/{serviceId}", HttpMethod.Post, content);
                 return response;
@@ -164,7 +217,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         //  Microsoft Bookings: Staff/Availability
         //      https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/Contosolunchdelivery@contoso.com/getStaffAvailability
         //
-        public static async Task<BookingStaffAvailabilityCollectionResponse> Get_MSBookingsStaffAvailability(List<string> staffIds, DateTime startDate, DateTime endDate)
+        public static async Task<BookingStaffAvailabilityCollectionResponse> Get_MSBookingsStaffAvailability(
+            List<string> staffIds, DateTime startDate, DateTime endDate, string timeZone = null)
         {
             try
             {
@@ -174,18 +228,29 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     throw new ArgumentException("Staff IDs list cannot be empty or null");
                 }
 
+                // Use user's timezone if provided, otherwise fall back to server timezone
+                timeZone = timeZone ?? TimeZoneInfo.Local.Id;
+
                 string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/getStaffAvailability";
 
-                // Ensure dates are in UTC and properly formatted for Graph API
-                string startDateFormatted = startDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-                string endDateFormatted = endDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                // Format dates properly for Graph API but maintain the user's timezone context
+                string startDateFormatted = startDate.ToString("yyyy-MM-ddTHH:mm:ss");
+                string endDateFormatted = endDate.ToString("yyyy-MM-ddTHH:mm:ss");
 
-                // Create request object with proper naming
+                // Create request object with the user's timezone
                 var requestObject = new
                 {
                     staffIds = staffIds,
-                    startDateTime = startDateFormatted,
-                    endDateTime = endDateFormatted
+                    startDateTime = new
+                    {
+                        dateTime = startDateFormatted,
+                        timeZone = timeZone
+                    },
+                    endDateTime = new
+                    {
+                        dateTime = endDateFormatted,
+                        timeZone = timeZone
+                    }
                 };
 
                 // Serialize with indented formatting for better debugging
@@ -206,12 +271,16 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     // Log the response for debugging
                     System.Diagnostics.Debug.WriteLine($"Response: {content}");
                     
-                    var jsonObject = JObject.Parse(content);
-                    var availabilityArray = jsonObject["value"] as JArray;
-
-                    // Convert JArray to BookingStaffAvailabilityCollectionResponse
-                    var availabilityList = availabilityArray.ToObject<BookingStaffAvailabilityCollectionResponse>();
-                    return availabilityList;
+                    // Deserialize the entire JSON response directly to BookingStaffAvailabilityCollectionResponse
+                    var settings = new JsonSerializerSettings
+                    {
+                        NullValueHandling = NullValueHandling.Ignore
+                    };
+                    
+                    var result = JsonConvert.DeserializeObject<BookingStaffAvailabilityCollectionResponse>(
+                        content, settings);
+                        
+                    return result;
                 }
                 else
                 {
@@ -232,65 +301,5 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         }
 
 
-    }
-}
-
-namespace Proyecto_ExpedicionOxigeno.Helpers
-{
-    public class KiotaTimeConverter : JsonConverter
-    {
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(Time) || objectType == typeof(Time?);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            if (reader.TokenType == JsonToken.Null)
-                return null;
-
-            string timeString = reader.Value.ToString();
-            
-            try
-            {
-                // Parse time string in format HH:MM:SS
-                if (TimeSpan.TryParse(timeString, out TimeSpan timeSpan))
-                {
-                    return new Time(timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
-                }
-                
-                // If parsing fails, try with regex to extract components
-                var match = Regex.Match(timeString, @"(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?");
-                if (match.Success)
-                {
-                    int hours = int.Parse(match.Groups[1].Value);
-                    int minutes = int.Parse(match.Groups[2].Value);
-                    int seconds = match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value) 
-                        ? int.Parse(match.Groups[3].Value) 
-                        : 0;
-                    
-                    return new Time(hours, minutes, seconds);
-                }
-                
-                throw new JsonSerializationException($"Could not parse time value: {timeString}");
-            }
-            catch (Exception ex)
-            {
-                throw new JsonSerializationException($"Error converting value '{timeString}' to Time: {ex.Message}");
-            }
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            if (value == null)
-            {
-                writer.WriteNull();
-                return;
-            }
-
-            Time time = (Time)value;
-            string timeString = $"{time.Hour:D2}:{time.Minute:D2}:{time.Second:D2}";
-            writer.WriteValue(timeString);
-        }
     }
 }
