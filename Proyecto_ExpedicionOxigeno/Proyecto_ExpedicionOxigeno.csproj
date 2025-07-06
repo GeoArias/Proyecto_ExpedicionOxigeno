@@ -363,6 +363,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Resources\Common\Cromatica - ExpedicionOxigeno.jpg" />
     <Content Include="Resources\Images\bannerExpedicion.png" />
     <Content Include="Resources\Images\logo.png" />
     <Content Include="Resources\Images\logoOxigeno.png" />

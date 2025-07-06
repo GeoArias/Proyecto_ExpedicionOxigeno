@@ -1,8 +1,11 @@
-﻿using Proyecto_ExpedicionOxigeno.Models;
+﻿using Microsoft.Graph.Models;
+using Proyecto_ExpedicionOxigeno.Models;
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
@@ -12,7 +15,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         [HttpGet]
-        public ActionResult Index(int? calificacion, string servicio)
+        public async Task<ActionResult> Index(int? calificacion, string servicio)
         {
             var reviewsQuery = db.Reviews.Where(r => r.Mostrar);
 
@@ -32,6 +35,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 .ToList();
 
             ViewBag.Reviews = reviews;
+
+
+            // Traer listado de servicios
+            List<BookingService> servicios = await MSBookings_Actions.Get_MSBookingsServices();
+
+            ViewBag.Servicios = servicios;
+
             return View();
         }
 
