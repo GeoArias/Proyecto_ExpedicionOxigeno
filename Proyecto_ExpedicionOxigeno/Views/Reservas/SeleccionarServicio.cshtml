@@ -1,4 +1,4 @@
-@using Proyecto_ExpedicionOxigeno.Controllers
+Ôªø@using Proyecto_ExpedicionOxigeno.Controllers
 @{
     ViewBag.Title = "Seleccionar horario";
     var servicio = ViewBag.Servicio as Microsoft.Graph.Models.BookingService;
@@ -15,7 +15,7 @@
                 <div>
                     <h4>@servicio.DisplayName</h4>
                     <p class="text-muted mb-0">
-                        DuraciÛn:
+                        Duraci√≥n:
                         @if (servicio.DefaultDuration.Value.TotalHours >= 1)
                         {
                             @($"{Math.Floor(servicio.DefaultDuration.Value.TotalHours)} horas {servicio.DefaultDuration.Value.Minutes} minutos")
@@ -24,7 +24,7 @@
                         {
                             @($"{servicio.DefaultDuration.Value.Minutes} minutos")
                         }
-                        | Precio: @string.Format("{0:C}", servicio.DefaultPrice)
+                        | Precio: ‚Ç°@string.Format("{0:N0}", servicio.DefaultPrice)
                     </p>
                 </div>
                 <div>
@@ -74,18 +74,18 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h4>InformaciÛn</h4>
+                <h4>Informaci√≥n</h4>
             </div>
             <div class="card-body">
-                <p>Selecciona el horario que m·s te convenga para tu reserva.</p>
+                <p>Selecciona el horario que m√°s te convenga para tu reserva.</p>
                 <hr>
                 <h5>Nuestros horarios:</h5>
                 <ul>
                     <li>Lunes a viernes: 1:00 pm - 7:00 pm</li>
-                    <li>S·bados y domingos: 12:00 pm - 7:00 pm</li>
+                    <li>S√°bados y domingos: 12:00 pm - 7:00 pm</li>
                 </ul>
                 <hr>
-                <p>Si necesitas cancelar o modificar tu reserva, cont·ctanos con al menos 24 horas de anticipaciÛn.</p>
+                <p>Si necesitas cancelar o modificar tu reserva, cont√°ctanos con al menos 24 horas de anticipaci√≥n.</p>
                 <div class="mt-3">
                     <a href="@Url.Action("Index", "Reservas")" class="btn btn-outline-secondary">
                         Cambiar servicio o fecha

@@ -4,12 +4,7 @@
     var hasFilters = !string.IsNullOrEmpty(Request["servicio"]) || !string.IsNullOrEmpty(Request["calificacionMinima"]);
 }
 
-<!-- Floating Reservation Button -->
-<div class="floating-reserve-btn">
-    <a href="/reservas" class="btn btn-lg btn-danger pulse-btn">
-        <i class="fas fa-calendar-check"></i> ¡RESERVA YA!
-    </a>
-</div>
+
 
 @if (!hasFilters)
 {
@@ -31,7 +26,6 @@
         <div class="hero-spacer"></div>
     }
 }
-
 <main class="container py-4">
     <section id="inicio" class="text-center mb-5">
         <div class="company-banner mb-4 animate__animated animate__fadeIn">
@@ -227,7 +221,7 @@
                                     </span>
                                     <span class="price">
                                         <i class="fas fa-tag me-1"></i>
-                                        @string.Format("{0:C}", servicio.DefaultPrice)
+                                        ₡@string.Format("{0:N2}", servicio.DefaultPrice)
                                     </span>
                                 </div>
                             </div>
@@ -245,6 +239,7 @@
             }
         </div>
     </section>
+
 
     <style>
         .activity-card {
@@ -298,7 +293,7 @@
 
                 <form method="get" action="/Home/Index#resenas" class="row mb-4">
                     <div class="col-md-6">
-                        <label for="calificacionFiltro" class="form-label">Calificación mínima</label>
+                        <label for="calificacionFiltro" class="form-label">Calificación</label>
                         <select id="calificacionFiltro" name="calificacion" class="form-select">
                             <option value="">Todas</option>
                             <option value="5">★★★★★</option>
@@ -354,17 +349,22 @@
                 }
                 else
                 {
-                    <form method="post" action="/Home/Index">
+                    <form method="post" action="/Home/Index" onsubmit="return validarComentario()">
                         @Html.AntiForgeryToken()
 
                         <div class="mb-3">
                             <label for="Comentario" class="form-label">Comentario</label>
-                            <textarea class="form-control" id="Comentario" name="Comentario" rows="4" placeholder="¿Qué te pareció tu experiencia?"></textarea>
+                            <textarea class="form-control" id="Comentario" name="Comentario" rows="4"
+                                      placeholder="¿Qué te pareció tu experiencia?" minlength="4" required></textarea>
+                            <div id="comentario-error" class="text-danger mt-1" style="display:none;">
+                                El comentario debe tener al menos 4 caracteres. Por favor, escribe una reseña más detallada.
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="Calificacion" class="form-label">Calificación</label>
-                            <select class="form-select" id="Calificacion" name="Calificacion">
+                            <select class="form-select" id="Calificacion" name="Calificacion" required>
+                                <option value="">Seleccione una calificación</option>
                                 <option value="5">★★★★★ - Excelente</option>
                                 <option value="4">★★★★☆ - Muy bueno</option>
                                 <option value="3">★★★☆☆ - Bueno</option>
@@ -375,7 +375,8 @@
 
                         <div class="mb-3">
                             <label for="Servicio" class="form-label">Tipo de servicio</label>
-                            <select class="form-select" id="Servicio" name="Servicio">
+                            <select class="form-select" id="Servicio" name="Servicio" required>
+                                <option value="">Seleccione un servicio</option>
                                 <option value="Parque de Cuerdas">Parque de Cuerdas</option>
                                 <option value="Pared de Escalada">Pared de Escalada</option>
                                 <option value="Roll Glider">Roll Glider</option>
@@ -384,6 +385,22 @@
 
                         <button type="submit" class="btn btn-success">Enviar reseña</button>
                     </form>
+
+                    <script>
+                        function validarComentario() {
+                            const comentario = document.getElementById("Comentario").value.trim();
+                            const error = document.getElementById("comentario-error");
+
+                            if (comentario.length < 4) {
+                                error.style.display = "block";
+                                return false;
+                            }
+
+                            error.style.display = "none";
+                            return true;
+                        }
+                    </script>
+
                 }
             </div>
 
@@ -402,7 +419,7 @@
                     Ubicación: O2<br />
                     Horario: De lunes a viernes de 1:00pm a 7:00pm. <br />
                     Sábados y domingos de 12:00pm a 7:00pm.<br />
-                    Número de la central de Oxígeno: 800-694-4366
+                    Número Telefónico: 2520-2100
                 </p>
 
                 @if (!Request.IsAuthenticated)
@@ -441,6 +458,15 @@
         </div>
     </section>
 </main>
+
+<!-- SIN la clase d-none -->
+<div class="floating-reserve-btn" id="botonReserva">
+    <a href="/reservas" class="btn btn-lg btn-danger pulse-btn">
+        <i class="fas fa-calendar-check"></i> ¡RESERVA YA!
+    </a>
+</div>
+
+
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -483,17 +509,30 @@
     }
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const hash = window.location.hash;
-            if (hash === "#resenas") {
-                // Previene el scroll automático al inicio
-                setTimeout(function () {
-                    const seccion = document.querySelector(hash);
-                    if (seccion) {
-                        seccion.scrollIntoView({ behavior: "instant", block: "start" });
+        document.addEventListener('DOMContentLoaded', function () {
+            const boton = document.getElementById('botonReserva');
+            const hero = document.querySelector('.hero-banner');
+
+            function toggleBoton() {
+                if (!boton) return;
+
+                if (hero) {
+                    const heroBottom = hero.offsetTop + hero.offsetHeight;
+                    if (window.scrollY > heroBottom - 50) {
+                        boton.classList.remove('d-none');
+                    } else {
+                        boton.classList.add('d-none');
                     }
-                }, 100); // Espera que cargue todo el layout
+                } else {
+                    // Si no hay HeroBanner, mostrar siempre
+                    boton.classList.remove('d-none');
+                }
             }
+
+            window.addEventListener('scroll', toggleBoton);
+            toggleBoton(); // 👈 Esto es lo que faltaba
         });
     </script>
+
+
 }
