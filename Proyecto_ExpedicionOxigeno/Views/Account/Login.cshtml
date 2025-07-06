@@ -2,8 +2,14 @@
 @{
     ViewBag.Title = "Iniciar sesión";
 }
-
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger animate__animated animate__shakeX">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+    </div>
+}
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+
     <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
         <div class="text-center mb-4">
             <i class="bi bi-person-circle" style="font-size: 3rem; color: #28a745;"></i>

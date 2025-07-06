@@ -12,6 +12,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // GET: Reservas
         public async Task<ActionResult> Index()
         {
+            //Si el usuario njo está autenticado, redirigir a la página de Inicio de Sesión
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para realizar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
             try
             {
                 // Cargar todos los servicios disponibles
