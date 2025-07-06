@@ -7,7 +7,7 @@ public class BookingStaffAvailabilityCollectionResponse
 {
     [JsonPropertyName("@odata.context")]
     public string OdataContext { get; set; }
-    
+
     [JsonPropertyName("value")]
     public List<BookingStaffAvailability> Value { get; set; }
 }
@@ -17,7 +17,7 @@ public class BookingStaffAvailability
 {
     [JsonPropertyName("staffId")]
     public string StaffId { get; set; }
-    
+
     [JsonPropertyName("availabilityItems")]
     public List<BookingStaffAvailabilityItem> AvailabilityItems { get; set; }
 }
@@ -27,13 +27,13 @@ public class BookingStaffAvailabilityItem
 {
     [JsonPropertyName("status")]
     public string Status { get; set; }
-    
+
     [JsonPropertyName("serviceId")]
     public string ServiceId { get; set; }
-    
+
     [JsonPropertyName("startDateTime")]
     public DateTimeInfo StartDateTime { get; set; }
-    
+
     [JsonPropertyName("endDateTime")]
     public DateTimeInfo EndDateTime { get; set; }
 }
@@ -43,7 +43,7 @@ public class DateTimeInfo
 {
     [JsonPropertyName("dateTime")]
     public DateTime DateTime { get; set; }
-    
+
     [JsonPropertyName("timeZone")]
     public string TimeZone { get; set; }
 }

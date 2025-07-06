@@ -4,97 +4,379 @@
     ViewBag.Title = "Nueva reserva";
 }
 
-<h2>@ViewBag.Title</h2>
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h4>Selecciona un servicio y fecha</h4>
-            </div>
-            <div class="card-body">
-                @if (ViewBag.Services != null)
-                {
-                    <form action="@Url.Action("SeleccionarServicio", "Reservas")" method="get">
-                        <div class="form-group mb-4">
-                            <label for="fecha" class="form-label">Selecciona la fecha deseada:</label>
-                            <input type="date" id="fecha" name="fecha" class="form-control"
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
-                                   max="@DateTime.Today.AddMonths(3).ToString("yyyy-MM-dd")"
-                                   value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
-                            <small class="form-text text-muted">Selecciona la fecha para ver la disponibilidad.</small>
-                        </div>
-
-                        <h5 class="mb-3">Selecciona un servicio:</h5>
-                        <div class="list-group">
-                            @foreach (var service in ViewBag.Services)
-                            {
-                                <div class="list-group-item">
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <input class="form-check-input" type="radio" name="id"
-                                                   id="service-@service.Id" value="@service.Id" required>
-                                        </div>
-                                        <div class="col">
-                                            <label class="form-check-label w-100" for="service-@service.Id">
-                                                <span class="d-block fw-bold">@service.DisplayName</span>
-                                            </label>
-                                            <p class="mb-1">@service.Description</p>
-                                            <small>
-                                                @if (service.DefaultDuration.TotalHours >= 1)
-                                                {
-                                                    @($"{Math.Floor(service.DefaultDuration.TotalHours)} horas {service.DefaultDuration.Minutes} minutos")
-                                                }
-                                                else
-                                                {
-                                                    @($"{service.DefaultDuration.Minutes} minutos")
-                                                }
-                                                | @string.Format("{0:C}", service.DefaultPrice)
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">Ver disponibilidad</button>
-                        </div>
-                    </form>
-                }
-                else
-                {
-                    <p>No hay servicios disponibles en este momento.</p>
-                }
-            </div>
-        </div>
+<div class="reservation-container">
+    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4">@ViewBag.Title</h1>
+        <p class="lead">¡Estamos emocionados de recibirte pronto!</p>
     </div>
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h4>Información</h4>
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger animate__animated animate__shakeX">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success animate__animated animate__bounceIn">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        </div>
+    }
+
+    @if (ViewBag.Services != null)
+    {
+        <form action="@Url.Action("SeleccionarServicio", "Reservas")" method="get">
+            <!-- Datepicker flotante -->
+            <div class="date-picker-floating animate__animated animate__fadeInDown">
+                <div class="date-picker-header">
+                    <i class="fas fa-calendar-alt calendar-icon"></i>
+                    <h4>Selecciona una fecha</h4>
+                </div>
+                <div class="date-picker-body">
+                    <div class="date-picker-container">
+                        <input type="date" id="fecha" name="fecha" class="form-control form-control-lg"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                               max="@DateTime.Today.AddMonths(3).ToString("yyyy-MM-dd")"
+                               value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <p class="date-picker-hint">Puedes reservar hasta 3 meses en adelante</p>
+                </div>
             </div>
-            <div class="card-body">
-                <p>Selecciona uno de nuestros servicios y la fecha deseada para continuar con la reserva.</p>
-                <p>Una vez seleccionados, podrás elegir el horario que más te convenga.</p>
-                <hr>
-                <h5>Nuestros horarios:</h5>
-                <ul>
-                    <li>Lunes a viernes: 1:00 pm - 7:00 pm</li>
-                    <li>Sábados y domingos: 12:00 pm - 7:00 pm</li>
-                </ul>
+
+            <!-- Título de servicios -->
+            <div class="services-header text-center my-5 animate__animated animate__fadeIn">
+                <h3>Nuestras Experiencias</h3>
+                <p class="text-muted">Selecciona la actividad que deseas reservar</p>
+            </div>
+
+            <!-- Servicios en horizontal -->
+            <div class="services-container">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    @foreach (var service in ViewBag.Services)
+                    {
+                        <div class="col animate__animated animate__fadeIn">
+                            <input class="form-check-input visually-hidden" type="radio" name="id"
+                                   id="service-@service.Id" value="@service.Id" required>
+                            <label class="service-card h-100" for="service-@service.Id">
+                                <div class="service-check-indicator">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="service-card-body">
+                                    <h5 class="service-title">@service.DisplayName</h5>
+                                    <p class="service-description">@service.Description</p>
+                                    <div class="service-details">
+                                        <span class="service-duration">
+                                            <i class="far fa-clock"></i>
+                                            @if (service.DefaultDuration.TotalHours >= 1)
+                                            {
+                                                @($"{Math.Floor(service.DefaultDuration.TotalHours)}h {service.DefaultDuration.Minutes}m")
+                                            }
+                                            else
+                                            {
+                                                @($"{service.DefaultDuration.Minutes}m")
+                                            }
+                                        </span>
+                                        <span class="service-price">
+                                            <i class="fas fa-tag"></i>
+                                            @string.Format("{0:C}", service.DefaultPrice)
+                                        </span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="submit-container text-center my-5">
+                <button type="submit" class="btn btn-primary btn-lg px-5 py-3 animate__animated animate__pulse animate__infinite animate__slow">
+                    <i class="fas fa-search me-2"></i>Ver disponibilidad
+                </button>
+            </div>
+        </form>
+    }
+    else
+    {
+        <div class="alert alert-info text-center p-4">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h5>No hay servicios disponibles</h5>
+            <p>Por favor intenta más tarde o contáctanos directamente.</p>
+        </div>
+    }
+
+    <!-- Información lateral se convierte en sección inferior -->
+    <div class="info-section mt-5 py-5">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-card mb-4 animate__animated animate__fadeInUp">
+                    <h4 class="border-start border-primary border-4 ps-3">Proceso de reserva</h4>
+                    <ol class="steps-list">
+                        <li>Selecciona un servicio y fecha</li>
+                        <li>Elige el horario que prefieras</li>
+                        <li>Completa tus datos personales</li>
+                        <li>¡Listo! Recibe confirmación por email</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-card mb-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                    <h4 class="border-start border-primary border-4 ps-3">Horarios de atención</h4>
+                    <div class="d-flex flex-wrap">
+                        <div class="schedule-item me-4 mb-3">
+                            <div class="schedule-icon mb-2">
+                                <i class="fas fa-business-time"></i>
+                            </div>
+                            <div class="text-center">
+                                <strong>Lunes a viernes</strong>
+                                <div>1:00 pm - 7:00 pm</div>
+                            </div>
+                        </div>
+                        <div class="schedule-item">
+                            <div class="schedule-icon mb-2">
+                                <i class="fas fa-umbrella-beach"></i>
+                            </div>
+                            <div class="text-center">
+                                <strong>Fines de semana</strong>
+                                <div>12:00 pm - 7:00 pm</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="contact-info text-center mt-4 animate__animated animate__fadeIn" style="animation-delay: 0.4s">
+            <h5 class="mb-3">¿Necesitas ayuda?</h5>
+            <div class="d-flex justify-content-center">
+                <a href="#" class="btn btn-outline-primary mx-2">
+                    <i class="fas fa-phone me-2"></i>Llámanos
+                </a>
+                <a href="#" class="btn btn-outline-primary mx-2">
+                    <i class="fas fa-envelope me-2"></i>Escríbenos
+                </a>
+                <a href="#" class="btn btn-outline-primary mx-2">
+                    <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                </a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* General styling */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .reservation-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Floating date picker styling */
+    .date-picker-floating {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin: 0 auto 2rem;
+        max-width: 500px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .date-picker-header {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .calendar-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .date-picker-body {
+        padding: 2rem;
+    }
+
+    .date-picker-hint {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    input[type="date"] {
+        font-size: 1.2rem;
+        padding: 0.75rem;
+        text-align: center;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+    }
+
+    /* Services styling */
+    .services-container {
+        margin-bottom: 3rem;
+    }
+
+    .service-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+        position: relative;
+        transition: all 0.3s ease;
+        border: 3px solid transparent;
+    }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+    .service-check-indicator {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        color: #0d6efd;
+        font-size: 1.5rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .service-card-body {
+        padding: 2rem;
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+
+    .service-description {
+        color: #6c757d;
+        flex-grow: 1;
+        margin-bottom: 1.5rem;
+    }
+
+    .service-details {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .service-duration, .service-price {
+        display: flex;
+        align-items: center;
+        color: #495057;
+        font-weight: 500;
+    }
+
+        .service-duration i, .service-price i {
+            margin-right: 0.5rem;
+            color: #0d6efd;
+        }
+
+    input[type="radio"]:checked + .service-card {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.03);
+    }
+
+        input[type="radio"]:checked + .service-card .service-check-indicator {
+            opacity: 1;
+        }
+
+    /* Info section styling */
+    .info-section {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        padding: 2rem;
+        margin-top: 4rem;
+    }
+
+    /* Steps list styling */
+    .steps-list {
+        counter-reset: step-counter;
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 1.5rem;
+    }
+
+        .steps-list li {
+            position: relative;
+            padding: 0.75rem 0 0.75rem 3rem;
+            margin-bottom: 1rem;
+            border-left: 2px dashed #e9ecef;
+            margin-left: 0.9rem;
+        }
+
+            .steps-list li:last-child {
+                border-left: none;
+            }
+
+            .steps-list li:before {
+                content: counter(step-counter);
+                counter-increment: step-counter;
+                position: absolute;
+                left: 0;
+                top: 0.75rem;
+                transform: translateX(-50%);
+                width: 2rem;
+                height: 2rem;
+                background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+                font-weight: bold;
+                z-index: 1;
+            }
+
+    /* Schedule styling */
+    .schedule-icon {
+        width: 4rem;
+        height: 4rem;
+        background-color: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0d6efd;
+        font-size: 1.5rem;
+        margin: 0 auto;
+    }
+
+    /* Animations */
+    .animate__animated {
+        animation-duration: 0.8s;
+    }
+</style>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Agregar retraso a las tarjetas de servicio para crear efecto escalonado
+            $(".services-container .col").each(function (index) {
+                $(this).css("animation-delay", (index * 0.1) + "s");
+            });
+
+            // Efecto hover para botón principal
+            $(".btn-primary").hover(
+                function () { $(this).addClass("animate__pulse"); },
+                function () { $(this).removeClass("animate__pulse"); }
+            );
+        });
+    </script>
+}

@@ -1,8 +1,7 @@
 ﻿namespace Proyecto_ExpedicionOxigeno.Migrations
 {
-    using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class ModificacionReviews : DbMigration
     {
         public override void Up()

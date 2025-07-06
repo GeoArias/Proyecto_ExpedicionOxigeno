@@ -1,11 +1,8 @@
 ﻿using Microsoft.Graph.Models;
-using Newtonsoft.Json.Linq;
-using Proyecto_ExpedicionOxigeno.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
@@ -198,20 +195,20 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             List<TimeSlot> availableSlots = new List<TimeSlot>();
 
-             try
+            try
             {
                 System.Diagnostics.Debug.WriteLine("Starting GenerateAvailableTimeSlotsAsync method");
-                
+
                 if (staffAvailability?.Value == null)
                     return availableSlots;
 
                 // Obtener el servicio actual del ViewBag (asumimos que se ha pasado a este método)
                 BookingService servicio = ViewBag.Servicio as BookingService;
-                
+
                 // Determinar los tiempos de buffer (usar 0 si son nulos)
                 TimeSpan preBuffer = servicio.PreBuffer ?? TimeSpan.Zero;
                 TimeSpan postBuffer = servicio.PostBuffer ?? TimeSpan.Zero;
-                
+
                 // Duración total requerida incluyendo buffers
                 TimeSpan totalDuration = preBuffer + serviceDuration + postBuffer;
 
@@ -242,25 +239,25 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
                 // Crear slots para este día (usando el horario del Get_MSBookingsBusiness())
                 BookingBusiness business = await MSBookings_Actions.Get_MSBookingsBusiness();
-                
+
                 string dayOfWeek = selectedDate.DayOfWeek.ToString().ToLower();
-                
+
                 // Buscar las horas de negocio para el día específico
                 var dayHours = business.BusinessHours?.FirstOrDefault(h => h.Day.ToString().ToLower() == dayOfWeek);
-                
+
                 // Establecer horarios predeterminados en caso de que no haya datos
                 DateTime slotStart = selectedDate.Date.AddHours(9); // Predeterminado: 9:00 AM
                 DateTime slotEnd = selectedDate.Date.AddHours(17);  // Predeterminado: 5:00 PM
-                
+
                 // Si hay horarios definidos para este día, usarlos
                 if (dayHours != null && dayHours.TimeSlots != null && dayHours.TimeSlots.Any())
                 {
                     var timeSlot = dayHours.TimeSlots.First();
-                    
+
                     // Parsear las horas del formato "HH:MM:SS.SSSSSSS"
                     TimeSpan startTime = TimeSpan.Parse(timeSlot.StartTime.ToString());
                     TimeSpan endTime = TimeSpan.Parse(timeSlot.EndTime.ToString());
-                    
+
                     slotStart = selectedDate.Date.Add(startTime);
                     slotEnd = selectedDate.Date.Add(endTime);
                 }
@@ -291,7 +288,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     // Avanzar al siguiente slot (incrementos de 30 minutos)
                     slotStart = slotStart.AddMinutes(30);
                 }
-                
+
                 System.Diagnostics.Debug.WriteLine($"Finished generating {availableSlots.Count} available slots");
                 return availableSlots;
             }
@@ -366,7 +363,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
     {
         public DateTime StartTime { get; set; }  // Hora visible de inicio (después del preBuffer)
         public DateTime EndTime { get; set; }    // Hora visible de fin (antes del postBuffer)
-        
+
         // Campos adicionales para manejo interno de buffers
         public DateTime BufferStartTime { get; set; }  // Hora real de inicio incluyendo preBuffer
         public DateTime BufferEndTime { get; set; }    // Hora real de fin incluyendo postBuffer

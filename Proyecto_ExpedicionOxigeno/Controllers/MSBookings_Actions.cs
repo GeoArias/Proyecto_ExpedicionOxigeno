@@ -1,19 +1,13 @@
 ﻿using Microsoft.Graph.Models;
-using Microsoft.Kiota.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Proyecto_ExpedicionOxigeno.Helpers;
-using Proyecto_ExpedicionOxigeno.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Services.Description;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
@@ -48,7 +42,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                         },
                         NullValueHandling = NullValueHandling.Ignore
                     };
-                    
+
                     bookingBusiness = JObject.Parse(content).ToObject<BookingBusiness>(
                         JsonSerializer.Create(settings));
                 }
@@ -62,7 +56,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             {
                 throw new Exception($"Error inesperado: {ex.Message}", ex);
             }
-            
+
         }
 
 
@@ -88,13 +82,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     // Convert JArray to List<BookingService> with our custom settings
                     var settings = new JsonSerializerSettings
                     {
-                        Converters = new List<JsonConverter> { 
-                            new GraphTimeSpanConverter(), 
-                            new GraphTimeConverter() 
+                        Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter()
                         },
                         NullValueHandling = NullValueHandling.Ignore
                     };
-                    
+
                     List<BookingService> servicesList = servicesArray.ToObject<List<BookingService>>(
                         JsonSerializer.Create(settings));
                     return servicesList;
@@ -125,9 +119,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     var content = await response.Content.ReadAsStringAsync();
                     var settings = new JsonSerializerSettings
                     {
-                        Converters = new List<JsonConverter> { 
-                            new GraphTimeSpanConverter(), 
-                            new GraphTimeConverter() 
+                        Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter()
                         },
                         NullValueHandling = NullValueHandling.Ignore
                     };
@@ -156,9 +150,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             {
                 var settings = new JsonSerializerSettings
                 {
-                    Converters = new List<JsonConverter> { 
-                        new GraphTimeSpanConverter(), 
-                        new GraphTimeConverter() 
+                    Converters = new List<JsonConverter> {
+                        new GraphTimeSpanConverter(),
+                        new GraphTimeConverter()
                     },
                     NullValueHandling = NullValueHandling.Ignore
                 };
@@ -255,7 +249,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
                 // Serialize with indented formatting for better debugging
                 string jsonContent = JsonConvert.SerializeObject(requestObject, Formatting.Indented);
-                
+
                 // Create the request content
                 HttpContent requestBody = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
 
@@ -270,16 +264,16 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     var content = await response.Content.ReadAsStringAsync();
                     // Log the response for debugging
                     System.Diagnostics.Debug.WriteLine($"Response: {content}");
-                    
+
                     // Deserialize the entire JSON response directly to BookingStaffAvailabilityCollectionResponse
                     var settings = new JsonSerializerSettings
                     {
                         NullValueHandling = NullValueHandling.Ignore
                     };
-                    
+
                     var result = JsonConvert.DeserializeObject<BookingStaffAvailabilityCollectionResponse>(
                         content, settings);
-                        
+
                     return result;
                 }
                 else

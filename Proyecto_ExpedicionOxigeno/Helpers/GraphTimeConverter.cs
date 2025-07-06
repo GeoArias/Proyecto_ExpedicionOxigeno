@@ -39,13 +39,13 @@ namespace Proyecto_ExpedicionOxigeno.Helpers
                 {
                     // Create a Time object with the parsed values
                     Time time = new Time(timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
-                    
+
                     // Return the appropriate type based on whether the target is nullable
                     if (objectType == typeof(Time?))
                     {
                         return (Time?)time;
                     }
-                    
+
                     return time;
                 }
                 else
@@ -71,10 +71,10 @@ namespace Proyecto_ExpedicionOxigeno.Helpers
             }
 
             var time = (Time)value;
-            
+
             // Format the time as "HH:mm:ss"
             string timeString = $"{time.Hour:D2}:{time.Minute:D2}:{time.Second:D2}";
-            
+
             writer.WriteValue(timeString);
         }
     }
