@@ -208,6 +208,7 @@
                 color: #ccc;
                 line-height: 1.6;
                 margin-bottom: 15px;
+                font-size: 16px; /* ⬅ Mejora de legibilidad */
             }
 
         .column.contact-about img {
@@ -255,13 +256,16 @@
         }
 
             .social-icons a {
-                display: inline-block;
+                display: flex; /* ← para centrar imagen dentro */
+                justify-content: center;
+                align-items: center;
                 transition: transform 0.3s ease;
                 border-radius: 50%;
-                width: 70px;
-                height: 70px;
-                padding: 5px;
+                width: 60px; /* ⬅ Hacerlo perfectamente redondo */
+                height: 60px;
+                padding: 0;
                 background-color: rgba(255, 255, 255, 0.1);
+                overflow: hidden;
             }
 
                 .social-icons a:hover {
@@ -270,6 +274,9 @@
                 }
 
             .social-icons img {
+                width: 28px;
+                height: 28px;
+                object-fit: contain;
                 border-radius: 50%;
             }
 
@@ -342,9 +349,36 @@
                 display: block;
                 margin: 0 auto 20px auto;
             }
+
+
+
+            .floating-reserve-btn {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 9999;
+                display: none;
+            }
+
+            .pulse-btn {
+                animation: pulse 1.5s infinite;
+            }
+
+            @@keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.1);
+                }
+
+                100% {
+                    transform: scale(1);
+                }
+            }
         }
     </style>
-
 
 
     @Styles.Render("~/Content/css")
@@ -464,22 +498,29 @@
             <div class="column contact-about">
                 <ul>
                     <li><p>Correo: <a href="mailto:expedicion@gmail.com?subject=Consulta%20-%20Expedici%C3%B3n%20Ox%C3%ADgeno">expedicion@gmail.com</a></p></li>
-                    <li><p>Teléfono: <a href="tel:+50625202100">2520 2100</a></p></li>
+                    <li><p>Teléfono: <a href="tel:+50625202100">2520-2100</a></p></li>
                 </ul>
                 <h5 style="color: #000;">También podés encontrarnos en redes sociales:</h5>
-                <div class="d-flex justify-content-center gap-4 mt-3">
+                <div class="d-flex flex-column align-items-center gap-3 mt-3">
+                    <!-- Íconos sociales -->
                     <div class="social-icons">
-
-                        <a href="https://www.facebook.com/OxigenoCostaRica" target="_blank">
+                        <a href="https://www.facebook.com/OxigenoCostaRica" target="_blank" title="Ir a Facebook">
                             <img src="~/Content/Images/icon_Facebook.png" alt="Facebook" />
                         </a>
-                        <a href="https://www.instagram.com/oxigenocr/" target="_blank" >
-                            <img src="~/Content/Images/icon_Instagram.png" alt="Instagram"/>
+                        <a href="https://www.instagram.com/oxigenocr/" target="_blank" title="Ir a Instagram">
+                            <img src="~/Content/Images/icon_Instagram.png" alt="Instagram" />
                         </a>
+                    </div>
+
+                    <!-- Texto institucional -->
+                    <div class="text-center px-3">
                         <h3>¿Quiénes somos?</h3>
-                        <p>Expedición Oxígeno es una atracción de aventura ubicada en el O2 de Oxígeno, la cual alberga 3 actividades cuyo propósito es proveer diversión y adrenalina a un público de todas las edades. Lo único que necesitás es cumplir con la estatura mínima para cada una de las actividades</p>
+                        <p>
+                            Expedición Oxígeno es una atracción de aventura ubicada en el O2 de Oxígeno, la cual alberga 3 actividades cuyo propósito es proveer diversión y adrenalina a un público de todas las edades. Lo único que necesitás es cumplir con la estatura mínima para cada una de las actividades.
+                        </p>
                     </div>
                 </div>
+
             </div>
             <div class="column address">
                 <h3>Dirección</h3>
