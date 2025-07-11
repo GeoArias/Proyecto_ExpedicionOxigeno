@@ -177,10 +177,22 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     });
 
                     // Crear Staff en Microsoft Bookings
+                    try
+                    {
+                        var staff = new Microsoft.Graph.Models.BookingStaffMember
+                        {
+                            DisplayName = model.Nombre,
+                            EmailAddress = model.Email,
+                            Role = Microsoft.Graph.Models.BookingStaffRole.Viewer, // Ajusta según los valores disponibles
+                        };
+                        await MSBookings_Actions.Create_MSBookingsStaff(staff);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Error al crear staff en Bookings: " + ex.Message);
+                    }
 
-                    // Enviamos señal al Home para mostrar modal
                     TempData["RegistroExitoso"] = true;
-
                     return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
@@ -188,7 +200,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             return View(model);
         }
-
 
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(string userId, string code)

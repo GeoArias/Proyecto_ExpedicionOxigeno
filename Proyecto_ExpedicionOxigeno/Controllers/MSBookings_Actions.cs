@@ -205,6 +205,29 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
         }
 
+        public static async Task<HttpResponseMessage> Create_MSBookingsStaff(BookingStaffMember staff)
+        {
+            try
+            {
+                string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers";
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                };
+                string jsonData = JsonConvert.SerializeObject(staff, settings);
+                var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
+                var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Post, content);
+                return response;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
+        }
 
 
         //
