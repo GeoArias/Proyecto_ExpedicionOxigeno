@@ -63,10 +63,10 @@
                                 <span class="service-check-indicator">
                                     <i class="fas fa-check-circle"></i>
                                 </span>
-                                <span class="service-card-body d-block">
+                                <span class="service-card-body d-block d-flex flex-column h-100">
                                     <h5 class="service-title">@service.DisplayName</h5>
-                                    <p class="service-description">@service.Description</p>
-                                    <span class="service-details d-block">
+                                    <p class="service-description flex-grow-1">@service.Description</p>
+                                    <span class="service-details d-block mt-auto">
                                         <span class="service-duration">
                                             <i class="far fa-clock"></i>
                                             @if (service.DefaultDuration.TotalHours >= 1)
