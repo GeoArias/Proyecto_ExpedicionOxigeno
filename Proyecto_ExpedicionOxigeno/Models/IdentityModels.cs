@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Proyecto_ExpedicionOxigeno.Models;
 using System.Data.Entity;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -10,8 +9,8 @@ namespace Proyecto_ExpedicionOxigeno.Models
     // Para agregar datos de perfil del usuario, agregue más propiedades a su clase ApplicationUser. Visite https://go.microsoft.com/fwlink/?LinkID=317594 para obtener más información.
     public class ApplicationUser : IdentityUser
     {
-        public string Nombre { get; set; }    // Cambiado a public set
-        public string Telefono { get; set; }  // Cambiado a public set
+        public string Nombre { get; internal set; }
+        public string Telefono { get; internal set; }
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
@@ -25,7 +24,7 @@ namespace Proyecto_ExpedicionOxigeno.Models
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
-            : base("DefaultConnection")
+            : base("DefaultConnection", throwIfV1Schema: false)
         {
         }
 
@@ -33,11 +32,10 @@ namespace Proyecto_ExpedicionOxigeno.Models
         {
             return new ApplicationDbContext();
         }
-
         public DbSet<Estado> Estados { get; set; }
         public DbSet<Contacto> Contactos { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<PuntosFidelidad> PuntosFidelidad { get; set; }
-        public DbSet<Reserva> Reservas { get; set; } // <-- Agregado para reservas
+
     }
 }
