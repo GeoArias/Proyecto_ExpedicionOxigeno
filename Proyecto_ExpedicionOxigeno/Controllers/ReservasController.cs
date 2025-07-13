@@ -292,7 +292,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     }
 
                     // Avanzar al siguiente slot (incrementos de 30 minutos)
-                    slotStart = slotStart.AddMinutes(30);
+                    slotStart = slotStart.AddMinutes(servicio.SchedulingPolicy.TimeSlotInterval.Value.TotalMinutes);
                 }
 
                 System.Diagnostics.Debug.WriteLine($"Finished generating {availableSlots.Count} available slots");
