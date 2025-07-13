@@ -33,7 +33,7 @@
             var adminUser = userManager.FindByName(adminEmail);
             if (adminUser == null)
             {
-                adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
+                adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true, Nombre = "Administrador", Telefono= "61426278" };
                 userManager.Create(adminUser, "Admin123!");
                 userManager.AddToRole(adminUser.Id, "Administrador");
             }
