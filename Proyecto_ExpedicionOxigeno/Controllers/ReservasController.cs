@@ -1,4 +1,7 @@
 ﻿using Microsoft.Graph.Models;
+using Proyecto_ExpedicionOxigeno.Models;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +24,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             try
             {
                 // Cargar todos los servicios disponibles
-                List<BookingService> services = await MSBookings_Actions.Get_MSBookingsServices();
+                var services = await MSBookings_Actions.Get_MSBookingsServices();
                 ViewBag.Services = services;
 
                 return View();
@@ -55,39 +58,33 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             try
             {
-                // Obtener detalles del servicio seleccionado
-                BookingService servicio = await MSBookings_Actions.Get_MSBookingsService(id);
+                var servicio = await MSBookings_Actions.Get_MSBookingsService(id);
                 if (servicio == null)
                 {
                     TempData["Error"] = "El servicio seleccionado no existe.";
                     return RedirectToAction("Index");
                 }
 
-                // Obtener personal asociado a este servicio
-                List<string> staffIds = servicio.StaffMemberIds;
+                var staffIds = servicio.StaffMemberIds;
                 if (staffIds == null || !staffIds.Any())
                 {
                     TempData["Error"] = "Este servicio no tiene personal asignado.";
                     return RedirectToAction("Index");
                 }
 
-                // Obtener disponibilidad del personal para el día seleccionado
                 var startDate = fecha.Value.Date;
-                var endDate = startDate.AddDays(1).AddSeconds(-1); // Hasta el final del día seleccionado
+                var endDate = startDate.AddDays(1).AddSeconds(-1);
 
-                // Get the user's timezone (this could be from a user profile or browser detection)
                 string userTimeZone = Request.Browser.IsMobileDevice ?
-                    TimeZoneInfo.Local.Id : // Simplified - you might need a better way to get mobile timezone
+                    TimeZoneInfo.Local.Id :
                     System.Web.HttpContext.Current.Request.Headers["TimeZone"] ?? TimeZoneInfo.Local.Id;
 
                 var staffAvailability = await MSBookings_Actions.Get_MSBookingsStaffAvailability(
                     staffIds, startDate, endDate, userTimeZone);
 
-                // Generar slots disponibles según la duración del servicio
                 ViewBag.Servicio = servicio;
                 var availableSlots = await GenerateAvailableTimeSlotsAsync(staffAvailability, servicio.DefaultDuration.Value, fecha.Value);
 
-                // Pasar datos a la vista
                 ViewBag.AvailableSlots = availableSlots;
                 ViewBag.FechaSeleccionada = fecha.Value;
 
@@ -113,7 +110,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             try
             {
-                // Obtener detalles del servicio
                 var servicio = await MSBookings_Actions.Get_MSBookingsService(serviceId);
                 if (servicio == null)
                 {
@@ -121,15 +117,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Parsear fechas
-                DateTime startTime, endTime;
-                if (!DateTime.TryParse(slotStart, out startTime) || !DateTime.TryParse(slotEnd, out endTime))
+                if (!DateTime.TryParse(slotStart, out var startTime) || !DateTime.TryParse(slotEnd, out var endTime))
                 {
                     TempData["Error"] = "Formato de fecha inválido.";
                     return RedirectToAction("SeleccionarServicio", new { id = serviceId, fecha = DateTime.Today });
                 }
 
-                // Pasar los datos a la vista de confirmación
                 ViewBag.Servicio = servicio;
                 ViewBag.SlotStart = startTime;
                 ViewBag.SlotEnd = endTime;
@@ -146,9 +139,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // POST: Reservas/ConfirmarReserva
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ConfirmarReserva(string serviceId, DateTime slotStart, DateTime slotEnd, string nombre, string email, string telefono)
+        public async Task<ActionResult> ConfirmarReserva(string serviceId, DateTime slotStart, DateTime slotEnd)
         {
-            if (string.IsNullOrEmpty(serviceId) || string.IsNullOrEmpty(nombre) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(telefono))
+            if (string.IsNullOrEmpty(serviceId))
             {
                 TempData["Error"] = "Todos los campos son obligatorios.";
                 return RedirectToAction("Index");
@@ -156,21 +149,16 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             try
             {
-                // Obtener detalles del servicio
                 var servicio = await MSBookings_Actions.Get_MSBookingsService(serviceId);
 
-                // Obtener staff disponible para esa franja
                 var staffIds = servicio.StaffMemberIds;
-
-                // Get the user's timezone (this could be from a user profile or browser detection)
                 string userTimeZone = Request.Browser.IsMobileDevice ?
-                    TimeZoneInfo.Local.Id : // Simplified - you might need a better way to get mobile timezone
+                    TimeZoneInfo.Local.Id :
                     System.Web.HttpContext.Current.Request.Headers["TimeZone"] ?? TimeZoneInfo.Local.Id;
 
                 var staffAvailability = await MSBookings_Actions.Get_MSBookingsStaffAvailability(
                     staffIds, slotStart.Date, slotStart.Date.AddDays(1), userTimeZone);
 
-                // Filtrar personal disponible para el slot seleccionado
                 var availableStaff = FindAvailableStaffForSlot(staffAvailability, slotStart, slotEnd);
 
                 if (!availableStaff.Any())
@@ -179,14 +167,68 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("SeleccionarServicio", new { id = serviceId, fecha = slotStart.Date });
                 }
 
-                // Seleccionar un staff al azar si hay varios disponibles
-                Random rnd = new Random();
-                string selectedStaffId = availableStaff[rnd.Next(availableStaff.Count)];
+                var userId = User.Identity.GetUserId();
+                using (var db = new ApplicationDbContext())
+                {
+                    var usuario = db.Users.Find(userId);
+                    if (usuario == null)
+                    {
+                        TempData["Error"] = "No se pudo obtener la información del usuario.";
+                        return RedirectToAction("Index");
+                    }
 
-                // Aquí implementarías la lógica para crear la reserva en MS Bookings
-                // Esto dependerá de cómo está estructurado tu método para crear reservas
+                    // Guardar la reserva usando HoraInicio y HoraFin
+                    var reserva = new Reserva
+                    {
+                        Usuario = usuario.Email,
+                        Nombre = usuario.Nombre,
+                        TipoActividad = servicio.DisplayName,
+                        DiaReserva = slotStart.Date,
+                        HoraInicio = slotStart,
+                        HoraFin = slotEnd
+                    };
+                    db.Reservas.Add(reserva);
+                    await db.SaveChangesAsync();
 
-                TempData["Success"] = "¡Reserva confirmada con éxito!";
+                    var emailService = new EmailService();
+                    await emailService.SendAsync(new Microsoft.AspNet.Identity.IdentityMessage
+                    {
+                        Destination = usuario.Email,
+                        Subject = "Confirmación de reserva - Expedición Oxígeno",
+                        Body = $@"
+<div style='font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; padding: 32px; background: #f8fafc;'>
+    <div style='text-align:center; margin-bottom:24px;'>
+        <img src='https://expedicionoxigeno.com/logo.png' alt='Expedición Oxígeno' style='max-width:160px; height:auto;' />
+    </div>
+    <h2 style='color: #27ae60; margin-bottom: 16px;'>¡Reserva confirmada!</h2>
+    <p style='font-size: 17px; color: #222; margin-bottom: 18px;'>Hola <strong>{usuario.Nombre}</strong>,</p>
+    <p style='font-size: 16px; color: #333; margin-bottom: 18px;'>
+        Tu reserva para <strong>{servicio.DisplayName}</strong> ha sido confirmada.
+    </p>
+    <div style='background: #eafaf1; border-radius: 8px; padding: 18px; margin-bottom: 18px;'>
+        <ul style='list-style:none; padding-left:0; font-size:16px; color:#222;'>
+            <li><strong>Fecha:</strong> {slotStart:dd/MM/yyyy}</li>
+            <li><strong>Horario:</strong> {slotStart:HH:mm} - {slotEnd:HH:mm}</li>
+        </ul>
+    </div>
+    <div style='background: #fffbe6; border-radius: 8px; padding: 16px; margin-bottom: 18px; border: 1px solid #ffe58f;'>
+        <strong style='color: #d35400;'>Importante:</strong>
+        <p style='margin: 8px 0 0 0; color: #d35400; font-size: 15px;'>
+            Por favor preséntate <strong>15 minutos antes</strong> al lugar para realizar el pago en el counter de Oxígeno.
+        </p>
+    </div>
+    <p style='font-size: 15px; color: #555; margin-bottom: 18px;'>
+        Te esperamos en <strong>Expedición Oxígeno</strong>. Si necesitas modificar o cancelar tu reserva, contáctanos.
+    </p>
+    <hr style='margin: 24px 0; border: none; border-top: 1px solid #e0e0e0;' />
+    <p style='font-size: 13px; color: #aaa; text-align:center;'>
+        Este correo es una confirmación automática. No respondas a este mensaje.
+    </p>
+</div>"
+                    });
+                }
+
+                TempData["Success"] = "¡Reserva confirmada con éxito! Te llegará un correo electrónico con los detalles de la reserva.";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -199,7 +241,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // Método auxiliar para generar slots disponibles según duración del servicio
         private async Task<List<TimeSlot>> GenerateAvailableTimeSlotsAsync(BookingStaffAvailabilityCollectionResponse staffAvailability, TimeSpan serviceDuration, DateTime selectedDate)
         {
-            List<TimeSlot> availableSlots = new List<TimeSlot>();
+            var availableSlots = new List<TimeSlot>();
 
             try
             {
@@ -208,19 +250,22 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 if (staffAvailability?.Value == null)
                     return availableSlots;
 
-                // Obtener el servicio actual del ViewBag (asumimos que se ha pasado a este método)
-                BookingService servicio = ViewBag.Servicio as BookingService;
+                var servicio = ViewBag.Servicio as BookingService;
+                var preBuffer = servicio.PreBuffer ?? TimeSpan.Zero;
+                var postBuffer = servicio.PostBuffer ?? TimeSpan.Zero;
+                var totalDuration = preBuffer + serviceDuration + postBuffer;
 
-                // Determinar los tiempos de buffer (usar 0 si son nulos)
-                TimeSpan preBuffer = servicio.PreBuffer ?? TimeSpan.Zero;
-                TimeSpan postBuffer = servicio.PostBuffer ?? TimeSpan.Zero;
+                // 1. Obtener reservas existentes para ese servicio y día
+                List<Reserva> reservasExistentes;
+                using (var db = new ApplicationDbContext())
+                {
+                    reservasExistentes = db.Reservas
+                        .Where(r => r.TipoActividad == servicio.DisplayName && r.DiaReserva == selectedDate.Date)
+                        .ToList();
+                }
 
-                // Duración total requerida incluyendo buffers
-                TimeSpan totalDuration = preBuffer + serviceDuration + postBuffer;
-
-                // Filtrar solo los items para la fecha seleccionada
-                List<BookingStaffAvailabilityItems> dateAvailabilityItems = new List<BookingStaffAvailabilityItems>();
-
+                // 2. Filtrar solo los items para la fecha seleccionada
+                var dateAvailabilityItems = new List<BookingStaffAvailabilityItems>();
                 foreach (var staff in staffAvailability.Value)
                 {
                     if (staff.AvailabilityItems == null)
@@ -231,7 +276,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                         if (item.Status != "available")
                             continue;
 
-                        // Solo considerar elementos para la fecha seleccionada
                         if (item.StartDateTime.DateTime.DayOfYear == selectedDate.Date.DayOfYear)
                         {
                             dateAvailabilityItems.Add(new BookingStaffAvailabilityItems
@@ -243,56 +287,47 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     }
                 }
 
-                // Crear slots para este día (usando el horario del Get_MSBookingsBusiness())
-                BookingBusiness business = await MSBookings_Actions.Get_MSBookingsBusiness();
-
+                var business = await MSBookings_Actions.Get_MSBookingsBusiness();
                 string dayOfWeek = selectedDate.DayOfWeek.ToString().ToLower();
-
-                // Buscar las horas de negocio para el día específico
                 var dayHours = business.BusinessHours?.FirstOrDefault(h => h.Day.ToString().ToLower() == dayOfWeek);
 
-                // Establecer horarios predeterminados en caso de que no haya datos
-                DateTime slotStart = selectedDate.Date.AddHours(9); // Predeterminado: 9:00 AM
-                DateTime slotEnd = selectedDate.Date.AddHours(17);  // Predeterminado: 5:00 PM
+                var slotStart = selectedDate.Date.AddHours(9);
+                var slotEnd = selectedDate.Date.AddHours(17);
 
-                // Si hay horarios definidos para este día, usarlos
                 if (dayHours != null && dayHours.TimeSlots != null && dayHours.TimeSlots.Any())
                 {
                     var timeSlot = dayHours.TimeSlots.First();
-
-                    // Parsear las horas del formato "HH:MM:SS.SSSSSSS"
-                    TimeSpan startTime = TimeSpan.Parse(timeSlot.StartTime.ToString());
-                    TimeSpan endTime = TimeSpan.Parse(timeSlot.EndTime.ToString());
-
+                    var startTime = TimeSpan.Parse(timeSlot.StartTime.ToString());
+                    var endTime = TimeSpan.Parse(timeSlot.EndTime.ToString());
                     slotStart = selectedDate.Date.Add(startTime);
                     slotEnd = selectedDate.Date.Add(endTime);
                 }
 
                 while (slotStart.Add(totalDuration) <= slotEnd)
                 {
-                    // Calcular tiempo real de inicio y fin (incluyendo buffers)
                     var actualStart = slotStart.Add(preBuffer);
                     var actualEnd = actualStart.Add(serviceDuration);
                     var bufferEnd = actualEnd.Add(postBuffer);
 
-                    // Verificar si hay al menos un staff disponible para este slot completo (incluyendo buffers)
                     bool isSlotAvailable = IsStaffAvailableForSlot(dateAvailabilityItems, slotStart, bufferEnd);
 
-                    if (isSlotAvailable)
+                    // 3. Verificar si el slot está ocupado por alguna reserva existente
+                    bool slotOcupado = reservasExistentes.Any(r =>
+                        actualStart < r.HoraFin && actualEnd > r.HoraInicio
+                    );
+
+                    if (isSlotAvailable && !slotOcupado)
                     {
                         availableSlots.Add(new TimeSlot
                         {
-                            // Guardamos el tiempo visible para el cliente (sin el pre/post buffer)
                             StartTime = actualStart,
                             EndTime = actualEnd,
-                            // Podríamos agregar propiedades adicionales para uso interno
                             BufferStartTime = slotStart,
                             BufferEndTime = bufferEnd
                         });
                     }
 
-                    // Avanzar al siguiente slot (incrementos de 30 minutos)
-                    slotStart = slotStart.AddMinutes(servicio.SchedulingPolicy.TimeSlotInterval.Value.TotalMinutes);
+                    slotStart = slotStart.AddMinutes(30);
                 }
 
                 System.Diagnostics.Debug.WriteLine($"Finished generating {availableSlots.Count} available slots");
@@ -302,7 +337,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             {
                 System.Diagnostics.Debug.WriteLine($"Error in GenerateAvailableTimeSlotsAsync: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                throw; // Re-throw to preserve the exception stack
+                throw;
             }
         }
 
@@ -311,15 +346,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             if (availabilityItems == null || !availabilityItems.Any())
                 return false;
-            List<BookingStaffAvailabilityItem> bookingAvailabilityItems = availabilityItems.Select(a => a.bookingAvailabilityItem).ToList();
+            var bookingAvailabilityItems = availabilityItems.Select(a => a.bookingAvailabilityItem).ToList();
 
             foreach (var staff in bookingAvailabilityItems)
             {
-                // Convertir a DateTime local para comparación
                 DateTime staffStart = staff.StartDateTime.DateTime;
                 DateTime staffEnd = staff.EndDateTime.DateTime;
 
-                // Verificar si este staff está disponible durante todo el slot (incluyendo buffers)
                 if (staffStart <= bufferStart && staffEnd >= bufferEnd)
                 {
                     return true;
@@ -347,15 +380,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     if (item.Status != "available")
                         continue;
 
-                    // Convertir a DateTime local para comparación
                     DateTime staffStart = item.StartDateTime.DateTime;
                     DateTime staffEnd = item.EndDateTime.DateTime;
 
-                    // Verificar si este staff está disponible durante todo el slot
                     if (staffStart <= start && staffEnd >= end)
                     {
                         availableStaff.Add(staff.StaffId);
-                        break; // Ya encontramos disponibilidad para este staff
+                        break;
                     }
                 }
             }

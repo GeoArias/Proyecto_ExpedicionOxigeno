@@ -19,8 +19,9 @@
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success animate__animated animate__bounceIn">
-            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <div class="alert alert-success text-center animate__animated animate__bounceIn">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["Success"]
         </div>
     }
 
@@ -59,13 +60,13 @@
                             <input class="form-check-input visually-hidden" type="radio" name="id"
                                    id="service-@service.Id" value="@service.Id" required>
                             <label class="service-card h-100" for="service-@service.Id">
-                                <div class="service-check-indicator">
+                                <span class="service-check-indicator">
                                     <i class="fas fa-check-circle"></i>
-                                </div>
-                                <div class="service-card-body">
+                                </span>
+                                <span class="service-card-body d-block">
                                     <h5 class="service-title">@service.DisplayName</h5>
                                     <p class="service-description">@service.Description</p>
-                                    <div class="service-details">
+                                    <span class="service-details d-block">
                                         <span class="service-duration">
                                             <i class="far fa-clock"></i>
                                             @if (service.DefaultDuration.TotalHours >= 1)
@@ -81,8 +82,8 @@
                                             <i class="fas fa-tag"></i>
                                             ₡@string.Format("{0:N0}", service.DefaultPrice)
                                         </span>
-                                    </div>
-                                </div>
+                                    </span>
+                                </span>
                             </label>
                         </div>
                     }
