@@ -15,11 +15,11 @@
                 Tu navegador no soporta la etiqueta de video.
             </video>
             <div class="hero-content animate__animated animate__fadeIn">
-                <h1 class="text-shadow">Bienvenido a ExpediCheck</h1>
+                <h1 class="text-shadow">Bienvenido a @ViewBag.Title</h1>
                 <p class="text-shadow">La aventura comienza aquí</p>
                 <div class="hero-buttons">
                     <a href="#inicio" class="btn btn-outline-light btn-lg mt-4 animate__animated animate__fadeInUp">Explorar</a>
-                    <a href="/reservas" class="btn btn-danger btn-lg mt-4 ms-3 animate__animated animate__fadeInUp animate__delay-1s">¡Reserva Ahora!</a>
+                    <a href="/reservas" class="btn btn-reserva btn-lg mt-4 ms-3 animate__animated animate__fadeInUp animate__delay-1s">¡Reserva Ahora!</a>
                 </div>
             </div>
         </div>
@@ -56,6 +56,21 @@
         .company-info {
             padding: 10px;
         }
+        .btn-reserva {
+            background-color: rgb(250, 143, 35) !important;
+            color: white !important;
+            font-weight: 600;
+            border-color: rgb(250, 143, 35) !important;
+            transition: all 0.3s ease;
+        }
+
+            .btn-reserva:hover {
+                background-color: rgb(230, 123, 15) !important;
+                border-color: rgb(230, 123, 15) !important;
+                color: white !important;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
     </style>
 
     <!-- Carrusel de imágenes mejorado -->
@@ -461,7 +476,7 @@
 
 <!-- SIN la clase d-none -->
 <div class="floating-reserve-btn" id="botonReserva">
-    <a href="/reservas" class="btn btn-lg btn-danger pulse-btn">
+    <a href="/reservas" class="btn btn-lg btn-reserva pulse-btn">
         <i class="fas fa-calendar-check"></i> ¡RESERVA YA!
     </a>
 </div>

@@ -93,19 +93,25 @@
 
         .nav-login,
         .nav-register {
-            background-color: #28a745 !important;
-            color: #222 !important;
+            background-color: rgb(250, 143, 35) !important;
+            color: white !important;
             font-weight: 600;
             border-radius: 8px;
             margin-left: 8px;
             padding: 8px 16px;
             transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: none;
+            display: inline-block;
         }
 
             .nav-login:hover,
             .nav-register:hover {
-                color: var(--blanco) !important;
-                transform: scale(1.05);
+                background-color: rgb(230, 123, 15) !important; /* Un poco más oscuro para el hover */
+                color: white !important;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             }
 
         .hero-banner {
@@ -449,23 +455,23 @@
                             @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
                             {
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="nav-link nav-login btn btn-link" style="color: #fff; text-decoration: none;">Cerrar sesión</button>
+                                <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
                             }
                         </li>
                     }
                     else
                     {
                         @*<li class="nav-item">
-                                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
-                            </li>*@
+                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
+            </li>*@
                         <li class="nav-item">
-                            <a class="nav-link nav-login" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
+                            <a class="btn btn-outline-light mx-1" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link nav-register" href="@Url.Action("Register", "Account")">Registrarse</a>
+                            <a class="btn btn-outline-light mx-1" href="@Url.Action("Register", "Account")">Registrarse</a>
                         </li>
                     }
                 </ul>
