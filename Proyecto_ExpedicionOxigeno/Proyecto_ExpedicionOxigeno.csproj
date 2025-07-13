@@ -330,6 +330,14 @@
     <Compile Include="Migrations\202507050332505_AddServicioToReview.Designer.cs">
       <DependentUpon>202507050332505_AddServicioToReview.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202507131517453_AddReservaTable.cs" />
+    <Compile Include="Migrations\202507131517453_AddReservaTable.Designer.cs">
+      <DependentUpon>202507131517453_AddReservaTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202507131559001_ActualizaModeloReserva.cs" />
+    <Compile Include="Migrations\202507131559001_ActualizaModeloReserva.Designer.cs">
+      <DependentUpon>202507131559001_ActualizaModeloReserva.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\BookingStaffAvailability.cs" />
@@ -338,6 +346,7 @@
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Contacto.cs" />
+    <Compile Include="Models\Reserva.cs" />
     <Compile Include="Models\Review.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -455,6 +464,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202507050332505_AddServicioToReview.resx">
       <DependentUpon>202507050332505_AddServicioToReview.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507131517453_AddReservaTable.resx">
+      <DependentUpon>202507131517453_AddReservaTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507131559001_ActualizaModeloReserva.resx">
+      <DependentUpon>202507131559001_ActualizaModeloReserva.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
