@@ -1,108 +1,296 @@
-@using Newtonsoft.Json.Linq
-
-@model JArray
-
+@using Proyecto_ExpedicionOxigeno.Models
+@model List<BookingAppointmentCustomed>
 @{
-    ViewBag.Title = "Mis reservas";
+    ViewBag.Title = "Mis Reservas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h2>Mis reservas</h2>
-@if (Model == null || !Model.Any())
-{
-    <div class="alert alert-info">No tienes reservas activas.</div>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Servicio</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Staff</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var r in Model)
-            {
-                var id = r["id"]?.ToString();
-                var fecha = r["start"]?["dateTime"]?.ToString().Substring(0, 10);
-                var horaInicio = r["start"]?["dateTime"]?.ToString().Substring(11, 5);
-                var horaFin = r["end"]?["dateTime"]?.ToString().Substring(11, 5);
-                var estado = r["status"]?.ToString();
-                var servicio = r["serviceName"]?.ToString();
 
-                <tr>
-                    <td>@servicio</td>
-                    <td>@fecha</td>
-                    <td>@horaInicio - @horaFin</td>
-                    <td>
-                        @{
-                            var staffList = r["staffMemberIds"] as JArray;
-                        }
-                        @if (staffList != null && staffList.Count > 0)
-                        {
-                            @(string.Join(", ", staffList.Select(s => s.ToString())))
-                        }
-                        else
-                        {
-                            <span>-</span>
-                        }
-                    </td>
-                    <td>@estado</td>
-                    <td>
-                        @if (!string.Equals(estado, "cancelled", StringComparison.OrdinalIgnoreCase))
-                        {
-                            <form method="post" action="@Url.Action("CancelarReserva", "Reservas")" style="display:inline;">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@id" />
-                                <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
-                            </form>
-                            <button type="button" class="btn btn-warning btn-sm ms-1" data-bs-toggle="modal" data-bs-target="#modalModificar-@id">
-                                Modificar
-                            </button>
-                            <!-- Modal para modificar reserva -->
-                            <div class="modal fade" id="modalModificar-@id" tabindex="-1" aria-labelledby="modalLabel-@id" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <form method="post" action="@Url.Action("ModificarReserva", "Reservas")">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@id" />
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="modalLabel-@id">Modificar reserva</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label for="nuevaFecha-@id" class="form-label">Nueva fecha</label>
-                                                    <input type="date" class="form-control" id="nuevaFecha-@id" name="nuevaFecha" value="@fecha" required />
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="nuevaHoraInicio-@id" class="form-label">Hora inicio</label>
-                                                    <input type="time" class="form-control" id="nuevaHoraInicio-@id" name="nuevaHoraInicio" value="@horaInicio" required />
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="nuevaHoraFin-@id" class="form-label">Hora fin</label>
-                                                    <input type="time" class="form-control" id="nuevaHoraFin-@id" name="nuevaHoraFin" value="@horaFin" required />
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                <button type="submit" class="btn btn-warning">Guardar cambios</button>
-                                            </div>
-                                        </form>
-                                    </div>
+
+<div class="reservation-container">
+    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4">Mis Reservas</h1>
+        <p class="lead">Gestiona tus próximas actividades en Expedición Oxígeno</p>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger animate__animated animate__shakeX">
+            <span class="me-2"><i class="fas fa-exclamation-circle"></i></span>@TempData["Error"]
+        </div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success animate__animated animate__fadeIn">
+            <span class="me-2"><i class="fas fa-check-circle"></i></span>@TempData["Success"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 animate__animated animate__fadeIn">
+            <div class="mb-4"><i class="fas fa-calendar-times fa-4x text-muted"></i></div>
+            <h4 class="text-muted">No tienes reservas futuras activas</h4>
+            <p class="text-muted mb-4">¡Es momento de vivir nuevas aventuras!</p>
+            <a href="@Url.Action("Index", "Reservas")" class="btn btn-Primary-ExpOxi mt-3">
+                <span class="me-2"><i class="fas fa-plus-circle"></i></span>Hacer una nueva reserva
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var reserva in Model)
+            {
+                var fecha = reserva.start?.dateTime;
+                var horaInicio = reserva.start?.dateTime;
+                var horaFin = reserva.end?.dateTime;
+                var fechaFormateada = fecha?.ToString("dddd, dd 'de' MMMM 'de' yyyy");
+                var horaInicioFormateada = horaInicio?.ToString("hh:mm tt");
+                var horaFinFormateada = horaFin?.ToString("hh:mm tt");
+
+                <div class="col animate__animated animate__fadeIn">
+                    <div class="card h-100 reservation-card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">@reserva.ServiceName</h5>
+                                <div class="reservation-icon">
+                                    @if (reserva.ServiceName.Contains("Escalada"))
+                                    {
+                                        <span><i class="fas fa-mountain"></i></span>
+                                    }
+                                    else if (reserva.ServiceName.Contains("Cuerdas"))
+                                    {
+                                        <span><i class="fas fa-route"></i></span>
+                                    }
+                                    else if (reserva.ServiceName.Contains("Glider"))
+                                    {
+                                        <span><i class="fas fa-wind"></i></span>
+                                    }
+                                    else
+                                    {
+                                        <span><i class="fas fa-tree"></i></span>
+                                    }
                                 </div>
                             </div>
-                        }
-                        else
-                        {
-                            <span class="text-muted">Cancelada</span>
-                        }
-                    </td>
-                </tr>
+                        </div>
+                        <div class="card-body">
+                            <div class="reservation-details">
+                                <div class="detail-item">
+                                    <span><i class="far fa-calendar-alt"></i></span>
+                                    <span>@fechaFormateada</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span><i class="far fa-clock"></i></span>
+                                    <span>@horaInicioFormateada - @horaFinFormateada</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span><i class="fas fa-clock"></i></span>
+                                    <span class="reservation-id">@reserva.Duration</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                @using (Html.BeginForm("CancelarReserva", "Reservas", FormMethod.Post, new { @class = "d-inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.Hidden("id", reserva.Id)
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('¿Estás seguro que deseas cancelar esta reserva?')">
+                                        <span class="me-1"><i class="fas fa-times-circle"></i></span>Cancelar
+                                    </button>
+                                }
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_@reserva.Id">
+                                    <span class="me-1"><i class="fas fa-edit"></i></span>Modificar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal de modificación -->
+                <div class="modal fade" id="modal_@reserva.Id" tabindex="-1" aria-labelledby="modalLabel_@reserva.Id" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            @using (Html.BeginForm("ModificarReserva", "Reservas", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", reserva.Id)
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        <span class="me-2"><i class="fas fa-calendar-alt"></i></span>Modificar Reserva
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="current-reservation mb-4">
+                                        <h6 class="text-muted mb-3">Información actual:</h6>
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <p class="mb-1"><strong>Servicio:</strong> @reserva.ServiceName</p>
+                                                <p class="mb-1"><strong>Fecha:</strong> @fechaFormateada</p>
+                                                <p class="mb-0"><strong>Horario:</strong> @horaInicioFormateada - @horaFinFormateada</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h6 class="text-muted mb-3">Nueva información:</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <span class="me-2"><i class="far fa-calendar-alt"></i></span>Nueva fecha:
+                                        </label>
+                                        <input type="date" name="nuevaFecha" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <span class="me-2"><i class="far fa-clock"></i></span>Nueva hora inicio:
+                                        </label>
+                                        <input type="time" name="nuevaHoraInicio" class="form-control" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <span class="me-2"><i class="far fa-clock"></i></span>Nueva hora fin:
+                                        </label>
+                                        <input type="time" name="nuevaHoraFin" class="form-control" required />
+                                    </div>
+                                    <div class="alert alert-info">
+                                        <span class="me-2"><i class="fas fa-info-circle"></i></span>
+                                        La disponibilidad está sujeta a confirmación. Si el horario seleccionado no está disponible, te notificaremos por correo.
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                        <span class="me-1"><i class="fas fa-times"></i></span>Cancelar
+                                    </button>
+                                    <button type="submit" class="btn btn-Primary-ExpOxi">
+                                        <span class="me-1"><i class="fas fa-save"></i></span>Guardar cambios
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    }
+</div>
+
+<style>
+@@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+@@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    .reservation-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .reservation-card {
+        transition: all 0.3s ease;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        border: none;
+    }
+
+        .reservation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-header {
+        background: linear-gradient(135deg, #F89026 0%, #D3901B 100%);
+        color: white;
+        border-bottom: none;
+        padding: 1rem 1.25rem;
+    }
+
+    .reservation-icon {
+        font-size: 1.8rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .reservation-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+        .detail-item i {
+            color: #F89026;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+    .reservation-id {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-family: monospace;
+        word-break: break-all;
+    }
+
+    .card-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 1.25rem;
+    }
+
+    /* Modal customization */
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .modal-footer {
+        background-color: #f8f9fa;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .alert {
+        border-radius: 8px;
+    }
+
+    /* Animations */
+    .animate__animated {
+        animation-duration: 0.8s;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .reservation-details {
+            gap: 0.5rem;
+        }
+
+        .card-footer .d-flex {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .card-footer .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Agregar efecto de entrada escalonada a las tarjetas
+            $(".row .col").each(function (index) {
+                $(this).css("animation-delay", (index * 0.1) + "s");
+            });
+        });
+    </script>
 }

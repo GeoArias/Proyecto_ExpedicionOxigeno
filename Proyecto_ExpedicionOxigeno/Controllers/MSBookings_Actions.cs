@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Proyecto_ExpedicionOxigeno.Helpers;
+using Proyecto_ExpedicionOxigeno.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -478,20 +479,34 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             return response;
         }
-        
-        
-        public static async Task<List<BookingAppointment>> Get_MSBookingsAppointmentsByEmail(string email)
+
+
+        public static async Task<List<BookingAppointmentCustomed>> GetAppointmentsByEmail(string email)
         {
-            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments?$filter=customerEmailAddress eq '{email}'";
+            string url = $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/appointments";
             var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Get);
+            var content = response.Content;
+            var jsonString = await content.ReadAsStringAsync();
+            // Parse the JSON string to a JArray
+            var jsonObject = JObject.Parse(jsonString);
+            var servicesArray = jsonObject["value"] as JArray;
 
-            if (!response.IsSuccessStatusCode)
-                return new List<BookingAppointment>();
+            // Convert JArray to List<BookingService> with our custom settings
+            var settings = new JsonSerializerSettings
+            {
+                Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter()
+                        },
+                NullValueHandling = NullValueHandling.Ignore
+            };
 
-            var content = await response.Content.ReadAsStringAsync();
-            var jsonObject = JObject.Parse(content);
-            var appointmentsArray = jsonObject["value"] as JArray;
-            return appointmentsArray.ToObject<List<BookingAppointment>>();
+            List<BookingAppointmentCustomed> servicesList = servicesArray.ToObject<List<BookingAppointmentCustomed>>(
+                JsonSerializer.Create(settings));
+            //Filtrar los servicios por el email del cliente
+            servicesList = servicesList.Where(a => a.CustomerEmailAddress.Equals(email, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            return servicesList;
         }
 
         public static async Task Cancel_MSBookingsAppointment(string appointmentId)
@@ -526,18 +541,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 throw new Exception("No se pudo modificar la reserva.");
         }
 
-        // Inside the MisReservas method, replace the User.Identity check with the following:
-        public static async Task<ActionResult> MisReservas(IPrincipal user, IDictionary<string, object> MSBookingsTempData)
-        {
-            if (!user.Identity.IsAuthenticated)
-            {
-                MSBookingsTempData["Error"] = "Debes iniciar sesión para ver tus reservas.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            var appointments = MSBookings_Actions.GetAppointmentsByEmail(user.Identity.Name);
-            return View(appointments);
-        }
 
         private static ActionResult View(JArray appointments)
         {
@@ -549,10 +552,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             throw new NotImplementedException();
         }
 
-        public static JArray GetAppointmentsByEmail(string email)
-        {
-            return new JArray(); // Retorna una lista vacía por ahora
-        }
 
         internal static IEnumerable<object> Get_MSBookingsStaffMembers()
         {

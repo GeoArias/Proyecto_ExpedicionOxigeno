@@ -279,20 +279,67 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             if (!User.Identity.IsAuthenticated)
             {
-                TempData["Error"] = "Debes iniciar sesión para ver tus reservas.";
+                TempData["Error"] = "Debes iniciar sesión.";
                 return RedirectToAction("Login", "Account");
             }
 
-            var appointments = MSBookings_Actions.GetAppointmentsByEmail(User.Identity.Name);
-            return View(appointments);
+            try
+            {
+                var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
+
+                var userAppointments = await MSBookings_Actions.GetAppointmentsByEmail(user.Email);
+
+
+
+
+                return View(userAppointments);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error al cargar reservas: " + ex.Message;
+                return View(new List<Microsoft.Graph.Models.BookingAppointment>());
+            }
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CancelarReserva(string id)
         {
-            await MSBookings_Actions.Cancel_MSBookingsAppointment(id);
-            TempData["Success"] = "Reserva cancelada correctamente.";
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para cancelar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                if (string.IsNullOrEmpty(id))
+                {
+                    TempData["Error"] = "ID de reserva no válido.";
+                    return RedirectToAction("MisReservas");
+                }
+
+                await MSBookings_Actions.Cancel_MSBookingsAppointment(id);
+
+                // También actualizar el sello relacionado si existe
+                var db = new ApplicationDbContext();
+                var sello = db.Sellos.FirstOrDefault(s => s.ReservaId == id);
+                if (sello != null)
+                {
+                    // Marcar el sello como no válido o eliminarlo
+                    db.Sellos.Remove(sello);
+                    db.SaveChanges();
+                }
+
+                TempData["Success"] = "Reserva cancelada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al cancelar la reserva: {ex.Message}";
+            }
+
             return RedirectToAction("MisReservas");
         }
 
@@ -300,13 +347,58 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ModificarReserva(string id, string nuevaFecha, string nuevaHoraInicio, string nuevaHoraFin)
         {
-            DateTime inicio = DateTime.Parse($"{nuevaFecha} {nuevaHoraInicio}");
-            DateTime fin = DateTime.Parse($"{nuevaFecha} {nuevaHoraFin}");
-            await MSBookings_Actions.Modify_MSBookingsAppointment(id, inicio, inicio, fin);
-            TempData["Success"] = "Reserva modificada correctamente.";
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para modificar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(nuevaFecha) ||
+                    string.IsNullOrEmpty(nuevaHoraInicio) || string.IsNullOrEmpty(nuevaHoraFin))
+                {
+                    TempData["Error"] = "Todos los campos son obligatorios.";
+                    return RedirectToAction("MisReservas");
+                }
+
+                // Validar que la fecha no sea anterior a hoy
+                DateTime fechaSeleccionada = DateTime.Parse(nuevaFecha);
+                if (fechaSeleccionada.Date < DateTime.Today)
+                {
+                    TempData["Error"] = "No puedes modificar una reserva para una fecha pasada.";
+                    return RedirectToAction("MisReservas");
+                }
+
+                // Construir las fechas y horas completas
+                DateTime nuevaHoraInicioCompleta = DateTime.Parse($"{nuevaFecha} {nuevaHoraInicio}");
+                DateTime nuevaHoraFinCompleta = DateTime.Parse($"{nuevaFecha} {nuevaHoraFin}");
+
+                // Validar que la hora de inicio sea anterior a la hora de fin
+                if (nuevaHoraInicioCompleta >= nuevaHoraFinCompleta)
+                {
+                    TempData["Error"] = "La hora de inicio debe ser anterior a la hora de fin.";
+                    return RedirectToAction("MisReservas");
+                }
+
+                // Validar que la nueva hora no sea en el pasado
+                if (nuevaHoraInicioCompleta <= DateTime.Now)
+                {
+                    TempData["Error"] = "No puedes modificar una reserva para un horario pasado.";
+                    return RedirectToAction("MisReservas");
+                }
+
+                await MSBookings_Actions.Modify_MSBookingsAppointment(id, fechaSeleccionada, nuevaHoraInicioCompleta, nuevaHoraFinCompleta);
+
+                TempData["Success"] = "Reserva modificada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al modificar la reserva: {ex.Message}";
+            }
+
             return RedirectToAction("MisReservas");
         }
-
         // Método auxiliar para generar slots disponibles según duración del servicio
         private async Task<List<TimeSlot>> GenerateAvailableTimeSlotsAsync(BookingStaffAvailabilityCollectionResponse staffAvailability, TimeSpan serviceDuration, DateTime selectedDate)
         {

@@ -351,6 +351,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\BookingAppointmentCustomed.cs" />
     <Compile Include="Models\BookingStaffAvailability.cs" />
     <Compile Include="Models\CodigoQR.cs" />
     <Compile Include="Models\Estado.cs" />
