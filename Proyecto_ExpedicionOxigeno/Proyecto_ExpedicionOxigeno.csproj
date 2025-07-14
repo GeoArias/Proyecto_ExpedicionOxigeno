@@ -435,6 +435,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\BookingAppointmentCustom\" />
+    <Folder Include="Views\GraphDurationConverter\" />
     <Folder Include="Views\MSBookings_Actions\" />
   </ItemGroup>
   <ItemGroup>
