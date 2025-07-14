@@ -12,11 +12,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Francy&display=swap" rel="stylesheet">
 
-
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/brands.js" integrity="sha384-sCI3dTBIJuqT6AwL++zH7qL8ZdKaHpxU43dDt9SyOzimtQ9eyRhkG3B7KMl6AO19" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js" integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c" crossorigin="anonymous"></script>
 
     <style>
 
-      
+
 
         .btn-Primary-ExpOxi {
             background-color: rgb(250, 143, 35) !important;
@@ -194,164 +195,162 @@
         }
 
         /* ===== ESTILOS DEL FOOTER ===== */
-        footer {
-            background-color: var(--azul-fondo);
-            color: var(--blanco);
-            padding: 50px 20px 20px;
-            font-family: 'Francy', sans-serif;
-            margin-top: 50px;
+        .footer-section {
+            background: linear-gradient(to right, #0f0829, #1a1245);
+            color: #fff;
+            padding: 60px 0 20px;
             position: relative;
-            z-index: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            border-radius: 12px;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
         }
 
-            footer h3 {
-                font-size: 20px;
+            .footer-section::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 5px;
+                background: linear-gradient(to right, #fa8f23, #28a745);
+            }
+
+            .footer-section h3 {
+                color: #fff;
+                font-size: 1.5rem;
                 font-weight: 600;
-                color: #28a745;
                 margin-bottom: 20px;
-                font-family: 'Francy', sans-serif;
-                border-bottom: 2px solid #28a745;
-                padding-bottom: 8px;
-                display: inline-block;
+                position: relative;
+                padding-bottom: 10px;
             }
 
-            footer h5 {
-                font-family: 'Francy', sans-serif;
-                color: var(--blanco) !important;
-                margin-top: 20px;
-                margin-bottom: 15px;
-            }
-
-            footer p {
-                font-family: 'Francy', sans-serif;
-                color: #ccc;
-                line-height: 1.6;
-                margin-bottom: 15px;
-                font-size: 16px; /* ⬅ Mejora de legibilidad */
-            }
-
-        .column.contact-about img {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .column.contact-about ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 20px 0;
-        }
-
-            .column.contact-about ul li {
-                margin-bottom: 15px;
-                font-family: 'Francy', sans-serif;
-            }
-
-                .column.contact-about ul li p {
-                    margin: 0;
-                    color: #ccc;
-                    font-size: 16px;
+                .footer-section h3::after {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    bottom: 0;
+                    width: 50px;
+                    height: 3px;
+                    background: #fa8f23;
                 }
 
-                .column.contact-about ul li a {
-                    color: #28a745;
-                    text-decoration: none;
-                    transition: color 0.3s ease;
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+            .info-item i {
+                color: #fa8f23;
+                font-size: 1.2rem;
+                margin-right: 15px;
+                width: 20px;
+            }
+
+            .info-item a {
+                color: #28a745;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            }
+
+                .info-item a:hover {
+                    color: #fa8f23;
                 }
 
-                    .column.contact-about ul li a:hover {
-                        color: var(--blanco);
-                    }
+        .social-media {
+            margin-top: 30px;
+        }
+
+            .social-media h4 {
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
 
         .social-icons {
             display: flex;
             gap: 15px;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
         }
 
-            .social-icons a {
-                display: flex; /* ← para centrar imagen dentro */
-                justify-content: center;
-                align-items: center;
-                transition: transform 0.3s ease;
-                border-radius: 50%;
-                width: 60px; /* ⬅ Hacerlo perfectamente redondo */
-                height: 60px;
-                padding: 0;
-                background-color: rgba(255, 255, 255, 0.1);
-                overflow: hidden;
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+            .social-icon:hover {
+                transform: translateY(-5px);
+                background: #fa8f23;
+                color: #fff;
             }
 
-                .social-icons a:hover {
-                    transform: translateY(-3px);
-                    background-color: #28a745;
+        .about-section p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .location-section .address {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+            .location-section .address i {
+                color: #fa8f23;
+                margin-right: 10px;
+                margin-top: 3px;
+            }
+
+        .map-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-bottom {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Make it responsive */
+        @@media (max-width: 768px) {
+            .footer-section .col-md-4 {
+                margin-bottom: 30px;
+            }
+
+            .footer-section h3 {
+                text-align: center;
+            }
+
+                .footer-section h3::after {
+                    left: 50%;
+                    transform: translateX(-50%);
                 }
 
-            .social-icons img {
-                width: 28px;
-                height: 28px;
-                object-fit: contain;
-                border-radius: 50%;
+            .info-item, .social-icons {
+                justify-content: center;
             }
 
-        .column.address {
-            text-align: center;
-            background: rgba(40, 167, 69, 0.1);
-            padding: 30px;
-            border-radius: 12px;
-            border: 2px solid rgba(40, 167, 69, 0.3);
+            .about-section, .location-section {
+                text-align: center;
+            }
+
+                .location-section .address {
+                    justify-content: center;
+                }
         }
-
-            .column.address h3 {
-                font-size: 22px;
-                margin-bottom: 15px;
-                color: var(--blanco);
-                border-bottom: 2px solid #28a745;
-            }
-
-            .column.address p {
-                font-size: 20px;
-                font-weight: 600;
-                color: var(--blanco);
-                margin-bottom: 20px;
-                font-family: 'Francy', sans-serif;
-            }
-
-            .column.address iframe {
-                width: 100%;
-                height: 200px;
-                border: 2px solid #28a745;
-                border-radius: 8px;
-                margin-top: 15px;
-            }
-
-        footer center {
-            grid-column: 1 / -1;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            padding-top: 25px;
-            margin-top: 20px;
-        }
-
-            footer center p {
-                color: #ccc;
-                font-size: 14px;
-                font-family: 'Francy', sans-serif;
-                margin: 0;
-            }
-
         /* Responsive para móviles */
         @@media (max-width: 768px) {
             footer {
@@ -530,40 +529,59 @@
     <div class="container body-content">
         @RenderBody()
         <hr />
-        <footer>
-            <div class="column contact-about">
-                <ul>
-                    <li><p>Correo: <a href="mailto:expedicion@gmail.com?subject=Consulta%20-%20Expedici%C3%B3n%20Ox%C3%ADgeno">expedicion@gmail.com</a></p></li>
-                    <li><p>Teléfono: <a href="tel:+50625202100">2520-2100</a></p></li>
-                </ul>
-                <h5 style="color: #000;">También podés encontrarnos en redes sociales:</h5>
-                <div class="d-flex flex-column align-items-center gap-3 mt-3">
-                    <!-- Íconos sociales -->
-                    <div class="social-icons">
-                        <a href="https://www.facebook.com/OxigenoCostaRica" target="_blank" title="Ir a Facebook">
-                            <img src="~/Content/Images/icon_Facebook.png" alt="Facebook" />
-                        </a>
-                        <a href="https://www.instagram.com/oxigenocr/" target="_blank" title="Ir a Instagram">
-                            <img src="~/Content/Images/icon_Instagram.png" alt="Instagram" />
-                        </a>
+        <footer class="footer-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="contact-info">
+                            <h3>Contáctanos</h3>
+                            <div class="info-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>Correo: <a href="mailto:expedicion@gmail.com">oxigeno.expedicion@gmail.com</a></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-phone-alt"></i>
+                                <span>Teléfono: <a href="tel:+50625202100">2520-2100</a></span>
+                            </div>
+                            <div class="social-media">
+                                <h4>Síguenos</h4>
+                                <div class="social-icons">
+                                    <a href="https://www.facebook.com/OxigenoCostaRica" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                                    <a href="https://www.instagram.com/oxigenocr/" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Texto institucional -->
-                    <div class="text-center px-3">
-                        <h3>¿Quiénes somos?</h3>
-                        <p>
-                            Expedición Oxígeno es una atracción de aventura ubicada en el O2 de Oxígeno, la cual alberga 3 actividades cuyo propósito es proveer diversión y adrenalina a un público de todas las edades. Lo único que necesitás es cumplir con la estatura mínima para cada una de las actividades.
-                        </p>
+                    <div class="col-md-4">
+                        <div class="about-section">
+                            <h3>¿Quiénes somos?</h3>
+                            <p>Expedición Oxígeno es una atracción de aventura ubicada en el O2 de Oxígeno, ofreciendo 3 actividades llenas de diversión y adrenalina para todas las edades.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="location-section">
+                            <h3>Dirección</h3>
+                            <p class="address"><i class="fas fa-map-marker-alt"></i> Centro Comercial Oxígeno, Heredia, San Francisco</p>
+                            <div class="map-container">
+                                <!-- Replace with the existing Google Maps iframe or code -->
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.4627968246337!2d-84.1316062!3d9.9876543!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8fa0fb079812c78d%3A0x1c0e5d7b730cc84!2sCentro%20Comercial%20Ox%C3%ADgeno!5e0!3m2!1ses!2scr!4v1656423077851!5m2!1ses!2scr" width="100%" height="150" style="border:0;" loading="lazy"></iframe>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-            </div>
-            <div class="column address">
-                <h3>Dirección</h3>
-                <p>Heredia, San Francisco</p>
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4297.640276655829!2d-84.13384462458062!3d9.99444979011064!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8fa0fae4d6f2f3c9%3A0xca979eb2e17fba1d!2sCentro%20Comercial%20Ox%C3%ADgeno!5e1!3m2!1ses-419!2scr!4v1751737305409!5m2!1ses-419!2scr" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <div class="footer-bottom">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="copyright">© 2023 Expedición Oxígeno. Todos los derechos reservados.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </footer>
+
     </div>
 
     <!-- Modal de Log in -->
