@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 
 
@@ -427,7 +428,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         //
         //  Microsoft Bookings: Appointments
         //
-        public static async Task<BookingAppointment> Create_MSBookingsAppointment(
+        public static async Task<HttpResponseMessage> Create_MSBookingsAppointment(
             string serviceId,
             string staffId,
             DateTime start,
@@ -436,10 +437,10 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             string customerEmail,
             string customerPhone)
         {
-            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments";
+            string url = $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/appointments";
             var appointment = new 
             {
-                ServiceId = serviceId,
+                serviceId = serviceId,
                 staffMemberIds = new List<string> { staffId },
                 start = new 
                 {
@@ -458,7 +459,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             var settings = new JsonSerializerSettings
             {
-                NullValueHandling = NullValueHandling.Ignore
+                Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter()
+                        },
+                NullValueHandling = NullValueHandling.Ignore,
+
             };
             string jsonData = JsonConvert.SerializeObject(appointment, settings);
             var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
@@ -467,8 +473,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             if (!response.IsSuccessStatusCode)
                 throw new Exception("No se pudo crear la reserva en MS Bookings.");
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<BookingAppointment>(responseContent);
+            return response;
         }
         
         

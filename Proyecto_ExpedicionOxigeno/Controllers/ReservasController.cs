@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
@@ -184,7 +185,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 string selectedStaffId = availableStaff[rnd.Next(availableStaff.Count)];
 
                 // Crear la reserva en MS Bookings
-                var appointment = await MSBookings_Actions.Create_MSBookingsAppointment(
+                HttpResponseMessage appointment = await MSBookings_Actions.Create_MSBookingsAppointment(
                     serviceId,
                     selectedStaffId,
                     slotStart,
@@ -193,10 +194,14 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     email,
                     telefono
                 );
-
-                // Puedes guardar el appointment.Id si lo necesitas para mostrarlo después
-                TempData["Success"] = "¡Reserva confirmada con éxito!";
-                // Si quieres mostrar el ID: TempData["AppointmentId"] = appointment.Id;
+                if (appointment.IsSuccessStatusCode)
+                {
+                    TempData["Success"] = "¡Reserva confirmada con éxito!";
+                }
+                else
+                {
+                    TempData["Error"] = "Ha ocurrido un error: " + appointment.ReasonPhrase;
+                }
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
