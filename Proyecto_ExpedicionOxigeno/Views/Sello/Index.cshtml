@@ -1,0 +1,183 @@
+﻿@model IEnumerable<Proyecto_ExpedicionOxigeno.Models.Sello>
+@{
+    ViewBag.Title = "Mis Sellos";
+    var estadisticas = ViewBag.Estadisticas as Proyecto_ExpedicionOxigeno.Services.EstadisticasSellos;
+    var pases = ViewBag.Pases as IEnumerable<Proyecto_ExpedicionOxigeno.Models.PaseExpedicion>;
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-stamp"></i> Mis Sellos de Expedición</h2>
+
+    <!-- Panel de estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>@estadisticas.SellosActivos</h3>
+                    <p>Sellos Activos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>@estadisticas.SellosTotal</h3>
+                    <p>Sellos Totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>@estadisticas.PasesDisponibles</h3>
+                    <p>Pases Disponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>@estadisticas.SellosRestantes</h3>
+                    <p>Sellos para Pase</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progreso hacia el próximo pase -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-trophy"></i> Progreso hacia Pase de Expedición</h5>
+        </div>
+        <div class="card-body">
+            <div class="progress mb-2">
+                <div class="progress-bar" role="progressbar"
+                     style="width: @((estadisticas.SellosActivos * 100) / 5)%"
+                     aria-valuenow="@estadisticas.SellosActivos"
+                     aria-valuemin="0"
+                     aria-valuemax="5">
+                    @estadisticas.SellosActivos/5
+                </div>
+            </div>
+            <small class="text-muted">
+                @if (estadisticas.SellosRestantes > 0)
+                {
+                    <span>Te faltan @estadisticas.SellosRestantes sellos para obtener un pase gratuito</span>
+                }
+                else
+                {
+                    <span class="text-success">¡Ya tienes suficientes sellos para generar un pase!</span>
+                }
+            </small>
+        </div>
+    </div>
+
+    <!-- Pases disponibles -->
+    @if (pases != null && pases.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-ticket-alt"></i> Mis Pases de Expedición</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var pase in pases.Where(p => !p.Utilizado && p.FechaExpiracion > DateTime.Now))
+                    {
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Pase Válido</h6>
+                                    <p class="h4 text-success">@pase.CodigoPase</p>
+                                    <small class="text-muted">
+                                        Válido hasta: @pase.FechaExpiracion.ToString("dd/MM/yyyy")
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Historial de sellos -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-history"></i> Historial de Sellos</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Servicio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sello in Model)
+                            {
+                                <tr>
+                                    <td>@sello.FechaObtencion.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@sello.Servicio</td>
+                                    <td>
+                                        @if (sello.UsadoEnPase)
+                                        {
+                                            <span class="badge badge-secondary">Usado en Pase</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-success">Disponible</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                onclick="mostrarQR('@sello.CodigoQR')">
+                                            <i class="fas fa-qrcode"></i> Ver QR
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-stamp fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No tienes sellos aún</h5>
+                    <p class="text-muted">Completa una reserva y valida tu código QR para obtener tu primer sello</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal para mostrar QR -->
+<div class="modal fade" id="qrModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Código QR del Sello</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="qrImage" src="" alt="Código QR" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function mostrarQR(codigo) {
+    document.getElementById('qrImage').src = '@Url.Action("GenerarQR", "Sello")?codigo=' + codigo;
+    $('#qrModal').modal('show');
+}
+</script>

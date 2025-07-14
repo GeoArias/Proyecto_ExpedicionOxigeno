@@ -1,0 +1,58 @@
+﻿@model Newtonsoft.Json.Linq.JToken
+@{
+    ViewBag.Title = "Mis Reservas";
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-calendar-alt"></i> Mis Reservas</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var appointment in Model)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>@appointment["service"]["displayName"]</h5>
+                            <small class="text-muted">@appointment["id"]</small>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Fecha:</strong> @DateTime.Parse(appointment["start"]["dateTime"].ToString()).ToString("dd/MM/yyyy HH:mm")</p>
+                            <p><strong>Duración:</strong> @appointment["service"]["defaultDuration"]</p>
+                            <p>
+                                <strong>Estado:</strong>
+                                <span class="badge badge-@(appointment["status"].ToString() == "confirmed" ? "success" : "warning")">
+                                    @appointment["status"]
+                                </span>
+                            </p>
+
+                            @if (appointment["status"].ToString() == "confirmed")
+                            {
+                                <hr>
+                                <div class="qr-section">
+                                    <h6><i class="fas fa-qrcode"></i> Código QR para Sello</h6>
+                                    <div class="text-center">
+                                        <img src="@Url.Action("ObtenerQRReserva", "BookingsAppointment", new { reservaId = appointment["id"] })"
+                                             alt="QR Code" class="img-fluid" style="max-width: 150px;">
+                                    </div>
+                                    <small class="text-muted">
+                                        Presenta este código QR al finalizar tu servicio para obtener tu sello
+                                    </small>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No tienes reservas</h5>
+            <p class="text-muted">Haz una reserva para comenzar a acumular sellos</p>
+        </div>
+    }
+</div>

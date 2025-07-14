@@ -40,5 +40,9 @@ namespace Proyecto_ExpedicionOxigeno.Models
         public DbSet<Contacto> Contactos { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<PuntosFidelidad> PuntosFidelidad { get; set; }
+        public DbSet<Sello> Sellos { get; set; }
+        public DbSet<CodigoQR> CodigosQR { get; set; }
+        public DbSet<ValidacionQR> ValidacionesQR { get; set; }
+        public DbSet<PaseExpedicion> PasesExpedicion { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using Owin;
 using Proyecto_ExpedicionOxigeno.Models;
 using System;
 using System.Configuration;
+using System.Linq;
 
 namespace Proyecto_ExpedicionOxigeno
 {
@@ -18,6 +19,46 @@ namespace Proyecto_ExpedicionOxigeno
         private static string redirectUri = ConfigurationManager.AppSettings["ida:RedirectUri"];
         private static string graphScopes = "https://graph.microsoft.com/.default";
 
+        protected void Application_Start()
+        {
+            // ... otras configuraciones existentes ...
+
+            // Registrar servicios de sellos
+            Proyecto_ExpedicionOxigeno.App_Start.SelloConfig.RegisterServices();
+
+            // Configurar tareas automáticas (opcional)
+            ConfigurarTareasAutomaticas();
+        }
+
+        private void ConfigurarTareasAutomaticas()
+        {
+            // Configurar limpieza automática de QR expirados (ejecutar diariamente)
+            System.Threading.Tasks.Task.Run(async () =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        using (var context = new ApplicationDbContext())
+                        {
+                            var qrExpirados = context.CodigosQR
+                                .Where(q => q.FechaExpiracion < DateTime.Now && !q.Validado)
+                                .ToList();
+
+                            context.CodigosQR.RemoveRange(qrExpirados);
+                            await context.SaveChangesAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error en limpieza automática: {ex.Message}");
+                    }
+
+                    // Esperar 24 horas
+                    await System.Threading.Tasks.Task.Delay(TimeSpan.FromHours(24));
+                }
+            });
+        }
 
         public void ConectionGraph()
         {

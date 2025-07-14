@@ -268,6 +268,12 @@
     <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
     </Reference>
+    <Reference Include="zxing, Version=0.16.10.0, Culture=neutral, PublicKeyToken=4e88037ac681fe60, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZXing.Net.0.16.10\lib\net48\zxing.dll</HintPath>
+    </Reference>
+    <Reference Include="zxing.presentation, Version=0.16.10.0, Culture=neutral, PublicKeyToken=4e88037ac681fe60, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZXing.Net.0.16.10\lib\net48\zxing.presentation.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Owin.Security.Cookies">
@@ -280,6 +286,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\SelloConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdministracionController.cs" />
@@ -289,11 +296,15 @@
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\MSBookings_Actions.cs" />
     <Compile Include="Controllers\ReservasController.cs" />
+    <Compile Include="Controllers\SelloController.cs" />
     <Compile Include="Controllers\ServiciosController.cs" />
+    <Compile Include="Controllers\WebhookController.cs" />
+    <Compile Include="Extensions\SelloExtensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="GraphTokenCache.cs" />
+    <Compile Include="Helpers\BookingsQRHelper.cs" />
     <Compile Include="Helpers\GraphApiHelper.cs" />
     <Compile Include="Helpers\GraphTimeConverter.cs" />
     <Compile Include="Helpers\GraphTimeSpanConverter.cs" />
@@ -334,16 +345,25 @@
     <Compile Include="Migrations\202507132321443_Add_MSBookingsGUIDStaff.Designer.cs">
       <DependentUpon>202507132321443_Add_MSBookingsGUIDStaff.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202507141655382_AddSistemaSellos.cs" />
+    <Compile Include="Migrations\202507141655382_AddSistemaSellos.Designer.cs">
+      <DependentUpon>202507141655382_AddSistemaSellos.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\BookingStaffAvailability.cs" />
+    <Compile Include="Models\CodigoQR.cs" />
     <Compile Include="Models\Estado.cs" />
     <Compile Include="Models\ExpediCheckContext.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Contacto.cs" />
+    <Compile Include="Models\PaseExpedicion.cs" />
     <Compile Include="Models\Review.cs" />
+    <Compile Include="Models\Sellos.cs" />
+    <Compile Include="Models\ValidacionQR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\SelloService.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Models\PuntosFidelidad.cs" />
   </ItemGroup>
@@ -432,12 +452,16 @@
     <Content Include="Views\Reservas\ConfirmarHorario.cshtml" />
     <Content Include="Views\Reservas\MisReservas.cshtml" />
     <Content Include="Views\Reservas\Confirmacion.cshtml" />
+    <Content Include="Views\Sello\Index.cshtml" />
+    <Content Include="Views\Sello\EscanearQR.cshtml" />
+    <Content Include="Views\BookingsAppointment\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Views\BookingAppointmentCustom\" />
     <Folder Include="Views\GraphDurationConverter\" />
     <Folder Include="Views\MSBookings_Actions\" />
+    <Folder Include="Views\Webhook\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202506170558195_MigracionInicial.resx">
@@ -466,6 +490,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202507132321443_Add_MSBookingsGUIDStaff.resx">
       <DependentUpon>202507132321443_Add_MSBookingsGUIDStaff.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507141655382_AddSistemaSellos.resx">
+      <DependentUpon>202507141655382_AddSistemaSellos.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
