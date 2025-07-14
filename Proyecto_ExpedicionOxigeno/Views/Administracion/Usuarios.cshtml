@@ -7,7 +7,12 @@
     ViewBag.Title = "Administrar Usuarios";
     var userManager = HttpContext.Current.GetOwinContext().GetUserManager<Proyecto_ExpedicionOxigeno.ApplicationUserManager>();
 }
-
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger animate__animated animate__shakeX">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+    </div>
+}
 <h2>Administrar Usuarios</h2>
 
 <table class="table table-bordered table-striped">

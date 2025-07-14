@@ -330,6 +330,10 @@
     <Compile Include="Migrations\202507050332505_AddServicioToReview.Designer.cs">
       <DependentUpon>202507050332505_AddServicioToReview.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202507132321443_Add_MSBookingsGUIDStaff.cs" />
+    <Compile Include="Migrations\202507132321443_Add_MSBookingsGUIDStaff.Designer.cs">
+      <DependentUpon>202507132321443_Add_MSBookingsGUIDStaff.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\BookingStaffAvailability.cs" />
@@ -455,6 +459,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202507050332505_AddServicioToReview.resx">
       <DependentUpon>202507050332505_AddServicioToReview.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507132321443_Add_MSBookingsGUIDStaff.resx">
+      <DependentUpon>202507132321443_Add_MSBookingsGUIDStaff.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -1,8 +1,13 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Graph.Models;
+using Proyecto_ExpedicionOxigeno.Models;
 using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -189,7 +194,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // GET: Administracion/EditarRolUsuario
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult EditarRolUsuario(string UserId, string SelectedRole)
+        public async Task<ActionResult> EditarRolUsuario(string UserId, string SelectedRole)
         {
             if (!User.IsInRole("Administrador"))
             {
@@ -197,11 +202,73 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
 
             var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            var user = userManager.FindById(UserId);
+            ApplicationUser user = userManager.FindById(UserId);
             if (user == null)
             {
                 return HttpNotFound();
             }
+
+            var previousRole = userManager.GetRoles(UserId).FirstOrDefault();
+
+
+            // Conseguir el GUID del MS Bookings StaffMember y si no existe, crear uno nuevo
+            BookingStaffMember staffWithEmail = await MSBookings_Actions.Get_MSBookingsStaffByEmail(user.Email);
+
+            switch (previousRole)
+            {
+                case "Administrador":
+                    if (user.Email.ToLower().Trim() != ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim())
+                    {
+                        if (SelectedRole == "Usuario" && staffWithEmail != null)
+                        {
+
+                            // Si el usuario era Administrador, y ahora Usuario, eliminarlo de MS Bookings
+                            await MSBookings_Actions.Delete_MSBookingsStaff(staffWithEmail.Id);
+                        }
+                    }
+                    else
+                    {
+                        TempData["Error"] = "No se puede eliminar el administrador primario.";
+                        return RedirectToAction("Usuarios");
+                    }
+                    break;
+                case "Usuario":
+                    if ((SelectedRole == "Administrador" || SelectedRole == "Empleado") && staffWithEmail == null)
+                    {
+                        // Si el usuario era Usuario, y ahora Administrador o Empleado, crearlo en MS Bookings
+                        var newStaff = new
+                        {
+                            DisplayName = user.Nombre,
+                            EmailAddress = user.Email,
+                            Role = "administrator",
+                        };
+                        HttpResponseMessage resultCreate = await MSBookings_Actions.Create_MSBookingsStaff(newStaff);
+                        if (!resultCreate.IsSuccessStatusCode)
+                        {
+                            TempData["Error"] = "Error al crear Staff en MSBookings:\n" + resultCreate.ReasonPhrase;
+                            return RedirectToAction("Usuarios");
+                        }
+                        staffWithEmail = await MSBookings_Actions.Get_MSBookingsStaffByEmail(user.Email);
+                        user.MsBookingsId = Guid.Parse(staffWithEmail.Id);
+                    }
+                    break;
+                case "Empleado":
+                    if (SelectedRole == "Usuario" && staffWithEmail != null)
+                    {
+                        // Si el usuario era Empleado, y ahora Usuario, eliminarlo de MS Bookings
+                        await MSBookings_Actions.Delete_MSBookingsStaff(staffWithEmail.Id);
+                    }
+                    break;
+            }
+            
+            var result = userManager.Update(user);
+            if (!result.Succeeded)
+            {
+                TempData["Mensaje"] = "Error al actualizar el ID de reservas: " + string.Join(", ", result.Errors);
+            }
+
+
+
 
             // Obtener los roles actuales del usuario
             var currentRoles = userManager.GetRoles(UserId);
@@ -217,6 +284,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             {
                 userManager.AddToRole(UserId, SelectedRole);
             }
+
 
             TempData["Mensaje"] = "Rol actualizado correctamente.";
             return RedirectToAction("Usuarios");

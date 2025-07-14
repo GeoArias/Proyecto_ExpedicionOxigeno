@@ -8,6 +8,7 @@ using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web.Services.Description;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
@@ -176,7 +177,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         //
         //  Microsoft Bookings: Staff/People
         //
-        public static async Task<List<BookingStaffMember>> Get_MSBookingsStaff()
+        public static async Task<List<BookingStaffMember>> Get_MSBookingsStaffs()
         {
             try
             {
@@ -204,12 +205,114 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 throw new Exception($"Error inesperado: {ex.Message}", ex);
             }
         }
-
-        public static async Task<HttpResponseMessage> Create_MSBookingsStaff(BookingStaffMember staff)
+        public static async Task<BookingStaffMember> Get_MSBookingsStaff(string staffID)
         {
             try
             {
-                string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers";
+                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers/{staffID}", HttpMethod.Get);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var settings = new JsonSerializerSettings
+                    {
+                        Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter()
+                        },
+                        NullValueHandling = NullValueHandling.Ignore
+                    };
+                    return JObject.Parse(content).ToObject<BookingStaffMember>(
+                        JsonSerializer.Create(settings));
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
+        }
+        public static async Task<BookingStaffMember> Get_MSBookingsStaffByEmail(string email)
+        {
+            try
+            {
+                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/staffMembers?$filter=EmailAddress eq '{email}'", HttpMethod.Get);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var jsonObject = JObject.Parse(content);
+                    var staffArray = jsonObject["value"] as JArray;
+                    // Convert JArray to List<BookingStaffMember>
+                    BookingStaffMember staff = staffArray.ToObject<List<BookingStaffMember>>().FirstOrDefault();
+                    return staff;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
+        }
+        public static async Task<HttpResponseMessage> Delete_MSBookingsStaff(string staffId)
+        {
+            try
+            {
+                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers/{staffId}", HttpMethod.Delete);
+                return response;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
+        }
+        public static async Task<HttpResponseMessage> Update_MSBookingsStaff(string staffId, BookingStaffMember staff)
+        {
+            try
+            {
+                var settings = new JsonSerializerSettings
+                {
+                    Converters = new List<JsonConverter> {
+                        new GraphTimeSpanConverter(),
+                        new GraphTimeConverter()
+                    },
+                    NullValueHandling = NullValueHandling.Ignore
+                };
+                string jsonData = JsonConvert.SerializeObject(staff, settings);
+                var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
+                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/staffMembers/{staffId}", HttpMethod.Put, content);
+                return response;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
+        }
+        public static async Task<HttpResponseMessage> Create_MSBookingsStaff(object staff)
+        {
+            try
+            {
+                string url = $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/staffMembers";
                 var settings = new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore
@@ -316,6 +419,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 throw new Exception($"Error inesperado: {ex.Message}", ex);
             }
         }
+
+
+
+        //
+        //  Microsoft Bookings: Appointment
+        //
 
 
     }
