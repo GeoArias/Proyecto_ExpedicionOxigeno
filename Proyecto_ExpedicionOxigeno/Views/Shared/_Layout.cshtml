@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNet.Identity
+@using Microsoft.AspNet.Identity.Owin
+@using Microsoft.Owin.Security
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -461,7 +464,9 @@
                     {
                         <li class="nav-item">
                             @{
-                                var nombre = ((System.Security.Claims.ClaimsIdentity)User.Identity).FindFirst("Nombre")?.Value;
+                                var userManager = HttpContext.Current.GetOwinContext().GetUserManager<Proyecto_ExpedicionOxigeno.ApplicationUserManager>();
+                                var currentUser = userManager.FindById(User.Identity.GetUserId());
+                                var nombre = currentUser?.Nombre ?? "Usuario";
                             }
                         </li>
                         <li class="nav-item">
@@ -480,11 +485,11 @@
                     else
                     {
                         @*<li class="nav-item">
-                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
-            </li>*@
+                                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
+                            </li>*@
                         <li class="nav-item">
                             <a class="btn btn-outline-light mx-1" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
                         </li>

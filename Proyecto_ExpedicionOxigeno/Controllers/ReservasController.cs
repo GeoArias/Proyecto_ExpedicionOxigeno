@@ -1,10 +1,18 @@
-﻿using Microsoft.Graph.Models;
+﻿using Azure;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Graph.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Proyecto_ExpedicionOxigeno.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
+using System.Web.UI.WebControls;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
@@ -104,9 +112,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // POST: Reservas/ElegirHorario
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ElegirHorario(string serviceId, string slotStart, string slotEnd)
+        public async Task<ActionResult> ElegirHorario(string serviceId, DateTime slotStart, DateTime slotEnd)
         {
-            if (string.IsNullOrEmpty(serviceId) || string.IsNullOrEmpty(slotStart) || string.IsNullOrEmpty(slotEnd))
+            if (string.IsNullOrEmpty(serviceId) || slotStart == null || slotEnd == null)
             {
                 TempData["Error"] = "Información incompleta para la reserva.";
                 return RedirectToAction("Index");
@@ -122,18 +130,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Parsear fechas
-                DateTime startTime, endTime;
-                if (!DateTime.TryParse(slotStart, out startTime) || !DateTime.TryParse(slotEnd, out endTime))
-                {
-                    TempData["Error"] = "Formato de fecha inválido.";
-                    return RedirectToAction("SeleccionarServicio", new { id = serviceId, fecha = DateTime.Today });
-                }
 
                 // Pasar los datos a la vista de confirmación
                 ViewBag.Servicio = servicio;
-                ViewBag.SlotStart = startTime;
-                ViewBag.SlotEnd = endTime;
+                ViewBag.SlotStart = slotStart;
+                ViewBag.SlotEnd = slotEnd;
 
                 return View("ConfirmarHorario");
             }
@@ -147,9 +148,15 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // POST: Reservas/ConfirmarReserva
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ConfirmarReserva(string serviceId, DateTime slotStart, DateTime slotEnd, string nombre, string email, string telefono)
+        public async Task<ActionResult> ConfirmarReserva(string serviceId, DateTime slotStart, DateTime slotEnd)
         {
-            if (string.IsNullOrEmpty(serviceId) || string.IsNullOrEmpty(nombre) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(telefono))
+            // Validar que el usuario esté autenticado
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para realizar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
+            if (string.IsNullOrEmpty(serviceId))
             {
                 TempData["Error"] = "Todos los campos son obligatorios.";
                 return RedirectToAction("Index");
@@ -180,6 +187,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("SeleccionarServicio", new { id = serviceId, fecha = slotStart.Date });
                 }
 
+                // Obtener el usuario logueado actualmente
+                ApplicationUserManager _userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                var user = await _userManager.FindByIdAsync(User.Identity.GetUserId());
+
+
                 // Seleccionar un staff al azar si hay varios disponibles
                 Random rnd = new Random();
                 string selectedStaffId = availableStaff[rnd.Next(availableStaff.Count)];
@@ -190,19 +202,48 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     selectedStaffId,
                     slotStart,
                     slotEnd,
-                    nombre,
-                    email,
-                    telefono
+                    user.Nombre,
+                    user.Email,
+                    user.Telefono
                 );
+
+
+
                 if (appointment.IsSuccessStatusCode)
                 {
+                    // Obtener la reserva creada
+                    var settings = new JsonSerializerSettings
+                    {
+                        Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter()
+                        },
+                        NullValueHandling = NullValueHandling.Ignore,
+
+                    };
+                    var responseContent = await appointment.Content.ReadAsStringAsync();
+
+
+                    // Convert JArray to List<BookingStaffMember>
+                    BookingAppointment appointmentMS = JObject.Parse(responseContent).ToObject<BookingAppointment>(
+                        JsonSerializer.Create(settings));
+
                     TempData["Success"] = "¡Reserva confirmada con éxito!";
+                    // Pasar los datos a la vista de confirmación
+                    ViewBag.Servicio = servicio;
+                    ViewBag.SlotStart = slotStart;
+                    ViewBag.SlotEnd = slotEnd;
+                    ViewBag.Booking = appointmentMS;
+
+                    return View("Confirmacion");
                 }
                 else
                 {
                     TempData["Error"] = "Ha ocurrido un error: " + appointment.ReasonPhrase;
+                    return RedirectToAction("Index");
                 }
-                return RedirectToAction("Index");
+
+
             }
             catch (Exception ex)
             {

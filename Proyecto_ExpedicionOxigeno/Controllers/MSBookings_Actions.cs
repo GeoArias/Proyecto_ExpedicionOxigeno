@@ -399,6 +399,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     // Deserialize the entire JSON response directly to BookingStaffAvailabilityCollectionResponse
                     var settings = new JsonSerializerSettings
                     {
+                        DateTimeZoneHandling = DateTimeZoneHandling.Local,
+                        DateFormatHandling =DateFormatHandling.IsoDateFormat,
+                        DateParseHandling = DateParseHandling.DateTime,
                         NullValueHandling = NullValueHandling.Ignore
                     };
 

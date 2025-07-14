@@ -6,92 +6,239 @@
     var fechaSeleccionada = (DateTime)ViewBag.FechaSeleccionada;
 }
 
-<h2>@ViewBag.Title</h2>
-
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <h4>@servicio.DisplayName</h4>
-                    <p class="text-muted mb-0">
-                        Duración:
-                        @if (servicio.DefaultDuration.Value.TotalHours >= 1)
-                        {
-                            @($"{Math.Floor(servicio.DefaultDuration.Value.TotalHours)} horas {servicio.DefaultDuration.Value.Minutes} minutos")
-                        }
-                        else
-                        {
-                            @($"{servicio.DefaultDuration.Value.Minutes} minutos")
-                        }
-                        | Precio: ₡@string.Format("{0:N0}", servicio.DefaultPrice)
-                    </p>
-                </div>
-                <div>
-                    <span class="badge bg-primary">@fechaSeleccionada.ToString("dd/MM/yyyy")</span>
-                </div>
-            </div>
-            <div class="card-body">
-                <p>@servicio.Description</p>
-
-                @if (TempData["Error"] != null)
-                {
-                    <div class="alert alert-danger">@TempData["Error"]</div>
-                }
-
-                <h5 class="mt-4">Selecciona un horario disponible:</h5>
-
-                @if (availableSlots != null && availableSlots.Any())
-                {
-                    <div class="row">
-                        @foreach (var slot in availableSlots)
-                        {
-                            <div class="col-md-4 col-sm-6 mb-3">
-                                <form action="@Url.Action("ElegirHorario", "Reservas")" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="serviceId" value="@servicio.Id" />
-                                    <input type="hidden" name="slotStart" value="@slot.StartTime" />
-                                    <input type="hidden" name="slotEnd" value="@slot.EndTime" />
-                                    <button type="submit" class="btn btn-outline-primary w-100">
-                                        @slot.StartTime.ToString("HH:mm") - @slot.EndTime.ToString("HH:mm")
-                                    </button>
-                                </form>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-info">
-                        No hay horarios disponibles para este servicio en la fecha seleccionada.
-                        <a href="@Url.Action("Index", "Reservas")" class="alert-link">Selecciona otra fecha</a> o contacta directamente con nosotros.
-                    </div>
-                }
-            </div>
-        </div>
+<div class="reservation-container">
+    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4">@ViewBag.Title</h1>
+        <p class="lead">Estamos a un paso más cerca de vivir la aventura juntos</p>
     </div>
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h4>Información</h4>
-            </div>
-            <div class="card-body">
-                <p>Selecciona el horario que más te convenga para tu reserva.</p>
-                <hr>
-                <h5>Nuestros horarios:</h5>
-                <ul>
-                    <li>Lunes a viernes: 1:00 pm - 7:00 pm</li>
-                    <li>Sábados y domingos: 12:00 pm - 7:00 pm</li>
-                </ul>
-                <hr>
-                <p>Si necesitas cancelar o modificar tu reserva, contáctanos con al menos 24 horas de anticipación.</p>
-                <div class="mt-3">
-                    <a href="@Url.Action("Index", "Reservas")" class="btn btn-outline-secondary">
-                        Cambiar servicio o fecha
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger animate__animated animate__shakeX">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-12">
+            <div class="service-detail-card animate__animated animate__fadeInUp">
+                <div class="service-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="service-title">@servicio.DisplayName</h3>
+                            <div class="service-meta">
+                                <span class="duration">
+                                    <i class="far fa-clock me-1"></i>
+                                    @if (servicio.DefaultDuration.Value.TotalHours >= 1)
+                                    {
+                                        @($"{Math.Floor(servicio.DefaultDuration.Value.TotalHours)}h {servicio.DefaultDuration.Value.Minutes}m")
+                                    }
+                                    else
+                                    {
+                                        @($"{servicio.DefaultDuration.Value.Minutes}m")
+                                    }
+                                </span>
+                                <span class="price">
+                                    <i class="fas fa-tag me-1"></i>
+                                    ₡@string.Format("{0:N0}", servicio.DefaultPrice)
+                                </span>
+                                <span class="date">
+                                    <i class="fas fa-calendar-day me-1"></i>
+                                    @fechaSeleccionada.ToString("dd/MM/yyyy")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="service-icon">
+                            @if (servicio.DisplayName.Contains("Escalada"))
+                            {
+                                <i class="fas fa-mountain"></i>
+                            }
+                            else if (servicio.DisplayName.Contains("Cuerdas"))
+                            {
+                                <i class="fas fa-route"></i>
+                            }
+                            else if (servicio.DisplayName.Contains("Glider"))
+                            {
+                                <i class="fas fa-wind"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-tree"></i>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="service-body">
+                    <p class="service-description">@servicio.Description</p>
+
+                    <h4 class="timeslot-header">
+                        <i class="fas fa-clock me-2"></i>Horarios disponibles
+                    </h4>
+
+                    @if (availableSlots != null && availableSlots.Any())
+                    {
+                        <div class="timeslots-container">
+                            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+                                @foreach (var slot in availableSlots)
+                                {
+                                    <div class="col animate__animated animate__fadeIn">
+                                        <form action="@Url.Action("ElegirHorario", "Reservas")" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="serviceId" value="@servicio.Id" />
+                                            <input type="hidden" name="slotStart" value="@slot.StartTime.ToString("o")" />
+                                            <input type="hidden" name="slotEnd" value="@slot.EndTime.ToString("o")" />
+                                            <button type="submit" class="timeslot-btn">
+                                                <span class="time-value">@slot.StartTime.ToString("hh:mm tt")</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info animate__animated animate__fadeIn">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No hay horarios disponibles para este servicio en la fecha seleccionada.
+                            <a href="@Url.Action("Index", "Reservas")" class="alert-link">Selecciona otra fecha</a> o contacta directamente con nosotros.
+                        </div>
+                    }
+
+                <div class="text-center mt-4">
+                    <a href="@Url.Action("Index", "Reservas")" class="btn btn-outline-secondary mx-1">
+                        <i class="fas fa-arrow-left me-2"></i>Cambiar servicio o fecha
                     </a>
+                </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* General styling */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .reservation-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Service detail card */
+    .service-detail-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .service-header {
+        background: linear-gradient(135deg, #F89026 0%, #D3901B 100%);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .service-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .service-icon {
+        font-size: 2.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .service-body {
+        padding: 2rem;
+    }
+
+    .service-description {
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+
+    /* Timeslots styling */
+    .timeslot-header {
+        color: #212529;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .timeslots-container {
+        margin-top: 1.5rem;
+    }
+
+    .timeslot-btn {
+        width: 100%;
+        padding: 0.75rem 0.5rem;
+        text-align: center;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .timeslot-btn:hover {
+            transform: translateY(-3px);
+            border-color: #fa8f23;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeslot-btn:active {
+            transform: translateY(-1px);
+        }
+
+    .time-value {
+        display: block;
+        font-size: 1.1rem;
+        color: #495057;
+    }
+
+    /* Animations */
+    .animate__animated {
+        animation-duration: 0.8s;
+    }
+
+    .animate__fadeIn {
+        animation-duration: 1s;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .service-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .service-icon {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+@section scripts {
+    <script>
+    $(document).ready(function () {
+            // Agregar retraso a los elementos de horario para crear efecto escalonado
+            $(".timeslots-container .col").each(function (index) {
+                $(this).css("animation-delay", (index * 0.05) + "s");
+            });
+        });</script>
+}
