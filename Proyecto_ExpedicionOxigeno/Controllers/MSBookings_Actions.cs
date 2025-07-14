@@ -7,7 +7,10 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Principal;
 using System.Threading.Tasks;
+using System.Web.Mvc;
+
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
@@ -18,6 +21,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/services";
 
         private static BookingBusiness bookingBusiness;
+
+        public static object TempData { get; private set; }
 
         //
         // Microsoft Bookings: Business
@@ -317,6 +322,137 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
         }
 
+        //
+        //  Microsoft Bookings: Appointments
+        //
+        public static async Task<BookingAppointment> Create_MSBookingsAppointment(
+            string serviceId,
+            string staffId,
+            DateTime start,
+            DateTime end,
+            string customerName,
+            string customerEmail,
+            string customerPhone)
+        {
+            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments";
+            var appointment = new 
+            {
+                ServiceId = serviceId,
+                staffMemberIds = new List<string> { staffId },
+                start = new 
+                {
+                    dateTime = start.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    timeZone = TimeZoneInfo.Local.Id
+                },
+                end = new 
+                {
+                    dateTime = end.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    timeZone = TimeZoneInfo.Local.Id
+                },
+                customerName = customerName,
+                customerEmailAddress = customerEmail,
+                customerPhone = customerPhone,
+            };
 
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            string jsonData = JsonConvert.SerializeObject(appointment, settings);
+            var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
+            var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Post, content);
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("No se pudo crear la reserva en MS Bookings.");
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<BookingAppointment>(responseContent);
+        }
+        
+        
+        public static async Task<List<BookingAppointment>> Get_MSBookingsAppointmentsByEmail(string email)
+        {
+            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments?$filter=customerEmailAddress eq '{email}'";
+            var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Get);
+
+            if (!response.IsSuccessStatusCode)
+                return new List<BookingAppointment>();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var jsonObject = JObject.Parse(content);
+            var appointmentsArray = jsonObject["value"] as JArray;
+            return appointmentsArray.ToObject<List<BookingAppointment>>();
+        }
+
+        public static async Task Cancel_MSBookingsAppointment(string appointmentId)
+        {
+            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}";
+            var patchData = new { cancelReason = "Cancelado por el usuario", isCancelled = true };
+            var content = new StringContent(JsonConvert.SerializeObject(patchData), System.Text.Encoding.UTF8, "application/json");
+            var response = await GraphApiHelper.SendGraphRequestAsync(url, new HttpMethod("PATCH"), content);
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("No se pudo cancelar la reserva.");
+        }
+
+        public static async Task Modify_MSBookingsAppointment(string appointmentId, DateTime nuevaFecha, DateTime nuevaHoraInicio, DateTime nuevaHoraFin)
+        {
+            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}";
+            var patchData = new
+            {
+                start = new DateTimeTimeZone
+                {
+                    DateTime = nuevaHoraInicio.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    TimeZone = TimeZoneInfo.Local.Id
+                },
+                end = new DateTimeTimeZone
+                {
+                    DateTime = nuevaHoraFin.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    TimeZone = TimeZoneInfo.Local.Id
+                }
+            };
+            var content = new StringContent(JsonConvert.SerializeObject(patchData), System.Text.Encoding.UTF8, "application/json");
+            var response = await GraphApiHelper.SendGraphRequestAsync(url, new HttpMethod("PATCH"), content);
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("No se pudo modificar la reserva.");
+        }
+
+        // Inside the MisReservas method, replace the User.Identity check with the following:
+        public static async Task<ActionResult> MisReservas(IPrincipal user, IDictionary<string, object> MSBookingsTempData)
+        {
+            if (!user.Identity.IsAuthenticated)
+            {
+                MSBookingsTempData["Error"] = "Debes iniciar sesión para ver tus reservas.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointments = MSBookings_Actions.GetAppointmentsByEmail(user.Identity.Name);
+            return View(appointments);
+        }
+
+        private static ActionResult View(JArray appointments)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ActionResult RedirectToAction(string v1, string v2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static JArray GetAppointmentsByEmail(string email)
+        {
+            return new JArray(); // Retorna una lista vacía por ahora
+        }
+
+        internal static IEnumerable<object> Get_MSBookingsStaffMembers()
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void ProcessResponse(object r)
+        {
+            var jobj = r as JObject;
+            var id = jobj?["id"];
+        }
     }
 }

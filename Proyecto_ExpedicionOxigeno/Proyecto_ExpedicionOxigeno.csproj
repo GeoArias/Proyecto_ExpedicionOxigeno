@@ -426,6 +426,7 @@
     <Content Include="Views\Reservas\index.cshtml" />
     <Content Include="Views\Reservas\SeleccionarServicio.cshtml" />
     <Content Include="Views\Reservas\ConfirmarHorario.cshtml" />
+    <Content Include="Views\Reservas\MisReservas.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

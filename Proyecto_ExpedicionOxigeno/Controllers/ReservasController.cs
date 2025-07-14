@@ -183,10 +183,20 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 Random rnd = new Random();
                 string selectedStaffId = availableStaff[rnd.Next(availableStaff.Count)];
 
-                // Aquí implementarías la lógica para crear la reserva en MS Bookings
-                // Esto dependerá de cómo está estructurado tu método para crear reservas
+                // Crear la reserva en MS Bookings
+                var appointment = await MSBookings_Actions.Create_MSBookingsAppointment(
+                    serviceId,
+                    selectedStaffId,
+                    slotStart,
+                    slotEnd,
+                    nombre,
+                    email,
+                    telefono
+                );
 
+                // Puedes guardar el appointment.Id si lo necesitas para mostrarlo después
                 TempData["Success"] = "¡Reserva confirmada con éxito!";
+                // Si quieres mostrar el ID: TempData["AppointmentId"] = appointment.Id;
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -194,6 +204,39 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 TempData["Error"] = $"Error al procesar la reserva: {ex.Message}";
                 return RedirectToAction("Index");
             }
+        }
+
+        // GET: Reservas/MisReservas
+        public async Task<ActionResult> MisReservas()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para ver tus reservas.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var appointments = MSBookings_Actions.GetAppointmentsByEmail(User.Identity.Name);
+            return View(appointments);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CancelarReserva(string id)
+        {
+            await MSBookings_Actions.Cancel_MSBookingsAppointment(id);
+            TempData["Success"] = "Reserva cancelada correctamente.";
+            return RedirectToAction("MisReservas");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ModificarReserva(string id, string nuevaFecha, string nuevaHoraInicio, string nuevaHoraFin)
+        {
+            DateTime inicio = DateTime.Parse($"{nuevaFecha} {nuevaHoraInicio}");
+            DateTime fin = DateTime.Parse($"{nuevaFecha} {nuevaHoraFin}");
+            await MSBookings_Actions.Modify_MSBookingsAppointment(id, inicio, inicio, fin);
+            TempData["Success"] = "Reserva modificada correctamente.";
+            return RedirectToAction("MisReservas");
         }
 
         // Método auxiliar para generar slots disponibles según duración del servicio

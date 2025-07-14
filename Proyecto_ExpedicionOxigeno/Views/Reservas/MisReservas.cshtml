@@ -1,0 +1,108 @@
+@using Newtonsoft.Json.Linq
+
+@model JArray
+
+@{
+    ViewBag.Title = "Mis reservas";
+}
+<h2>Mis reservas</h2>
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No tienes reservas activas.</div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Servicio</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Staff</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                var id = r["id"]?.ToString();
+                var fecha = r["start"]?["dateTime"]?.ToString().Substring(0, 10);
+                var horaInicio = r["start"]?["dateTime"]?.ToString().Substring(11, 5);
+                var horaFin = r["end"]?["dateTime"]?.ToString().Substring(11, 5);
+                var estado = r["status"]?.ToString();
+                var servicio = r["serviceName"]?.ToString();
+
+                <tr>
+                    <td>@servicio</td>
+                    <td>@fecha</td>
+                    <td>@horaInicio - @horaFin</td>
+                    <td>
+                        @{
+                            var staffList = r["staffMemberIds"] as JArray;
+                        }
+                        @if (staffList != null && staffList.Count > 0)
+                        {
+                            @(string.Join(", ", staffList.Select(s => s.ToString())))
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td>@estado</td>
+                    <td>
+                        @if (!string.Equals(estado, "cancelled", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <form method="post" action="@Url.Action("CancelarReserva", "Reservas")" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@id" />
+                                <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                            </form>
+                            <button type="button" class="btn btn-warning btn-sm ms-1" data-bs-toggle="modal" data-bs-target="#modalModificar-@id">
+                                Modificar
+                            </button>
+                            <!-- Modal para modificar reserva -->
+                            <div class="modal fade" id="modalModificar-@id" tabindex="-1" aria-labelledby="modalLabel-@id" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="post" action="@Url.Action("ModificarReserva", "Reservas")">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@id" />
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="modalLabel-@id">Modificar reserva</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label for="nuevaFecha-@id" class="form-label">Nueva fecha</label>
+                                                    <input type="date" class="form-control" id="nuevaFecha-@id" name="nuevaFecha" value="@fecha" required />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="nuevaHoraInicio-@id" class="form-label">Hora inicio</label>
+                                                    <input type="time" class="form-control" id="nuevaHoraInicio-@id" name="nuevaHoraInicio" value="@horaInicio" required />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="nuevaHoraFin-@id" class="form-label">Hora fin</label>
+                                                    <input type="time" class="form-control" id="nuevaHoraFin-@id" name="nuevaHoraFin" value="@horaFin" required />
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-warning">Guardar cambios</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Cancelada</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
