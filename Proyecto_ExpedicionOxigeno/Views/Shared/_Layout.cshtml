@@ -447,6 +447,10 @@
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("MisReservas", "Reservas")">Mis reservas</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Sello")">Mis Sellos</a>
+                        </li>
+                        
                     }
                     @if (Request.IsAuthenticated && User.IsInRole("Administrador"))
                     {

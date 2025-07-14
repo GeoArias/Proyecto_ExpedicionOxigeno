@@ -5,6 +5,7 @@ using Microsoft.Graph.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Proyecto_ExpedicionOxigeno.Helpers;
+using Proyecto_ExpedicionOxigeno.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -228,7 +229,26 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     BookingAppointment appointmentMS = JObject.Parse(responseContent).ToObject<BookingAppointment>(
                         JsonSerializer.Create(settings));
 
-                    TempData["Success"] = "¡Reserva confirmada con éxito!";
+                    // === AGREGAR SELLO ===
+                    var db = new ApplicationDbContext();
+
+                    // Generar un código QR (puedes usar el ID de la reserva como base)
+                    string codigoQR = appointmentMS.Id;
+
+                    var nuevoSello = new Sello
+                    {
+                        UserId = user.Id,
+                        CodigoQR = codigoQR,
+                        Servicio = servicio.DisplayName,
+                        FechaObtencion = DateTime.Now,
+                        ReservaId = appointmentMS.Id,
+                        UsadoEnPase = false
+                    };
+
+                    db.Sellos.Add(nuevoSello);
+                    db.SaveChanges();
+
+                    TempData["Success"] = "¡Reserva confirmada con éxito y se otorgó un sello!";
                     // Pasar los datos a la vista de confirmación
                     ViewBag.Servicio = servicio;
                     ViewBag.SlotStart = slotStart;
