@@ -4,6 +4,7 @@
     using Microsoft.AspNet.Identity.EntityFramework;
     using Proyecto_ExpedicionOxigeno.Models;
     using System;
+    using System.Configuration;
     using System.Data.Entity.Migrations;
     using System.Linq;
 
@@ -27,13 +28,15 @@
                 roleManager.Create(new IdentityRole("Administrador"));
             if (!roleManager.RoleExists("Usuario"))
                 roleManager.Create(new IdentityRole("Usuario"));
+            if (!roleManager.RoleExists("Empleado"))
+                roleManager.Create(new IdentityRole("Empleado"));
 
             // Crear usuario administrador por defecto  
-            var adminEmail = "admin@demo.com";
+            var adminEmail = ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim();
             var adminUser = userManager.FindByName(adminEmail);
             if (adminUser == null)
             {
-                adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true, Nombre = "Administrador", Telefono= "61426278" };
+                adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true, Nombre = "Geovanny", Telefono= "61426278", MsBookingsId= Guid.Parse("59acd6a8-2ba4-4c00-ba2a-820220ad1078") };
                 userManager.Create(adminUser, "Admin123!");
                 userManager.AddToRole(adminUser.Id, "Administrador");
             }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
+using System;
 using System.Data.Entity;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Proyecto_ExpedicionOxigeno.Models
     {
         public string Nombre { get; internal set; }
         public string Telefono { get; internal set; }
+        public Guid MsBookingsId { get; internal set; }
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {

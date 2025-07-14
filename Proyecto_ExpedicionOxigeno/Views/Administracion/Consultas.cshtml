@@ -9,7 +9,12 @@
 {
     <div class="alert alert-success">@TempData["Mensaje"]</div>
 }
-
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger animate__animated animate__shakeX">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+    </div>
+}
 <table class="table table-bordered table-striped align-middle">
     <thead>
         <tr>

@@ -96,6 +96,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
 
             ModelState.AddModelError("", "Intento de inicio de sesión no válido.");
+            TempData["Error"] = "Correo electrónico o contraseña no válidos.";
             return View(model);
         }
 
@@ -199,6 +200,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
+                TempData["Error"] = "Error al crear cuenta, intenta de nuevo más tarde.";
             }
 
             return View(model);
