@@ -159,14 +159,12 @@
 </div>
 
 <!-- Modal para mostrar QR -->
-<div class="modal fade" id="qrModal" tabindex="-1" role="dialog">
+<div class="modal" id="qrModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Código QR del Sello</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
                 <img id="qrImage" src="" alt="Código QR" class="img-fluid">
@@ -178,6 +176,8 @@
 <script>
 function mostrarQR(codigo) {
     document.getElementById('qrImage').src = '@Url.Action("GenerarQR", "Sello")?codigo=' + codigo;
-    $('#qrModal').modal('show');
+    
+    var modal = new bootstrap.Modal(document.getElementById('qrModal'), { backdrop: false });
+    modal.show();
 }
-</script>
+</script>                       
