@@ -457,7 +457,7 @@
     <Content Include="Views\Sello\Index.cshtml" />
     <Content Include="Views\Sello\EscanearQR.cshtml" />
     <Content Include="Views\BookingsAppointment\Index.cshtml" />
-    <Content Include="Views\Home\IndexV2.cshtml" />
+    <Content Include="Views\Home\IndexVPrior.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

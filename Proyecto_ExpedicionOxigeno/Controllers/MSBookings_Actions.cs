@@ -180,6 +180,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
 
 
+
         //
         //  Microsoft Bookings: Staff/People
         //
@@ -343,8 +344,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         //  Microsoft Bookings: Staff/Availability
         //      https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/Contosolunchdelivery@contoso.com/getStaffAvailability
         //
-        public static async Task<BookingStaffAvailabilityCollectionResponse> Get_MSBookingsStaffAvailability(
-            List<string> staffIds, DateTime startDate, DateTime endDate, string timeZone = null)
+        public static async Task<BookingStaffAvailabilityCollectionResponse> Get_MSBookingsStaffAvailability(List<string> staffIds, DateTime startDate, DateTime endDate, string timeZone = null)
         {
             try
             {
@@ -432,14 +432,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         //
         //  Microsoft Bookings: Appointments
         //
-        public static async Task<HttpResponseMessage> Create_MSBookingsAppointment(
-            string serviceId,
-            string staffId,
-            DateTime start,
-            DateTime end,
-            string customerName,
-            string customerEmail,
-            string customerPhone)
+        public static async Task<HttpResponseMessage> Create_MSBookingsAppointment(string serviceId, string staffId,DateTime start,DateTime end,string customerName,string customerEmail,string customerPhone)
         {
             string url = $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/appointments";
             var appointment = new 
@@ -479,8 +472,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             return response;
         }
-
-
         public static async Task<List<BookingAppointmentCustomed>> GetAppointmentsByEmail(string email)
         {
             string url = $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/appointments";

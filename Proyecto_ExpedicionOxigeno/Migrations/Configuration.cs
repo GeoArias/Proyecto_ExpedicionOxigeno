@@ -121,7 +121,8 @@
                     Comentario = "¡Una experiencia increíble! Los guías son muy profesionales y la decoración es increíble",
                     Fecha = DateTime.Now,
                     Mostrar= true,
-                    Calificacion = 5
+                    Calificacion = 5,
+                    Servicio = "Parque de Cuerdas"
                 },
                 new Review
                 {
@@ -130,7 +131,8 @@
                     Comentario = "Me encantó la experiencia, pero creo que deberían mejorar la señalización en algunas rutas.",
                     Fecha = DateTime.Now,
                     Mostrar= true,
-                    Calificacion = 4
+                    Calificacion = 4,
+                    Servicio = "Pared de Escalada"
                 },
                 new Review
                 {
@@ -139,7 +141,8 @@
                     Comentario = "Excelente atención y servicio. Definitivamente volveré.",
                     Fecha = DateTime.Now,
                     Mostrar= false,
-                    Calificacion = 5
+                    Calificacion = 5,
+                    Servicio = "Pared de Escalada"
                 }
             };
             foreach (var reseña in reseñas)
