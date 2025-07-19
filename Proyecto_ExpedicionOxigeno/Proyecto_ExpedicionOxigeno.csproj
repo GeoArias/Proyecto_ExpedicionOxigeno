@@ -305,6 +305,7 @@
     </Compile>
     <Compile Include="GraphTokenCache.cs" />
     <Compile Include="Helpers\BookingsQRHelper.cs" />
+    <Compile Include="Helpers\DateTimeExtensions.cs" />
     <Compile Include="Helpers\GraphApiHelper.cs" />
     <Compile Include="Helpers\GraphTimeConverter.cs" />
     <Compile Include="Helpers\GraphTimeSpanConverter.cs" />

@@ -1,3 +1,5 @@
+@using Proyecto_ExpedicionOxigeno.Helpers
+
 @using Proyecto_ExpedicionOxigeno.Models
 @model List<BookingAppointmentCustomed>
 @{
@@ -41,10 +43,12 @@
         <div class="row row-cols-1 row-cols-md-2 g-4">
             @foreach (var reserva in Model)
             {
-                var fecha = reserva.start?.dateTime;
-                var horaInicio = reserva.start?.dateTime;
-                var horaFin = reserva.end?.dateTime;
-                var fechaFormateada = fecha?.ToString("dddd, dd 'de' MMMM 'de' yyyy");
+                var fecha = reserva.start?.dateTime.ToCostaRicaTime();
+                var horaInicio = reserva.start?.dateTime.ToCostaRicaTime();
+                var horaFin = reserva.end?.dateTime.ToCostaRicaTime();
+                var cultura = new System.Globalization.CultureInfo("es-ES");
+                var fechaTexto = fecha?.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura);
+                var fechaFormateada = char.ToUpper(fechaTexto[0]) + fechaTexto.Substring(1);
                 var horaInicioFormateada = horaInicio?.ToString("hh:mm tt");
                 var horaFinFormateada = horaFin?.ToString("hh:mm tt");
 
@@ -175,8 +179,8 @@
 </div>
 
 <style>
-@@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
-@@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
 
     .reservation-container {
         max-width: 1200px;

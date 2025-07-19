@@ -522,24 +522,31 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         public static async Task Modify_MSBookingsAppointment(string appointmentId, DateTime nuevaFecha, DateTime nuevaHoraInicio, DateTime nuevaHoraFin)
         {
             string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}";
+
             var patchData = new
             {
-                start = new DateTimeTimeZone
+                start = new
                 {
-                    DateTime = nuevaHoraInicio.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    TimeZone = TimeZoneInfo.Local.Id
+                    dateTime = nuevaHoraInicio.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    timeZone = "America/Costa_Rica"
                 },
-                end = new DateTimeTimeZone
+                end = new
                 {
-                    DateTime = nuevaHoraFin.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    TimeZone = TimeZoneInfo.Local.Id
+                    dateTime = nuevaHoraFin.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    timeZone = "America/Costa_Rica"
                 }
             };
+
             var content = new StringContent(JsonConvert.SerializeObject(patchData), System.Text.Encoding.UTF8, "application/json");
             var response = await GraphApiHelper.SendGraphRequestAsync(url, new HttpMethod("PATCH"), content);
+
             if (!response.IsSuccessStatusCode)
-                throw new Exception("No se pudo modificar la reserva.");
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                throw new Exception($"No se pudo modificar la reserva: {errorMessage}");
+            }
         }
+
 
 
         private static ActionResult View(JArray appointments)
