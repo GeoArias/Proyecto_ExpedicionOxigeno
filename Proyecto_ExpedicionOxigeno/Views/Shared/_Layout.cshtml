@@ -17,7 +17,8 @@
 
     <style>
 
-
+        @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+        @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
 
         .btn-Primary-ExpOxi {
             background-color: rgb(250, 143, 35) !important;
@@ -403,6 +404,16 @@
                     transform: scale(1);
                 }
             }
+            .navbar-nav .dropdown-menu-end {
+                right: 0;
+                left: auto;
+            }
+
+            .navbar-nav .fa-user-circle {
+                color: #fff;
+            }
+
+
         }
     </style>
 
@@ -418,7 +429,6 @@
 
 
     <nav class="navbar navbar-expand-sm navbar-dark sticky-top @(esHomeIndex ? "transparent" : "")" id="mainNavbar">
-
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="/">
                 <img src="~/Resources/Images/logo.png" alt="ExpediCheck Logo" height="48" />
@@ -430,81 +440,86 @@
 
             <div class="collapse navbar-collapse justify-content-between" id="mainNavbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-sm-0">
-                    <li class="nav-item"><a class="nav-link" href="/Reservas">Reservas</a></li>
-
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Reservas">
+                            <i class="fas fa-calendar-check me-1"></i>Reservar
+                        </a>
+                    </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#nosotros" id="nosotrosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Nosotros
+                        <a class="nav-link dropdown-toggle" href="/Home/Index#nosotros" id="nosotrosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-users me-1"></i>Nosotros
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="nosotrosDropdown">
-                            <li><a class="dropdown-item" href="#acerca">Acerca</a></li>
-                            <li><a class="dropdown-item" href="#contacto">Contacto</a></li>
+                            <li>
+                                <a class="dropdown-item" href="/#inicio">
+                                    <i class="fas fa-info-circle me-2"></i>Acerca
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/#contacto">
+                                    <i class="fas fa-envelope me-2"></i>Contacto
+                                </a>
+                            </li>
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="#resenas">Reseñas</a></li>
-                    @if (Request.IsAuthenticated)
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("MisReservas", "Reservas")">Mis reservas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Sello")">Mis Sellos</a>
-                        </li>
-
-                    }
-                    @if (Request.IsAuthenticated && User.IsInRole("Administrador"))
-                    {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#administracion" id="administracionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Administración
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="administracionDropdown">
-                                <li><a class="dropdown-item" href="/Administracion/Usuarios">Usuarios</a></li>
-                                <li><a class="dropdown-item" href="/Administracion/Consultas">Consultas</a></li>
-                                <li><a class="dropdown-item" href="/Administracion/Reviews">Reseñas</a></li>
-                                <li><a class="dropdown-item" href="/Servicios">Servicios</a></li>
-                            </ul>
-                        </li>
-                    }
-
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#resenas">
+                            <i class="fas fa-star me-1"></i>Reseñas
+                        </a>
+                    </li>
                 </ul>
 
                 <ul class="navbar-nav">
                     @if (Request.IsAuthenticated)
                     {
-                        <li class="nav-item">
-                            @{
-                                var userManager = HttpContext.Current.GetOwinContext().GetUserManager<Proyecto_ExpedicionOxigeno.ApplicationUserManager>();
-                                var currentUser = userManager.FindById(User.Identity.GetUserId());
-                                var nombre = currentUser?.Nombre ?? "Usuario";
-                            }
-                        </li>
-                        <li class="nav-item">
-                            <span class="nav-link text-white">Hola, @nombre</span>
-                        </li>
-
-
-                        <li class="nav-item">
-                            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
-                            {
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
-                            }
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Cuenta">
+                                <i class="fas fa-user-circle fa-lg"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="@Url.Action("MisReservas", "Reservas")">
+                                        <i class="fas fa-calendar-check me-2"></i>Mis reservas
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="@Url.Action("Index", "Sello")">
+                                        <i class="fas fa-certificate me-2"></i>Mis sellos
+                                    </a>
+                                </li>
+                                @if (User.IsInRole("Administrador"))
+                                {
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Administracion">
+                                            <i class="fas fa-tools me-2"></i>Administración
+                                        </a>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "d-inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                                        </button>
+                                    }
+                                </li>
+                            </ul>
                         </li>
                     }
                     else
                     {
-                        @*<li class="nav-item">
-                                <a class="nav-link nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link nav-register" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarse</a>
-                            </li>*@
                         <li class="nav-item">
-                            <a class="btn btn-outline-light mx-1" href="@Url.Action("Login", "Account")">Iniciar sesión</a>
+                            <a class="btn btn-outline-light mx-1" href="@Url.Action("Login", "Account")">
+                                <i class="fas fa-sign-in-alt me-1"></i>Iniciar sesión
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-outline-light mx-1" href="@Url.Action("Register", "Account")">Registrarse</a>
+                            <a class="btn btn-outline-light mx-1" href="@Url.Action("Register", "Account")">
+                                <i class="fas fa-user-plus me-1"></i>Registrarse
+                            </a>
                         </li>
                     }
                 </ul>

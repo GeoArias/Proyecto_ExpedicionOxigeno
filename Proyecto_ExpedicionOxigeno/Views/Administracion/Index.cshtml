@@ -1,0 +1,137 @@
+﻿@{
+    ViewBag.Title = "Panel de Administración";
+    // Definición de módulos de administración
+    var adminModules = new[]
+    {
+        new { Title = "Usuarios", Icon = "fas fa-users-cog", Description = "Gestión de usuarios y roles.", Url = Url.Action("Usuarios", "Administracion") },
+        new { Title = "Consultas", Icon = "fas fa-question-circle", Description = "Ver y responder consultas de clientes.", Url = Url.Action("Consultas", "Administracion") },
+        new { Title = "Reseñas", Icon = "fas fa-star", Description = "Administrar reseñas y comentarios.", Url = Url.Action("Reviews", "Administracion") },
+        new { Title = "Servicios", Icon = "fas fa-cogs", Description = "Configura los servicios ofrecidos.", Url = Url.Action("Index", "Servicios") },
+        new { Title = "Sellos", Icon = "fas fa-stamp", Description = "Gestión de sellos y recompensas.", Url = Url.Action("Index", "Sello") },
+    };
+}
+
+<div class="admin-container">
+    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4">Panel de Administración</h1>
+        <p class="lead">Gestiona los módulos principales de Expedición Oxígeno</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 admin-modules">
+        @for (int i = 0; i < adminModules.Length; i++)
+        {
+            var module = adminModules[i];
+            <div class="col animate__animated animate__fadeInUp" style="animation-delay:@($"{i * 0.1}s")">
+                <a href="@module.Url" class="admin-card h-100">
+                    <div class="admin-icon">
+                        <i class="@module.Icon"></i>
+                    </div>
+                    <h4 class="admin-title">@module.Title</h4>
+                    <p class="admin-description">@module.Description</p>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .admin-modules {
+        margin-top: 2rem;
+    }
+
+    .admin-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 2.5rem 1.5rem 2rem 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        color: #212529;
+        transition: transform 0.25s, box-shadow 0.25s, border 0.25s;
+        border: 3px solid transparent;
+        position: relative;
+        min-height: 320px;
+    }
+
+        .admin-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 16px 32px rgba(250,143,35,0.13);
+            border-color: #fa8f23;
+            color: #fa8f23;
+            text-decoration: none;
+        }
+
+    .admin-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 16px rgba(250,143,35,0.13);
+        transition: background 0.3s;
+    }
+
+    .admin-card:hover .admin-icon {
+        background: linear-gradient(135deg, #bbbd1b 0%, #1c4800 50%, #6aff79 100%);
+        color: #fff;
+    }
+
+    .admin-title {
+        font-weight: 700;
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem;
+        color: #212529;
+        transition: color 0.3s;
+    }
+
+    .admin-card:hover .admin-title {
+        color: #fa8f23;
+    }
+
+    .admin-description {
+        color: #6c757d;
+        font-size: 1.05rem;
+        margin-bottom: 0;
+        flex-grow: 1;
+    }
+
+    /* Animations */
+    .animate__animated {
+        animation-duration: 0.8s;
+    }
+
+    .animate__fadeInUp {
+        animation-duration: 1s;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .admin-card {
+            min-height: 220px;
+            padding: 1.5rem 1rem;
+        }
+
+        .admin-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.7rem;
+        }
+    }
+</style>

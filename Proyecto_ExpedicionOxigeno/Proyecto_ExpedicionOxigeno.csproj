@@ -458,6 +458,7 @@
     <Content Include="Views\Sello\EscanearQR.cshtml" />
     <Content Include="Views\BookingsAppointment\Index.cshtml" />
     <Content Include="Views\Home\IndexVPrior.cshtml" />
+    <Content Include="Views\Administracion\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
