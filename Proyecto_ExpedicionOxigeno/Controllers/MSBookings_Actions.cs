@@ -514,14 +514,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return servicesList;
         }
 
-        public static async Task Cancel_MSBookingsAppointment(string appointmentId)
+        public static async Task<HttpResponseMessage> Cancel_MSBookingsAppointment(string appointmentId)
         {
-            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}";
-            var patchData = new { cancelReason = "Cancelado por el usuario", isCancelled = true };
+            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}/cancel";
+            var patchData = new { cancellationMessage = "Cancelado por el usuario"};
             var content = new StringContent(JsonConvert.SerializeObject(patchData), System.Text.Encoding.UTF8, "application/json");
-            var response = await GraphApiHelper.SendGraphRequestAsync(url, new HttpMethod("PATCH"), content);
-            if (!response.IsSuccessStatusCode)
-                throw new Exception("No se pudo cancelar la reserva.");
+            var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Post, content);
+            return response;
         }
 
         public static async Task Modify_MSBookingsAppointment(string appointmentId, DateTime nuevaFecha, DateTime nuevaHoraInicio, DateTime nuevaHoraFin)

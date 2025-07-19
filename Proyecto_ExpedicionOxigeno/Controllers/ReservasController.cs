@@ -321,19 +321,26 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("MisReservas");
                 }
 
-                await MSBookings_Actions.Cancel_MSBookingsAppointment(id);
+                var response = await MSBookings_Actions.Cancel_MSBookingsAppointment(id);
 
-                // También actualizar el sello relacionado si existe
-                var db = new ApplicationDbContext();
-                var sello = db.Sellos.FirstOrDefault(s => s.ReservaId == id);
-                if (sello != null)
+                if (response.IsSuccessStatusCode)
                 {
-                    // Marcar el sello como no válido o eliminarlo
-                    db.Sellos.Remove(sello);
-                    db.SaveChanges();
-                }
+                    // También actualizar el sello relacionado si existe
+                    var db = new ApplicationDbContext();
+                    var sello = db.Sellos.FirstOrDefault(s => s.ReservaId == id);
+                    if (sello != null)
+                    {
+                        // Marcar el sello como no válido o eliminarlo
+                        db.Sellos.Remove(sello);
+                        db.SaveChanges();
+                    }
 
-                TempData["Success"] = "Reserva cancelada correctamente.";
+                    TempData["Success"] = "Reserva cancelada correctamente.";
+                }
+                else
+                {
+                    TempData["Error"] = $"Error al cancelar la reserva: {response.ReasonPhrase}";
+                }
             }
             catch (Exception ex)
             {

@@ -107,7 +107,7 @@
                                             <span class="me-1"><i class="fas fa-times-circle"></i></span>Cancelar
                                         </button>
                                     }
-                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_@reserva.Id">
+                                    <button type="button" class="btn btn-outline-primary" onclick="alert('La funcionalidad para modificar reservas estará disponible próximamente. Por favor, mantente atento a futuras actualizaciones.')">
                                         <span class="me-1"><i class="fas fa-edit"></i></span>Modificar
                                     </button>
                                 </div>
@@ -115,68 +115,7 @@
                         </div>
                     </div>
 
-                    <!-- Modal de modificación -->
-                    <div class="modal fade" id="modal_@reserva.Id" tabindex="-1" aria-labelledby="modalLabel_@reserva.Id" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                @using (Html.BeginForm("ModificarReserva", "Reservas", FormMethod.Post))
-                                {
-                                    @Html.AntiForgeryToken()
-                                    @Html.Hidden("id", reserva.Id)
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">
-                                            <span class="me-2"><i class="fas fa-calendar-alt"></i></span>Modificar Reserva
-                                        </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="current-reservation mb-4">
-                                            <h6 class="text-muted mb-3">Información actual:</h6>
-                                            <div class="card bg-light">
-                                                <div class="card-body">
-                                                    <p class="mb-1"><strong>Servicio:</strong> @reserva.ServiceName</p>
-                                                    <p class="mb-1"><strong>Fecha:</strong> @fechaFormateada</p>
-                                                    <p class="mb-0"><strong>Horario:</strong> @horaInicioFormateada - @horaFinFormateada</p>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <h6 class="text-muted mb-3">Nueva información:</h6>
-                                        <div class="mb-3">
-                                            <label class="form-label">
-                                                <span class="me-2"><i class="far fa-calendar-alt"></i></span>Nueva fecha:
-                                            </label>
-                                            <input type="date" name="nuevaFecha" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">
-                                                <span class="me-2"><i class="far fa-clock"></i></span>Nueva hora inicio:
-                                            </label>
-                                            <input type="time" name="nuevaHoraInicio" class="form-control" required />
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">
-                                                <span class="me-2"><i class="far fa-clock"></i></span>Nueva hora fin:
-                                            </label>
-                                            <input type="time" name="nuevaHoraFin" class="form-control" required />
-                                        </div>
-                                        <div class="alert alert-info">
-                                            <span class="me-2"><i class="fas fa-info-circle"></i></span>
-                                            La disponibilidad está sujeta a confirmación. Si el horario seleccionado no está disponible, te notificaremos por correo.
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                            <span class="me-1"><i class="fas fa-times"></i></span>Cancelar
-                                        </button>
-                                        <button type="submit" class="btn btn-Primary-ExpOxi">
-                                            <span class="me-1"><i class="fas fa-save"></i></span>Guardar cambios
-                                        </button>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
                 }
             </div>
         }
