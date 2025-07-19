@@ -450,7 +450,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Index", "Sello")">Mis Sellos</a>
                         </li>
-                        
+
                     }
                     @if (Request.IsAuthenticated && User.IsInRole("Administrador"))
                     {
@@ -514,19 +514,24 @@
     @if (esHomeIndex)
     {
         <script>
-            function updateNavbarTransparency() {
+            document.addEventListener("DOMContentLoaded", function () {
                 const nav = document.getElementById("mainNavbar");
-                // Si el scroll está en la parte superior, el Hero Banner está visible
-                if (window.scrollY < window.innerHeight - nav.offsetHeight) {
-                    nav.classList.add("transparent");
-                } else {
-                    nav.classList.remove("transparent");
+                function updateNavbarTransparency() {
+                    if (!nav) return;
+                    const scrollY = window.scrollY;
+                    const windowHeight = window.innerHeight;
+                    const navHeight = nav.offsetHeight;
+                    const threshold = windowHeight - navHeight;
+                    if (scrollY < threshold) {
+                        nav.classList.add("transparent");
+                    } else {
+                        nav.classList.remove("transparent");
+                    }
                 }
-            }
-            window.addEventListener("scroll", updateNavbarTransparency);
-            window.addEventListener("resize", updateNavbarTransparency);
-            document.addEventListener("DOMContentLoaded", updateNavbarTransparency);
-
+                window.addEventListener("scroll", updateNavbarTransparency);
+                window.addEventListener("resize", updateNavbarTransparency);
+                updateNavbarTransparency();
+            });
         </script>
     }
     @RenderSection("HeroBanner", required: false)

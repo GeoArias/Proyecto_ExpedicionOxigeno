@@ -45,6 +45,37 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return View();
         }
 
+        [HttpGet]
+        public async Task<ActionResult> IndexV2(int? calificacion, string servicio)
+        {
+            var reviewsQuery = db.Reviews.Where(r => r.Mostrar);
+
+            if (calificacion.HasValue)
+            {
+                reviewsQuery = reviewsQuery.Where(r => r.Calificacion >= calificacion.Value);
+            }
+
+            if (!string.IsNullOrEmpty(servicio))
+            {
+                reviewsQuery = reviewsQuery.Where(r => r.Servicio == servicio);
+            }
+
+            var reviews = reviewsQuery
+                .OrderByDescending(r => r.Fecha)
+                .Take(5)
+                .ToList();
+
+            ViewBag.Reviews = reviews;
+
+
+            // Traer listado de servicios
+            List<BookingService> servicios = await MSBookings_Actions.Get_MSBookingsServices();
+
+            ViewBag.Servicios = servicios;
+
+            return View();
+        }
+
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -75,6 +106,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             return View();
         }
+
+       
 
         [HttpPost]
         [Authorize]

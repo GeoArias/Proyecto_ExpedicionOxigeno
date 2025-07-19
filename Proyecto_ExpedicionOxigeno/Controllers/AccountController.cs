@@ -180,21 +180,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                         </div>"
                     });
 
-                    // Crear Staff en Microsoft Bookings
-                    try
-                    {
-                        var staff = new Microsoft.Graph.Models.BookingStaffMember
-                        {
-                            DisplayName = model.Nombre,
-                            EmailAddress = model.Email,
-                            Role = Microsoft.Graph.Models.BookingStaffRole.Viewer, // Ajusta según los valores disponibles
-                        };
-                        await MSBookings_Actions.Create_MSBookingsStaff(staff);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine("Error al crear staff en Bookings: " + ex.Message);
-                    }
+                    
 
                     TempData["RegistroExitoso"] = true;
                     return RedirectToAction("Index", "Home");

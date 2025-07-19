@@ -46,43 +46,63 @@
             </div>
 
             <!-- Título de servicios -->
-            <div class="services-header text-center my-5 animate__animated animate__fadeIn">
-                <h3>Nuestras Experiencias</h3>
-                <p class="text-muted">Selecciona la actividad que deseas reservar</p>
+            <div class="text-center my-5 animate__animated animate__fadeIn">
+                <div class="section-badge">NUESTRAS EXPERIENCIAS</div>
+                <h2 class="section-title">Elige tu Aventura</h2>
+                <p class="section-text">Selecciona la actividad que deseas reservar</p>
             </div>
 
-            <!-- Servicios en horizontal -->
+            <!-- Servicios en cards -->
             <div class="services-container">
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     @foreach (var service in ViewBag.Services)
                     {
+                        string iconClass = "fas fa-tree";
+
+                        if (service.DisplayName.Contains("Escalada"))
+                        {
+                            iconClass = "fas fa-mountain";
+                        }
+                        else if (service.DisplayName.Contains("Cuerdas"))
+                        {
+                            iconClass = "fas fa-route";
+                        }
+                        else if (service.DisplayName.Contains("Glider"))
+                        {
+                            iconClass = "fas fa-wind";
+                        }
+
                         <div class="col animate__animated animate__fadeIn">
                             <input class="form-check-input visually-hidden" type="radio" name="id"
                                    id="service-@service.Id" value="@service.Id" required>
                             <label class="service-card h-100" for="service-@service.Id">
-                                <span class="service-check-indicator">
+                                <div class="service-check-indicator">
                                     <i class="fas fa-check-circle"></i>
-                                </span>
-                                <div class="service-card-body d-block d-flex flex-column h-100">
-                                    <h5 class="service-title">@service.DisplayName</h5>
-                                    <p class="service-description flex-grow-1">@service.Description</p>
-                                    <span class="service-details d-block mt-auto">
-                                        <span class="service-duration">
-                                            <i class="far fa-clock"></i>
-                                            @if (service.DefaultDuration.TotalHours >= 1)
-                                            {
-                                                @($"{Math.Floor(service.DefaultDuration.TotalHours)}h {service.DefaultDuration.Minutes}m")
-                                            }
-                                            else
-                                            {
-                                                @($"{service.DefaultDuration.Minutes}m")
-                                            }
-                                        </span>
-                                        <span class="service-price">
-                                            <i class="fas fa-tag"></i>
-                                            ₡@string.Format("{0:N0}", service.DefaultPrice)
-                                        </span>
-                                    </span>
+                                </div>
+                                <div class="service-icon">
+                                    <i class="@iconClass"></i>
+                                </div>
+                                <h4 class="service-title">@service.DisplayName</h4>
+                                <p class="service-description">@service.Description</p>
+                                <div class="service-meta">
+                                    <div class="service-duration">
+                                        <i class="far fa-clock"></i>
+                                        @if (service.DefaultDuration.TotalHours >= 1)
+                                        {
+                                            @($"{Math.Floor(service.DefaultDuration.TotalHours)}h {service.DefaultDuration.Minutes}m")
+                                        }
+                                        else
+                                        {
+                                            @($"{service.DefaultDuration.Minutes}m")
+                                        }
+                                    </div>
+                                    <div class="service-price">
+                                        <i class="fas fa-tag"></i>
+                                        ₡@string.Format("{0:N0}", service.DefaultPrice)
+                                    </div>
+                                </div>
+                                <div class="btn-select-service">
+                                    <i class="fas fa-check-circle me-2"></i>Seleccionar
                                 </div>
                             </label>
                         </div>
@@ -92,7 +112,7 @@
 
             <div class="submit-container text-center my-5">
                 <button type="submit" class="btn btn-Primary-ExpOxi btn-lg px-5 py-3 animate__animated animate__pulse animate__infinite animate__slow ">
-                    <i class="fas fa-search me-2"></i>Ver disponibilidad
+                    <i class="fas fa-search me-2"></i>Ver horarios disponibles
                 </button>
             </div>
         </form>
@@ -105,10 +125,12 @@
             <p>Por favor intenta más tarde o contáctanos directamente.</p>
         </div>
     }
-
 </div>
 
 <style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
     /* General styling */
     body {
         background-color: #f8f9fa;
@@ -118,6 +140,33 @@
         max-width: 1200px;
         margin: 0 auto;
         padding: 2rem 1rem;
+    }
+
+    /* Section styling */
+    .section-badge {
+        display: inline-block;
+        background-color: rgba(250, 143, 35, 0.1);
+        color: #fa8f23;
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 8px 16px;
+        border-radius: 50px;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #212529;
+    }
+
+    .section-text {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 800px;
+        margin: 0 auto;
     }
 
     /* Floating date picker styling */
@@ -169,68 +218,92 @@
     }
 
     .service-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        cursor: pointer;
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 30px;
+        text-align: center;
+        position: relative;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
         display: flex;
         flex-direction: column;
-        height: 100%;
-        overflow: hidden;
-        position: relative;
-        transition: all 0.3s ease;
+        cursor: pointer;
         border: 3px solid transparent;
     }
 
         .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
 
     .service-check-indicator {
         position: absolute;
         top: 15px;
         right: 15px;
-        color: #0d6efd;
+        color: #fa8f23;
         font-size: 1.5rem;
         opacity: 0;
         transition: all 0.3s ease;
     }
 
-    .service-card-body {
-        padding: 2rem;
+    .service-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin: 0 auto 20px;
     }
 
     .service-title {
         font-weight: 600;
-        margin-bottom: 1rem;
+        margin-bottom: 15px;
         font-size: 1.3rem;
+        color: #212529;
     }
 
     .service-description {
         color: #6c757d;
+        margin-bottom: 20px;
         flex-grow: 1;
-        margin-bottom: 1.5rem;
     }
 
-    .service-details {
+    .service-meta {
         display: flex;
         justify-content: space-between;
-        padding-top: 1rem;
+        padding-top: 15px;
+        margin-top: auto;
         border-top: 1px solid #e9ecef;
+        margin-bottom: 20px;
     }
 
     .service-duration, .service-price {
         display: flex;
         align-items: center;
-        color: #495057;
         font-weight: 500;
+        color: #495057;
     }
 
         .service-duration i, .service-price i {
-            margin-right: 0.5rem;
-            color: #0d6efd;
+            margin-right: 5px;
+            color: #fa8f23;
         }
+
+    .btn-select-service {
+        display: inline-block;
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
 
     input[type="radio"]:checked + .service-card {
         border-color: #fa8f23;
@@ -241,72 +314,34 @@
             opacity: 1;
         }
 
-    /* Info section styling */
-    .info-section {
-        background-color: white;
-        border-radius: 16px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-        padding: 2rem;
-        margin-top: 4rem;
-    }
-
-    /* Steps list styling */
-    .steps-list {
-        counter-reset: step-counter;
-        list-style-type: none;
-        padding-left: 0;
-        margin-top: 1.5rem;
-    }
-
-        .steps-list li {
-            position: relative;
-            padding: 0.75rem 0 0.75rem 3rem;
-            margin-bottom: 1rem;
-            border-left: 2px dashed #e9ecef;
-            margin-left: 0.9rem;
+        input[type="radio"]:checked + .service-card .btn-select-service {
+            background-color: #fa8f23;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-            .steps-list li:last-child {
-                border-left: none;
-            }
-
-            .steps-list li:before {
-                content: counter(step-counter);
-                counter-increment: step-counter;
-                position: absolute;
-                left: 0;
-                top: 0.75rem;
-                transform: translateX(-50%);
-                width: 2rem;
-                height: 2rem;
-                background: linear-gradient(135deg, #d97d1f 0%, #fa8f23 100%);
-                color: white;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1rem;
-                font-weight: bold;
-                z-index: 1;
-            }
-
-    /* Schedule styling */
-    .schedule-icon {
-        width: 4rem;
-        height: 4rem;
-        background-color: #f8f9fa;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #0d6efd;
-        font-size: 1.5rem;
-        margin: 0 auto;
+    /* Submit button styling */
+    .submit-container {
+        margin-top: 3rem;
     }
+
+    .btn-Primary-ExpOxi {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .btn-Primary-ExpOxi:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
 
     /* Animations */
     .animate__animated {
         animation-duration: 0.8s;
+    }
+
+    .animate__fadeIn {
+        animation-duration: 1s;
     }
 </style>
 
@@ -318,11 +353,29 @@
                 $(this).css("animation-delay", (index * 0.1) + "s");
             });
 
-            // Efecto hover para botón principal
-            $(".btn-primary").hover(
-                function () { $(this).addClass("animate__pulse"); },
-                function () { $(this).removeClass("animate__pulse"); }
-            );
+            // Cambiar el estado visual de la tarjeta seleccionada
+            $(".service-card").click(function () {
+                // Mostrar el botón de envío cuando se selecciona una tarjeta
+                $(".submit-container").addClass("animate__animated animate__fadeInUp");
+
+                // Scroll suave al botón de envío si está fuera de la vista
+                if (!isElementInViewport($(".submit-container")[0])) {
+                    $('html, body').animate({
+                        scrollTop: $(".submit-container").offset().top - 100
+                    }, 500);
+                }
+            });
+
+            // Función para verificar si un elemento está visible en la ventana
+            function isElementInViewport(el) {
+                var rect = el.getBoundingClientRect();
+                return (
+                    rect.top >= 0 &&
+                    rect.left >= 0 &&
+                    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+                );
+            }
         });
     </script>
 }
