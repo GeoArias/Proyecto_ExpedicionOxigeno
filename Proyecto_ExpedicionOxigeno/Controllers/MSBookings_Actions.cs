@@ -150,7 +150,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
         }
 
-        // POST: Servicios/ID
+        // PUT: Servicios/ID
         public static async Task<HttpResponseMessage> Update_MSBookingsService(string serviceId, BookingService service)
         {
             try
@@ -165,7 +165,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 };
                 string jsonData = JsonConvert.SerializeObject(service, settings);
                 var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
-                var response = await GraphApiHelper.SendGraphRequestAsync($"{GetServicesUrl(businessId)}/{serviceId}", HttpMethod.Post, content);
+                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/services/{serviceId}", new HttpMethod("PATCH"), content);
                 return response;
             }
             catch (HttpRequestException ex)
@@ -303,7 +303,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 };
                 string jsonData = JsonConvert.SerializeObject(staff, settings);
                 var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
-                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/staffMembers/{staffId}", HttpMethod.Put, content);
+                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/staffMembers/{staffId}", new HttpMethod("PATCH"), content);
                 return response;
             }
             catch (HttpRequestException ex)

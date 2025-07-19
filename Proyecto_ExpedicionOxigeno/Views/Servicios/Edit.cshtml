@@ -2,96 +2,224 @@
 @model BookingService
 
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "Editar Servicio";
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger text-center mb-4 animate__animated animate__fadeInDown" role="alert" style="border-radius:0;">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @TempData["Error"]
+    </div>
 }
 
-<h2>Edit</h2>
-
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    
-<div class="form-horizontal">
-    <h4>BookingService</h4>
-    <hr />
-    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-    @Html.HiddenFor(model => model.Id)
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.DisplayName, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.DisplayName, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.DisplayName, "", new { @class = "text-danger" })
-        </div>
+<div class="reservation-container">
+    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4"><i class="fas fa-cogs me-2"></i>Editar Servicio</h1>
+        <p class="lead">Modifica los detalles del servicio seleccionado</p>
     </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.DefaultDuration, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.DefaultDuration, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.DefaultDuration, "", new { @class = "text-danger" })
-        </div>
-    </div>
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.DefaultPrice, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.DefaultPrice, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.DefaultPrice, "", new { @class = "text-danger" })
-        </div>
-    </div>
+        <div class="service-detail-card animate__animated animate__fadeInUp">
+            <div class="service-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="service-title">@Model.DisplayName</h3>
+                        <div class="service-meta">
+                            <span class="duration">
+                                <i class="far fa-clock me-1"></i>
+                                @if (Model.DefaultDuration?.TotalHours >= 1)
+                                {
+                                    @($"{Math.Floor(Model.DefaultDuration.Value.TotalHours)}h {Model.DefaultDuration.Value.Minutes}m")
+                                }
+                                else
+                                {
+                                    @($"{Model.DefaultDuration?.Minutes ?? 0}m")
+                                }
+                            </span>
+                            <span class="price">
+                                <i class="fas fa-tag me-1"></i>
+                                ₡@string.Format("{0:N0}", Model.DefaultPrice)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="service-icon">
+                        @{
+                            string iconClass = "fas fa-tree";
+                            if (Model.DisplayName?.Contains("Escalada") == true)
+                            {
+                                iconClass = "fas fa-mountain";
+                            }
+                            else if (Model.DisplayName?.Contains("Cuerdas") == true)
+                            {
+                                iconClass = "fas fa-route";
+                            }
+                            else if (Model.DisplayName?.Contains("Glider") == true)
+                            {
+                                iconClass = "fas fa-wind";
+                            }
+                        }
+                        <i class="@iconClass"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="service-body">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+                @Html.HiddenFor(model => model.Id)
 
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="DisplayName">Nombre del Servicio</label>
+                        @Html.EditorFor(model => model.DisplayName, new { htmlAttributes = new { @class = "form-control", placeholder = "Nombre del servicio" } })
+                        @Html.ValidationMessageFor(model => model.DisplayName, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" for="DefaultDuration">Duración</label>
+                        @Html.EditorFor(model => model.DefaultDuration, new { htmlAttributes = new { @class = "form-control", placeholder = "Duración" } })
+                        @Html.ValidationMessageFor(model => model.DefaultDuration, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" for="DefaultPrice">Precio</label>
+                        @Html.EditorFor(model => model.DefaultPrice, new { htmlAttributes = new { @class = "form-control", placeholder = "Precio" } })
+                        @Html.ValidationMessageFor(model => model.DefaultPrice, "", new { @class = "text-danger" })
+                    </div>
+                </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
-        </div>
-    </div>
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="Description">Descripción</label>
+                        @Html.TextAreaFor(model => model.Description, 4, 40, new { @class = "form-control", placeholder = "Descripción del servicio" })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="Notes">Notas</label>
+                        @Html.TextAreaFor(model => model.Notes, 4, 40, new { @class = "form-control", placeholder = "Notas adicionales" })
+                        @Html.ValidationMessageFor(model => model.Notes, "", new { @class = "text-danger" })
+                    </div>
+                </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.Notes, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.Notes, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.Notes, "", new { @class = "text-danger" })
-        </div>
-    </div>
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="PreBuffer">Pre-buffer</label>
+                        @Html.EditorFor(model => model.PreBuffer, new { htmlAttributes = new { @class = "form-control", placeholder = "Pre-buffer" } })
+                        @Html.ValidationMessageFor(model => model.PreBuffer, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="PostBuffer">Post-buffer</label>
+                        @Html.EditorFor(model => model.PostBuffer, new { htmlAttributes = new { @class = "form-control", placeholder = "Post-buffer" } })
+                        @Html.ValidationMessageFor(model => model.PostBuffer, "", new { @class = "text-danger" })
+                    </div>
+                </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.PreBuffer, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.PreBuffer, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.PreBuffer, "", new { @class = "text-danger" })
-        </div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.PostBuffer, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.PostBuffer, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.PostBuffer, "", new { @class = "text-danger" })
-        </div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.SmsNotificationsEnabled, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            <div class="checkbox">
-                @Html.EditorFor(model => model.SmsNotificationsEnabled)
-                @Html.ValidationMessageFor(model => model.SmsNotificationsEnabled, "", new { @class = "text-danger" })
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-Primary-ExpOxi btn-lg px-5 animate__animated animate__pulse animate__infinite animate__slower">
+                        <i class="fas fa-save me-2"></i>Guardar Cambios
+                    </button>
+                    <a href="@Url.Action("Index", "Servicios")" class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a la lista
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-            <input type="submit" value="Save" class="btn btn-default" />
-        </div>
-    </div>
+    }
 </div>
-}
 
-<div>
-    @Html.ActionLink("Back to List", "Index")
-</div>
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .reservation-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .service-detail-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .service-header {
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .service-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .service-icon {
+        font-size: 2.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .service-body {
+        padding: 2rem;
+    }
+
+    .form-label {
+        color: #212529;
+        font-weight: 600;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        font-size: 1.05rem;
+    }
+
+        .form-control:focus {
+            border-color: #fa8f23;
+            box-shadow: 0 0 0 2px rgba(250, 143, 35, 0.15);
+        }
+
+    .btn-Primary-ExpOxi {
+        background-color: #fa8f23;
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 50px;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+        .btn-Primary-ExpOxi:hover {
+            background-color: #e67b0f;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+    .btn-outline-secondary {
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        .service-body {
+            padding: 1rem;
+        }
+
+        .service-header {
+            padding: 1rem;
+        }
+    }
+</style>

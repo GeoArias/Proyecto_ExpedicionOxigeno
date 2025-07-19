@@ -70,13 +70,20 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 var response = await MSBookings_Actions.Update_MSBookingsService(id, service);
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Servicios");
+                    TempData["Mensaje"] = "Servicio modificado satisfactoriamente!";
+                    return RedirectToAction("Index");
                 }
                 else
                 {
-                    ModelState.AddModelError("", await response.Content.ReadAsStringAsync());
-                    return View();
+                    var Nservice = await MSBookings_Actions.Get_MSBookingsService(id);
+                    if (Nservice == null)
+                    {
+                        return HttpNotFound();
+                    }
+                    TempData["Error"] = "Error al procesar el cambio: "+response.ReasonPhrase;
+                    return View(Nservice);
                 }
+                
             }
             catch (HttpRequestException ex)
             {
