@@ -1,0 +1,232 @@
+﻿@using Microsoft.Graph.Models
+@model BookingService
+
+@{
+    ViewBag.Title = "Detalle del Servicio";
+}
+
+<div class="reservation-container">
+    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4"><i class="fas fa-cogs me-2"></i>Detalle del Servicio</h1>
+        <p class="lead">Consulta los detalles del servicio seleccionado</p>
+    </div>
+
+    <div class="service-detail-card animate__animated animate__fadeInUp">
+        <div class="service-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="service-title">@Model.DisplayName</h3>
+                    <div class="service-meta">
+                        <span class="duration">
+                            <i class="far fa-clock me-1"></i>
+                            @if (Model.DefaultDuration?.TotalHours >= 1)
+                            {
+                                @($"{Math.Floor(Model.DefaultDuration.Value.TotalHours)}h {Model.DefaultDuration.Value.Minutes}m")
+                            }
+                            else
+                            {
+                                @($"{Model.DefaultDuration?.Minutes ?? 0}m")
+                            }
+                        </span>
+                        <span class="price">
+                            <i class="fas fa-tag me-1"></i>
+                            ₡@string.Format("{0:N0}", Model.DefaultPrice)
+                        </span>
+                    </div>
+                </div>
+                <div class="service-icon">
+                    @{
+                        string iconClass = "fas fa-tree";
+                        if (Model.DisplayName?.Contains("Escalada") == true)
+                        {
+                            iconClass = "fas fa-mountain";
+                        }
+                        else if (Model.DisplayName?.Contains("Cuerdas") == true)
+                        {
+                            iconClass = "fas fa-route";
+                        }
+                        else if (Model.DisplayName?.Contains("Glider") == true)
+                        {
+                            iconClass = "fas fa-wind";
+                        }
+                    }
+                    <i class="@iconClass"></i>
+                </div>
+            </div>
+        </div>
+        <div class="service-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nombre del Servicio</label>
+                    <div class="form-control-plaintext">@Model.DisplayName</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Duración</label>
+                    <div class="form-control-plaintext">
+                        @if (Model.DefaultDuration?.TotalHours >= 1)
+                        {
+                            @($"{Math.Floor(Model.DefaultDuration.Value.TotalHours)}h {Model.DefaultDuration.Value.Minutes}m")
+                        }
+                        else
+                        {
+                            @($"{Model.DefaultDuration?.Minutes ?? 0}m")
+                        }
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Precio</label>
+                    <div class="form-control-plaintext">₡@string.Format("{0:N0}", Model.DefaultPrice)</div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Descripción</label>
+                    <div class="form-control-plaintext">@Model.Description</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Notas</label>
+                    <div class="form-control-plaintext">@Model.Notes</div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-3">
+                <label class="form-label fw-bold">Personal asignado</label>
+                <div>
+                    @if (ViewBag.AllStaff != null && Model.StaffMemberIds != null)
+                    {
+                        foreach (var staff in ViewBag.AllStaff)
+                        {
+                            if (Model.StaffMemberIds.Contains(staff.Id))
+                            {
+                                <div class="form-control-plaintext">
+                                    <i class="fas fa-user me-1"></i>
+                                    @staff.DisplayName (@staff.EmailAddress)
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="form-control-plaintext text-muted">No hay personal asignado.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="row g-3 mt-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Pre-buffer</label>
+                    <div class="form-control-plaintext">
+                        @if (Model.PreBuffer != null && (Model.PreBuffer.Value.Hours > 0 || Model.PreBuffer.Value.Minutes > 0))
+                        {
+                            @($"{Model.PreBuffer.Value.Hours}h {Model.PreBuffer.Value.Minutes}m")
+                        }
+                        else
+                        {
+                            @("0m")
+                        }
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Post-buffer</label>
+                    <div class="form-control-plaintext">
+                        @if (Model.PostBuffer != null && (Model.PostBuffer.Value.Hours > 0 || Model.PostBuffer.Value.Minutes > 0))
+                        {
+                            @($"{Model.PostBuffer.Value.Hours}h {Model.PostBuffer.Value.Minutes}m")
+                        }
+                        else
+                        {
+                            @("0m")
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <a href="@Url.Action("Index", "Servicios")" class="btn btn-outline-secondary btn-lg ms-2">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a la lista
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .reservation-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .service-detail-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .service-header {
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .service-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .service-icon {
+        font-size: 2.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .service-body {
+        padding: 2rem;
+    }
+
+    .form-label {
+        color: #212529;
+        font-weight: 600;
+    }
+
+    .form-control-plaintext {
+        padding: 0.375rem 0;
+        margin-bottom: 0.5rem;
+        color: #495057;
+        font-size: 1.05rem;
+        background: none;
+        border: none;
+        display: block;
+    }
+
+    .btn-outline-secondary {
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        .service-body {
+            padding: 1rem;
+        }
+
+        .service-header {
+            padding: 1rem;
+        }
+    }
+</style>

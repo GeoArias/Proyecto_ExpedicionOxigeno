@@ -75,10 +75,15 @@
                         @Html.EditorFor(model => model.DisplayName, new { htmlAttributes = new { @class = "form-control", placeholder = "Nombre del servicio" } })
                         @Html.ValidationMessageFor(model => model.DisplayName, "", new { @class = "text-danger" })
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold" for="DefaultDuration">Duración</label>
-                        @Html.EditorFor(model => model.DefaultDuration, new { htmlAttributes = new { @class = "form-control", placeholder = "Duración" } })
-                        @Html.ValidationMessageFor(model => model.DefaultDuration, "", new { @class = "text-danger" })
+                    <div class="form-group col-md-4">
+                        @Html.Label("Duración")
+                        <div class="input-group">
+                            @Html.TextBox("DurationHours", Model.DefaultDuration?.Hours ?? 0, new { @class = "form-control", type = "number", min = "0", max = "23", placeholder = "Horas" })
+                            <div class="input-group-append"><span class="input-group-text">h</span></div>
+                            @Html.TextBox("DurationMinutes", Model.DefaultDuration?.Minutes ?? 0, new { @class = "form-control", type = "number", min = "0", max = "59", placeholder = "Minutos" })
+                            <div class="input-group-append"><span class="input-group-text">min</span></div>
+                        </div>
+                        <small class="form-text text-muted">Duración total del servicio.</small>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold" for="DefaultPrice">Precio</label>
@@ -99,17 +104,47 @@
                         @Html.ValidationMessageFor(model => model.Notes, "", new { @class = "text-danger" })
                     </div>
                 </div>
+                <div class="row g-3 mt-3">
+                    <label class="form-label fw-bold" for="selectedStaff">Personal asignado</label>
+                    <div>
+                        @foreach (var staff in ViewBag.AllStaff)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="selectedStaff"
+                                       id="staff_@staff.Id"
+                                       value="@staff.Id"
+                                       @(Model.StaffMemberIds != null && Model.StaffMemberIds.Contains(staff.Id) ? "checked" : "") />
+                                <label class="form-check-label" for="staff_@staff.Id">
+                                    @staff.DisplayName (@staff.EmailAddress)
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    <small class="form-text text-muted">Selecciona uno o más miembros del personal.</small>
+                </div>
 
                 <div class="row g-3 mt-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold" for="PreBuffer">Pre-buffer</label>
-                        @Html.EditorFor(model => model.PreBuffer, new { htmlAttributes = new { @class = "form-control", placeholder = "Pre-buffer" } })
-                        @Html.ValidationMessageFor(model => model.PreBuffer, "", new { @class = "text-danger" })
+                    <div class="form-group col-md-4">
+                        @Html.Label("Pre-buffer")
+                        <div class="input-group">
+                            @Html.TextBox("PreBufferHours", Model.PreBuffer?.Hours ?? 0, new { @class = "form-control", type = "number", min = "0", max = "23", placeholder = "Horas" })
+                            <div class="input-group-append"><span class="input-group-text">h</span></div>
+                            @Html.TextBox("PreBufferMinutes", Model.PreBuffer?.Minutes ?? 0, new { @class = "form-control", type = "number", min = "0", max = "59", placeholder = "Minutos" })
+                            <div class="input-group-append"><span class="input-group-text">min</span></div>
+                        </div>
+                        <small class="form-text text-muted">Tiempo antes de iniciar el servicio.</small>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold" for="PostBuffer">Post-buffer</label>
-                        @Html.EditorFor(model => model.PostBuffer, new { htmlAttributes = new { @class = "form-control", placeholder = "Post-buffer" } })
-                        @Html.ValidationMessageFor(model => model.PostBuffer, "", new { @class = "text-danger" })
+                    <div class="form-group col-md-4">
+                        @Html.Label("Post-buffer")
+                        <div class="input-group">
+                            @Html.TextBox("PostBufferHours", Model.PostBuffer?.Hours ?? 0, new { @class = "form-control", type = "number", min = "0", max = "23", placeholder = "Horas" })
+                            <div class="input-group-append"><span class="input-group-text">h</span></div>
+                            @Html.TextBox("PostBufferMinutes", Model.PostBuffer?.Minutes ?? 0, new { @class = "form-control", type = "number", min = "0", max = "59", placeholder = "Minutos" })
+                            <div class="input-group-append"><span class="input-group-text">min</span></div>
+                        </div>
+                        <small class="form-text text-muted">Tiempo después de finalizar el servicio.</small>
                     </div>
                 </div>
 
@@ -129,6 +164,8 @@
 <style>
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+
 
     body {
         background-color: #f8f9fa;

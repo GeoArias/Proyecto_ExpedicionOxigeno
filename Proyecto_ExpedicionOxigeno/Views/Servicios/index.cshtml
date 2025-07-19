@@ -4,53 +4,211 @@
     ViewBag.Title = "Servicios";
 }
 
-<h2>@ViewBag.Title</h2>
+<main class="container py-4">
+    <section class="section-padding">
+        <div class="text-center mb-5">
+            <div class="section-badge">ADMINISTRA LOS SERVICIOS</div>
+            <h2 class="section-title">Servicios Disponibles</h2>
+            <p class="section-text">Gestiona y visualiza los servicios ofrecidos en Expedición Oxígeno</p>
+        </div>
 
-@if (TempData["Mensaje"] != null)
-{
-    <div class="alert alert-success">@TempData["Mensaje"]</div>
-}
-
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>ID</th>
-            <th>Duración</th>
-            <th>Precio</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+        @if (TempData["Mensaje"] != null)
         {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.DisplayName)</td>
-                <td>@Html.DisplayFor(modelItem => item.Id)</td>
-                <td>
-                    @if (item.DefaultDuration.Value.TotalHours >= 1)
-                    {
-                        @($"{Math.Floor(item.DefaultDuration.Value.TotalHours)} horas {item.DefaultDuration.Value.Minutes} minutos")
-                    }
-                    else
-                    {
-                        @($"{item.DefaultDuration.Value.Minutes} minutos")
-                    }
-                </td>
-                <td>@string.Format("{0:C}", item.DefaultPrice)</td>
-                <td>
-                    <a href="@Url.Action("Details", "Servicios", new { id = item.Id })" class="btn btn-sm btn-primary">
-                        <i class="bi bi-eye"></i> Ver detalles
-                    </a>
-                    <a href="@Url.Action("Edit", "Servicios", new { id = item.Id })" class="btn btn-sm btn-warning">
-                        <i class="bi bi-pencil-square"></i> Editar
-                    </a>
-                    <a href="@Url.Action("Delete", "Servicios", new { id = item.Id })" class="btn btn-sm btn-danger"
-                       onclick="return confirm('¿Seguro que deseas eliminar este servicio?');">
-                        <i class="bi bi-trash"></i> Eliminar
-                    </a>
-                </td>
-            </tr>
+            <div class="alert alert-success text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Mensaje"]
+            </div>
         }
-    </tbody>
-</table>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Mensaje"]
+            </div>
+        }
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    string iconClass = "fas fa-tree";
+                    if (item.DisplayName?.Contains("Escalada") == true)
+                    {
+                        iconClass = "fas fa-mountain";
+                    }
+                    else if (item.DisplayName?.Contains("Cuerdas") == true)
+                    {
+                        iconClass = "fas fa-route";
+                    }
+                    else if (item.DisplayName?.Contains("Glider") == true)
+                    {
+                        iconClass = "fas fa-wind";
+                    }
+                    <div class="col">
+                        <div class="service-card animate__animated animate__fadeInUp">
+                            <div class="service-icon">
+                                <i class="@iconClass"></i>
+                            </div>
+                            <h4 class="service-title">@item.DisplayName</h4>
+                            <div class="service-meta mb-2">
+                                <div class="service-duration">
+                                    <i class="far fa-clock"></i>
+                                    @if (item.DefaultDuration?.TotalHours >= 1)
+                                    {
+                                        @($"{Math.Floor(item.DefaultDuration.Value.TotalHours)}h {item.DefaultDuration.Value.Minutes}m")
+                                    }
+                                    else
+                                    {
+                                        @($"{item.DefaultDuration?.Minutes ?? 0}m")
+                                    }
+                                </div>
+                                <div class="service-price">
+                                    <i class="fas fa-tag"></i>
+                                    ₡@string.Format("{0:N0}", item.DefaultPrice)
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center gap-2 mt-3">
+                                <a href="@Url.Action("Details", "Servicios", new { id = item.Id })" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Ver detalles
+                                </a>
+                                <a href="@Url.Action("Edit", "Servicios", new { id = item.Id })" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </a>
+                                <a href="@Url.Action("Delete", "Servicios", new { id = item.Id })" class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('¿Seguro que deseas eliminar este servicio?');">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>No hay servicios disponibles</h5>
+                        <p>Por favor intenta más tarde o agrega un nuevo servicio.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+</main>
+
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    .section-padding {
+        padding: 60px 0 40px 0;
+    }
+    .section-badge {
+        display: inline-block;
+        background-color: rgba(250, 143, 35, 0.1);
+        color: #fa8f23;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 8px 18px;
+        border-radius: 50px;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+    }
+    .section-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: #212529;
+    }
+    .section-text {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 700px;
+        margin: 0 auto 30px auto;
+    }
+    .service-card {
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 30px 20px 20px 20px;
+        text-align: center;
+        position: relative;
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    .service-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 15px 30px rgba(250,143,35,0.13);
+    }
+    .service-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin: 0 auto 18px;
+        box-shadow: 0 4px 16px rgba(250,143,35,0.13);
+    }
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+        color: #212529;
+    }
+    .service-meta {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 10px;
+        border-top: 1px solid #e9ecef;
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+    .service-duration, .service-price {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        color: #495057;
+    }
+    .service-duration i, .service-price i {
+        margin-right: 5px;
+        color: #fa8f23;
+    }
+    .btn-outline-primary, .btn-outline-warning, .btn-outline-danger {
+        border-radius: 50px;
+        font-weight: 600;
+        min-width: 110px;
+        transition: all 0.2s;
+    }
+    .btn-outline-primary:hover {
+        background: #fa8f23;
+        color: #fff;
+        border-color: #fa8f23;
+    }
+    .btn-outline-warning:hover {
+        background: #ffc107;
+        color: #fff;
+        border-color: #ffc107;
+    }
+    .btn-outline-danger:hover {
+        background: #dc3545;
+        color: #fff;
+        border-color: #dc3545;
+    }
+    @@media (max-width: 992px) {
+        .section-padding { padding: 40px 0 20px 0; }
+        .service-card { padding: 20px 10px 15px 10px; }
+        .service-icon { width: 55px; height: 55px; font-size: 1.3rem; }
+    }
+    @@media (max-width: 768px) {
+        .section-title { font-size: 1.5rem; }
+        .service-card { padding: 15px 5px 10px 5px; }
+    }
+</style>

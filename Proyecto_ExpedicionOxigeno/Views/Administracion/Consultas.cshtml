@@ -3,69 +3,98 @@
     ViewBag.Title = "Consultas";
 }
 
-<h2>Consultas recibidas</h2>
+<main class="container py-4">
+    <section class="section-padding">
+        <div class="text-center mb-5">
+            <div class="section-badge">ADMINISTRA LAS CONSULTAS</div>
+            <h2 class="section-title">Consultas Recibidas</h2>
+            <p class="section-text">Gestiona y responde las consultas enviadas por los usuarios de Expedición Oxígeno</p>
+        </div>
 
-@if (TempData["Mensaje"] != null)
-{
-    <div class="alert alert-success">@TempData["Mensaje"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger animate__animated animate__shakeX">
-        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
-    </div>
-}
-<table class="table table-bordered table-striped align-middle">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Nombre</th>
-            <th>Teléfono</th>
-            <th>Email</th>
-            <th>Consulta</th>
-            <th>Respondida</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model)
+        @if (TempData["Mensaje"] != null)
         {
-            <tr>
-                <td>@c.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>@c.Nombre</td>
-                <td>@c.Telefono</td>
-                <td>@c.Email</td>
-                <td>@c.Consulta</td>
-                <td>
-                    @if (c.Respondida)
-                    {
-                        <span class="badge bg-success">Sí</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning text-dark">No</span>
-                    }
-                </td>
-                <td>
-                    @if (!c.Respondida)
-                    {
-                        <button type="button"
-                                class="btn btn-primary btn-sm btn-responder"
-                                data-id="@c.Id"
-                                data-email="@c.Email"
-                                data-nombre="@c.Nombre">
-                            Responder
-                        </button>
-                    }
-                    else
-                    {
-                        <span class="text-muted">Respondida</span>
-                    }
-                </td>
-            </tr>
+            <div class="alert alert-success text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Mensaje"]
+            </div>
         }
-    </tbody>
-</table>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+            </div>
+        }
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var c in Model)
+                {
+                    <div class="col">
+                        <div class="service-card animate__animated animate__fadeInUp">
+                            <div class="service-icon" style="background: linear-gradient(135deg, #100b2c 0%, #fa8f23 100%);">
+                                <i class="fas fa-envelope-open-text"></i>
+                            </div>
+                            <h4 class="service-title mb-1">@c.Nombre</h4>
+                            <div class="service-meta mb-2" style="justify-content: center;">
+                                <div class="service-duration">
+                                    <i class="far fa-calendar-alt"></i>
+                                    @c.Fecha.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                                <div class="service-price ms-3">
+                                    <i class="fas fa-phone"></i>
+                                    @c.Telefono
+                                </div>
+                            </div>
+                            <div class="mb-2" style="min-height: 40px;">
+                                <span class="text-muted"><i class="fas fa-at"></i> @c.Email</span>
+                            </div>
+                            <div class="mb-2" style="min-height: 60px;">
+                                <span class="text-dark">"@c.Consulta"</span>
+                            </div>
+                            <div class="mb-2">
+                                @if (c.Respondida)
+                                {
+                                    <span class="badge bg-success">Respondida</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                }
+                            </div>
+                            <div class="d-flex justify-content-center gap-2 mt-2">
+                                @if (!c.Respondida)
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary btn-responder"
+                                            data-id="@c.Id"
+                                            data-email="@c.Email"
+                                            data-nombre="@c.Nombre"
+                                            style="min-width:110px;border-radius:50px;">
+                                        <i class="bi bi-reply"></i> Responder
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Respondida</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>No hay consultas disponibles</h5>
+                        <p>Por favor intenta más tarde o espera nuevas consultas.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+</main>
 
 <!-- Modal para responder consulta -->
 <div class="modal fade" id="responderModal" tabindex="-1" aria-labelledby="responderModalLabel" aria-hidden="true">
@@ -105,6 +134,154 @@
     </div>
 </div>
 
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    .section-padding {
+        padding: 60px 0 40px 0;
+    }
+
+    .section-badge {
+        display: inline-block;
+        background-color: rgba(250, 143, 35, 0.1);
+        color: #fa8f23;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 8px 18px;
+        border-radius: 50px;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+    }
+
+    .section-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: #212529;
+    }
+
+    .section-text {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 700px;
+        margin: 0 auto 30px auto;
+    }
+
+    .service-card {
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 30px 20px 20px 20px;
+        text-align: center;
+        position: relative;
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+        .service-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(250,143,35,0.13);
+        }
+
+    .service-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin: 0 auto 18px;
+        box-shadow: 0 4px 16px rgba(250,143,35,0.13);
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+        color: #212529;
+    }
+
+    .service-meta {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 10px;
+        border-top: 1px solid #e9ecef;
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    .service-duration, .service-price {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        color: #495057;
+    }
+
+        .service-duration i, .service-price i {
+            margin-right: 5px;
+            color: #fa8f23;
+        }
+
+    .btn-outline-primary, .btn-outline-warning, .btn-outline-danger {
+        border-radius: 50px;
+        font-weight: 600;
+        min-width: 110px;
+        transition: all 0.2s;
+    }
+
+        .btn-outline-primary:hover {
+            background: #fa8f23;
+            color: #fff;
+            border-color: #fa8f23;
+        }
+
+        .btn-outline-warning:hover {
+            background: #ffc107;
+            color: #fff;
+            border-color: #ffc107;
+        }
+
+        .btn-outline-danger:hover {
+            background: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+
+    @@media (max-width: 992px) {
+        .section-padding {
+            padding: 40px 0 20px 0;
+        }
+
+        .service-card {
+            padding: 20px 10px 15px 10px;
+        }
+
+        .service-icon {
+            width: 55px;
+            height: 55px;
+            font-size: 1.3rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .section-title {
+            font-size: 1.5rem;
+        }
+
+        .service-card {
+            padding: 15px 5px 10px 5px;
+        }
+    }
+</style>
+
 @section Scripts {
     <script>
         document.querySelectorAll('.btn-responder').forEach(function (btn) {
@@ -119,5 +296,4 @@
             });
         });
     </script>
-    <!-- Si usas Bootstrap Icons, asegúrate de incluir su CDN en tu _Layout.cshtml -->
 }

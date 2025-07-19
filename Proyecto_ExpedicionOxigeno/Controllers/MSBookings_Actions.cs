@@ -189,14 +189,28 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             try
             {
                 var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers", HttpMethod.Get);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var jsonObject = JObject.Parse(content);
+                    var content = response.Content;
+                    var jsonString = await content.ReadAsStringAsync();
+                    // Parse the JSON string to a JArray
+                    var jsonObject = JObject.Parse(jsonString);
                     var staffArray = jsonObject["value"] as JArray;
-                    // Convert JArray to List<BookingStaffMember>
-                    var staff = staffArray.ToObject<List<BookingStaffMember>>();
-                    return staff;
+
+                    // Convert JArray to List<BookingStaffMember> with our custom settings
+                    var settings = new JsonSerializerSettings
+                    {
+                        Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter()
+                        },
+                        NullValueHandling = NullValueHandling.Ignore
+                    };
+
+                    List<BookingStaffMember> staffList = staffArray.ToObject<List<BookingStaffMember>>(
+                        JsonSerializer.Create(settings));
+                    return staffList;
                 }
                 else
                 {

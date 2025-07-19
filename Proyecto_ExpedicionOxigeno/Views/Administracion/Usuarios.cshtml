@@ -7,97 +7,212 @@
     ViewBag.Title = "Administrar Usuarios";
     var userManager = HttpContext.Current.GetOwinContext().GetUserManager<Proyecto_ExpedicionOxigeno.ApplicationUserManager>();
 }
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger animate__animated animate__shakeX">
-        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
-    </div>
-}
-<h2>Administrar Usuarios</h2>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Correo electrónico</th>
-            <th>Correo confirmado</th>
-            <th>Roles</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
-            var roles = userManager.GetRoles(user.Id);
-            <tr>
-                <td>@user.Email</td>
-                <td>
-                    @if (user.EmailConfirmed)
-                    {
-                        <span class="badge bg-success">Sí</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">No</span>
-                    }
-                </td>
-                <td>
-                    <span>
-                        @string.Join(", ", roles)
-                        <button type="button"
-                                class="btn btn-outline-primary btn-sm ms-2 edit-role-link align-middle"
-                                title="Editar rol"
-                                data-userid="@user.Id"
-                                data-roles="@string.Join(",", roles)">
-                            <i class="bi bi-pencil-square"></i> Editar
-                        </button>
-
-                    </span>
-                </td>
-
-                <td>
-                    <a href="@Url.Action("EliminarUsuario", "Account", new { id = user.Id })" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">Eliminar</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-<!-- Modal para editar rol de usuario -->
-<div class="modal fade" id="editarRolModal" tabindex="-1" aria-labelledby="editarRolModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
-            <div class="modal-header text-white" style="background-color: #100b2c;">
-                <h5 class="modal-title" id="editarRolModalLabel">
-                    Editar rol de usuario
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <form method="post" action="@Url.Action("EditarRolUsuario", "Administracion")" autocomplete="off">
-                @Html.AntiForgeryToken()
-                <div class="modal-body">
-                    <input type="hidden" name="UserId" id="modalUserId" />
-                    <div class="mb-3">
-                        <label for="modalSelectedRole" class="form-label fw-bold">Rol</label>
-                        <select class="form-select" id="modalSelectedRole" name="SelectedRole" required>
-                            <option value="">Selecciona un rol...</option>
-                            @foreach (var rol in ViewBag.Roles as List<string>)
-                            {
-                                <option value="@rol">@rol</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-save"></i> Guardar cambios
-                    </button>
-                </div>
-            </form>
+<main class="container py-4">
+    <section class="section-padding">
+        <div class="text-center mb-5">
+            <div class="section-badge">ADMINISTRA LOS USUARIOS</div>
+            <h2 class="section-title">Administrar Usuarios</h2>
+            <p class="section-text">Gestiona los usuarios registrados en Expedición Oxígeno</p>
         </div>
-    </div>
-</div>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger text-center mb-4 animate__animated animate__shakeX">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+            </div>
+        }
+        @if (TempData["Mensaje"] != null)
+        {
+            <div class="alert alert-success text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Mensaje"]
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle shadow-sm bg-white rounded">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Correo electrónico</th>
+                        <th>Correo confirmado</th>
+                        <th>Roles</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        var roles = userManager.GetRoles(user.Id);
+                        <tr>
+                            <td>
+                                <span class="fw-bold text-primary">@user.Email</span>
+                            </td>
+                            <td>
+                                @if (user.EmailConfirmed)
+                                {
+                                    <span class="badge bg-success">Sí</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">No</span>
+                                }
+                            </td>
+                            <td>
+                                <span>
+                                    @string.Join(", ", roles)
+                                    <button type="button"
+                                            class="btn btn-outline-primary btn-sm ms-2 edit-role-link align-middle"
+                                            title="Editar rol"
+                                            data-userid="@user.Id"
+                                            data-roles="@string.Join(",", roles)">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </button>
+                                </span>
+                            </td>
+                            <td>
+                                <form method="post" action="@Url.Action("EliminarUsuario", "Administracion", new { id = user.Id })" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">
+                                        <i class="fas fa-trash-alt"></i> Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal para editar rol de usuario -->
+        <div class="modal fade" id="editarRolModal" tabindex="-1" aria-labelledby="editarRolModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0">
+                    <div class="modal-header text-white" style="background-color: #100b2c;">
+                        <h5 class="modal-title" id="editarRolModalLabel">
+                            Editar rol de usuario
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <form method="post" action="@Url.Action("EditarRolUsuario", "Administracion")" autocomplete="off">
+                        @Html.AntiForgeryToken()
+                        <div class="modal-body">
+                            <input type="hidden" name="UserId" id="modalUserId" />
+                            <div class="mb-3">
+                                <label for="modalSelectedRole" class="form-label fw-bold">Rol</label>
+                                <select class="form-select" id="modalSelectedRole" name="SelectedRole" required>
+                                    <option value="">Selecciona un rol...</option>
+                                    @foreach (var rol in ViewBag.Roles as List<string>)
+                                    {
+                                        <option value="@rol">@rol</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-save"></i> Guardar cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    .section-padding {
+        padding: 60px 0 40px 0;
+    }
+
+    .section-badge {
+        display: inline-block;
+        background-color: rgba(250, 143, 35, 0.1);
+        color: #fa8f23;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 8px 18px;
+        border-radius: 50px;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+    }
+
+    .section-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: #212529;
+    }
+
+    .section-text {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 700px;
+        margin: 0 auto 30px auto;
+    }
+
+    .table {
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+        .table thead th {
+            background: #100b2c;
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .table td, .table th {
+            vertical-align: middle !important;
+        }
+
+    .btn-outline-primary, .btn-outline-danger {
+        border-radius: 50px;
+        font-weight: 600;
+        min-width: 90px;
+        transition: all 0.2s;
+    }
+
+        .btn-outline-primary:hover {
+            background: #fa8f23;
+            color: #fff;
+            border-color: #fa8f23;
+        }
+
+        .btn-outline-danger:hover, .btn-danger:hover {
+            background: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+
+    .modal-content {
+        border-radius: 16px;
+    }
+
+    @@media (max-width: 992px) {
+        .section-padding {
+            padding: 40px 0 20px 0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+        }
+
+        .table-responsive {
+            font-size: 0.95rem;
+        }
+    }
+</style>
 
 @section Scripts {
     <script>
