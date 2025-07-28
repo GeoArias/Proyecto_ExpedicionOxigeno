@@ -1,22 +1,6 @@
 ﻿@using Microsoft.AspNet.Identity
 @using Microsoft.AspNet.Identity.Owin
 @using Microsoft.Owin.Security
-@using System.Security.Claims
-@{
-    string nombreUsuario = "";
-    if (Request.IsAuthenticated)
-    {
-        var claimsIdentity = User.Identity as ClaimsIdentity;
-        if (claimsIdentity != null)
-        {
-            var claimNombre = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "Nombre");
-            if (claimNombre != null)
-            {
-                nombreUsuario = claimNombre.Value;
-            }
-        }
-    }
-}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -32,6 +16,7 @@
     <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js" integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c" crossorigin="anonymous"></script>
 
     <style>
+
         @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
         @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
 
@@ -94,13 +79,14 @@
         }
 
         .navbar {
-            position: fixed !important;
+            position: fixed !important; /* Always fixed at the top */
             top: 0;
             left: 0;
-            width: 100%;
+            width: 100%; /* Full width */
             background-color: var(--azul-fondo);
             padding: 1rem 0;
-            z-index: 1030;
+            z-index: 1030; /* On top of other elements */
+            transition: none; /* No transition needed */
         }
 
             .navbar.hidden {
@@ -145,7 +131,7 @@
 
             .nav-login:hover,
             .nav-register:hover {
-                background-color: rgb(230, 123, 15) !important;
+                background-color: rgb(230, 123, 15) !important; /* Un poco más oscuro para el hover */
                 color: white !important;
                 transform: translateY(-2px);
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -166,15 +152,15 @@
         .body-content, main.container {
             position: relative;
             z-index: 1;
-            padding-top: 90px;
+            padding-top: 90px; /* Ajusta este valor a la altura real de tu navbar */
         }
 
         .hero-banner video {
             position: absolute;
-            top: -90px;
+            top: -90px; /* igual a la altura de tu navbar */
             left: 0;
             min-width: 100vw;
-            min-height: calc(100vh + 90px);
+            min-height: calc(100vh + 90px); /* cubre el área extra */
             object-fit: cover;
             z-index: -1;
         }
@@ -339,6 +325,7 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
+        /* Make it responsive */
         @@media (max-width: 768px) {
             .footer-section .col-md-4 {
                 margin-bottom: 30px;
@@ -365,7 +352,7 @@
                     justify-content: center;
                 }
         }
-
+        /* Responsive para móviles */
         @@media (max-width: 768px) {
             footer {
                 grid-template-columns: 1fr;
@@ -389,6 +376,8 @@
                 display: block;
                 margin: 0 auto 20px auto;
             }
+
+
 
             .floating-reserve-btn {
                 position: fixed;
@@ -415,7 +404,6 @@
                     transform: scale(1);
                 }
             }
-
             .navbar-nav .dropdown-menu-end {
                 right: 0;
                 left: auto;
@@ -424,16 +412,21 @@
             .navbar-nav .fa-user-circle {
                 color: #fff;
             }
+
+
         }
     </style>
+
 
     @Styles.Render("~/Content/css")
 </head>
 <body>
     @{
+        // Detecta si es la página principal (Home/Index)
         bool esHomeIndex = (ViewContext.RouteData.Values["controller"].ToString().ToLower() == "home"
             && ViewContext.RouteData.Values["action"].ToString().ToLower() == "index");
     }
+
 
     <nav class="navbar navbar-expand-sm navbar-dark sticky-top @(esHomeIndex ? "transparent" : "")" id="mainNavbar">
         <div class="container">
@@ -477,13 +470,6 @@
                 </ul>
 
                 <ul class="navbar-nav">
-                    @if (!string.IsNullOrEmpty(nombreUsuario))
-                    {
-                        <li class="nav-item d-flex align-items-center me-3">
-                            <span class="navbar-text text-white">Hola, @nombreUsuario</span>
-                        </li>
-                    }
-
                     @if (Request.IsAuthenticated)
                     {
                         <li class="nav-item dropdown">
@@ -603,6 +589,7 @@
                             <h3>Dirección</h3>
                             <p class="address"><i class="fas fa-map-marker-alt"></i> Centro Comercial Oxígeno, Heredia, San Francisco</p>
                             <div class="map-container">
+                                <!-- Replace with the existing Google Maps iframe or code -->
                                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.4627968246337!2d-84.1316062!3d9.9876543!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8fa0fb079812c78d%3A0x1c0e5d7b730cc84!2sCentro%20Comercial%20Ox%C3%ADgeno!5e0!3m2!1ses!2scr!4v1656423077851!5m2!1ses!2scr" width="100%" height="150" style="border:0;" loading="lazy"></iframe>
                             </div>
                         </div>
@@ -618,7 +605,99 @@
                 </div>
             </div>
         </footer>
+
     </div>
+
+    <!-- Modal de Log in -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="loginModalLabel">Iniciar sesión</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/Account/Login">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label for="emailLogin" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="emailLogin" name="Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="passwordLogin" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="passwordLogin" name="Password" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Entrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="registerModalLabel">Crear cuenta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/Account/Register">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label for="emailRegister" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="emailRegister" name="Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="passwordRegister" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="passwordRegister" name="Password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Registrarme</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de Confirmación de Registro -->
+    <div class="modal fade" id="registroExitosoModal" tabindex="-1" aria-labelledby="registroExitosoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="registroExitosoModalLabel">Registro Exitoso</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center">
+                    ¡Gracias por registrarte!<br />
+                    Te llegará un correo a la dirección brindada para confirmar tu cuenta.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal: Debes iniciar sesión -->
+    <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="loginRequiredModalLabel">Inicio de sesión requerido</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center">
+                    Debes iniciar sesión para dejar una reseña o consulta.
+                    <div class="mt-3">
+                        <a href="@Url.Action("Login", "Account", new { ReturnUrl = Request.RawUrl })" class="btn btn-success">
+                            Iniciar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
