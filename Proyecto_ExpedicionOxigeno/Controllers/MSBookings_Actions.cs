@@ -91,7 +91,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     {
                         Converters = new List<JsonConverter> {
                             new GraphTimeSpanConverter(),
-                            new GraphTimeConverter()
+                            new GraphTimeConverter(),
+                            new KiotaDateConverter() // <-- Agrega aquí
                         },
                         NullValueHandling = NullValueHandling.Ignore
                     };
@@ -128,7 +129,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     {
                         Converters = new List<JsonConverter> {
                             new GraphTimeSpanConverter(),
-                            new GraphTimeConverter()
+                            new GraphTimeConverter(),
+                            new KiotaDateConverter() // <-- Agrega aquí
                         },
                         NullValueHandling = NullValueHandling.Ignore
                     };
@@ -203,7 +205,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     {
                         Converters = new List<JsonConverter> {
                             new GraphTimeSpanConverter(),
-                            new GraphTimeConverter()
+                            new GraphTimeConverter(),
+                            new KiotaDateConverter() // <-- Agrega aquí
                         },
                         NullValueHandling = NullValueHandling.Ignore
                     };
@@ -238,7 +241,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     {
                         Converters = new List<JsonConverter> {
                             new GraphTimeSpanConverter(),
-                            new GraphTimeConverter()
+                            new GraphTimeConverter(),
+                            new KiotaDateConverter() // <-- Agrega aquí
                         },
                         NullValueHandling = NullValueHandling.Ignore
                     };
@@ -573,6 +577,44 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             var jobj = r as JObject;
             var id = jobj?["id"];
+            // Hacer algo con el ID si es necesario
+        }
+    }
+
+    internal class KiotaDateConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            // Soporta Microsoft.Kiota.Abstractions.Date y Nullable<Date>
+            return objectType == typeof(Microsoft.Kiota.Abstractions.Date) ||
+                   objectType == typeof(Microsoft.Kiota.Abstractions.Date?);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            var dateStr = reader.Value as string;
+            if (string.IsNullOrEmpty(dateStr))
+                return null;
+
+            // Parse "yyyy-MM-dd"
+            if (DateTime.TryParse(dateStr, out var dt))
+            {
+                return new Microsoft.Kiota.Abstractions.Date(dt.Year, dt.Month, dt.Day);
+            }
+            // Si el formato no es válido, retorna null
+            return null;
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            if (value is Microsoft.Kiota.Abstractions.Date date)
+            {
+                writer.WriteValue($"{date.Year:D4}-{date.Month:D2}-{date.Day:D2}");
+            }
+            else
+            {
+                writer.WriteNull();
+            }
         }
     }
 }

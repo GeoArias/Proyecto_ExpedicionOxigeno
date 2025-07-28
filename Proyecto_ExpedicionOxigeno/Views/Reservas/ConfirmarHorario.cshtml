@@ -1,4 +1,5 @@
 ﻿@model dynamic
+@using System.Globalization
 @{
     ViewBag.Title = "Confirmar reserva";
     var servicio = ViewBag.Servicio as Microsoft.Graph.Models.BookingService;
@@ -35,7 +36,7 @@
                         </div>
                         <div class="col-md-4 text-md-end">
                             <div class="invoice-details animate__animated animate__fadeInRight">
-                                <p class="text-muted mb-0">Fecha: @DateTime.Now.ToString("dd/MM/yyyy")</p>
+                                <p class="text-muted mb-0">Fecha: @DateTime.Now.ToString("D", new CultureInfo("es-ES"))</p>
                             </div>
                         </div>
                     </div>
@@ -90,7 +91,9 @@
                                 <div class="invoice-info-body">
                                     <div class="invoice-item">
                                         <span class="item-label">Fecha:</span>
-                                        <span class="item-value">@slotStart.ToString("dddd, dd 'de' MMMM 'de' yyyy")</span>
+                                        <span class="item-value">
+                                            @(char.ToUpper(slotStart.ToString("dddd", new CultureInfo("es-ES"))[0]) + slotStart.ToString(", dd 'de' MMMM 'de' yyyy", new CultureInfo("es-ES")))
+                                        </span>
                                     </div>
                                     <div class="invoice-item">
                                         <span class="item-label">Horario:</span>
@@ -110,7 +113,7 @@
                                 <div class="price-summary">
                                     <div class="price-row subtotal">
                                         <span>Subtotal:</span>
-                                        <span>₡@string.Format("{0:N0}", servicio.DefaultPrice*0.87)</span>
+                                        <span>₡@string.Format("{0:N0}", servicio.DefaultPrice * 0.87)</span>
                                     </div>
                                     <div class="price-row tax">
                                         <span>IVA (13%):</span>
@@ -130,7 +133,6 @@
                             </div>
                         </div>
                     </div>
-
 
                     <div class="important-notes animate__animated animate__fadeIn animate__delay-4s">
                         <h5><i class="fas fa-exclamation-circle me-2"></i>Información Importante</h5>
@@ -176,6 +178,7 @@
     </div>
 </div>
 
+
 <style>
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
@@ -204,8 +207,7 @@
     /* Receipt Tear Effect */
     .receipt-tear-top, .receipt-tear-bottom {
         height: 12px;
-        background-image: linear-gradient(45deg, white 25%, transparent 25%),
-                          linear-gradient(-45deg, white 25%, transparent 25%);
+        background-image: linear-gradient(45deg, white 25%, transparent 25%), linear-gradient(-45deg, white 25%, transparent 25%);
         background-size: 20px 20px;
         background-position: 0 0;
         border-bottom: 1px dashed #ddd;
@@ -253,17 +255,17 @@
         transform: rotate(15deg);
     }
 
-    .confirmation-stamp span {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: rgba(40, 167, 69, 0.7);
-        border: 4px solid rgba(40, 167, 69, 0.7);
-        padding: 8px 16px;
-        border-radius: 8px;
-        display: inline-block;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
+        .confirmation-stamp span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: rgba(40, 167, 69, 0.7);
+            border: 4px solid rgba(40, 167, 69, 0.7);
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
 
     /* Section Title */
     .section-title {
@@ -377,20 +379,20 @@
         border-left: 4px solid #ffc107;
     }
 
-    .important-notes h5 {
-        color: #ff9800;
-        margin-bottom: 1rem;
-    }
+        .important-notes h5 {
+            color: #ff9800;
+            margin-bottom: 1rem;
+        }
 
-    .important-notes ul {
-        margin-bottom: 0;
-        padding-left: 1.5rem;
-    }
+        .important-notes ul {
+            margin-bottom: 0;
+            padding-left: 1.5rem;
+        }
 
-    .important-notes li {
-        margin-bottom: 0.5rem;
-        color: #795548;
-    }
+        .important-notes li {
+            margin-bottom: 0.5rem;
+            color: #795548;
+        }
 
     /* Invoice Footer */
     .invoice-footer {
