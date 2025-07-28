@@ -907,69 +907,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         }
 
 
-        public static async Task EnviarCorreoRecordatorio(string email, BookingAppointmentCustomed reserva)
-        {
-            try
-            {
-                // Usa el puerto y protocolo de tu entorno local
-                string baseUrl = "https://localhost:44399";
-
-                string asunto = "Recordatorio de tu reserva - Expedición Oxígeno";
-                string cuerpo = $@"
-                <html>
-                <body>
-                    <h2>¡Tu aventura está cerca!</h2>
-                    <p>Te recordamos tu reserva:</p>
-                    <ul>
-                        <li>Servicio: {reserva.ServiceName}</li>
-                        <li>Fecha: {reserva.start.dateTime:dddd, dd 'de' MMMM 'de' yyyy}</li>
-                        <li>Hora: {reserva.start.dateTime:hh:mm tt} - {reserva.end.dateTime:hh:mm tt}</li>
-                        <li>Duración: {reserva.Duration}</li>
-                    </ul>
-                    <p>
-                        <a href='{baseUrl}/Reservas/ConfirmarAsistencia?id={reserva.Id}'>Confirmar asistencia</a> |
-                        <a href='{baseUrl}/Reservas/ModificarReserva?id={reserva.Id}'>Reprogramar evento</a>
-                    </p>
-                </body>
-                </html>";
-
-                var emailService = new EmailService();
-                await emailService.SendAsync(new Microsoft.AspNet.Identity.IdentityMessage
-                {
-                    Destination = email,
-                    Subject = asunto,
-                    Body = cuerpo
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error al enviar recordatorio: {ex.Message}");
-            }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> ConfirmarAsistencia(string id)
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                TempData["Error"] = "Debes iniciar sesión para confirmar asistencia.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            var db = new ApplicationDbContext();
-            var sello = db.Sellos.FirstOrDefault(s => s.ReservaId == id && s.UserId == User.Identity.GetUserId());
-            if (sello != null)
-            {
-                sello.UsadoEnPase = true;
-                db.SaveChanges();
-                TempData["Success"] = "¡Asistencia confirmada!";
-            }
-            else
-            {
-                TempData["Error"] = "Reserva no encontrada.";
-            }
-            return RedirectToAction("MisReservas");
-        }
     }
 
     // Clase auxiliar para representar un slot de tiempo disponible

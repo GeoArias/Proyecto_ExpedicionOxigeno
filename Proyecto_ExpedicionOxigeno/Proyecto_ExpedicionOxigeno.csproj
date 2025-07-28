@@ -310,7 +310,6 @@
     <Compile Include="Helpers\GraphTimeConverter.cs" />
     <Compile Include="Helpers\GraphTimeSpanConverter.cs" />
     <Compile Include="Helpers\GraphTokenProvider.cs" />
-    <Compile Include="Helpers\ReminderHelper.cs" />
     <Compile Include="Migrations\202506170558195_MigracionInicial.cs" />
     <Compile Include="Migrations\202506170558195_MigracionInicial.Designer.cs">
       <DependentUpon>202506170558195_MigracionInicial.cs</DependentUpon>
