@@ -1,4 +1,5 @@
 ﻿@model dynamic
+@using System.Globalization
 @{
     ViewBag.Title = "Confirmación de reserva";
     var servicio = ViewBag.Servicio as Microsoft.Graph.Models.BookingService;
@@ -36,7 +37,7 @@
                         </div>
                         <div class="col-md-4 text-md-end">
                             <div class="invoice-details animate__animated animate__fadeInRight">
-                                <p class="text-muted mb-0">Fecha: @bookingMS.CreatedDateTime.Value.ToString("dd/MM/yyyy")</p>
+                                <p class="text-muted mb-0">Fecha: @bookingMS.CreatedDateTime.Value.ToString("D", new CultureInfo("es-ES"))</p>
                             </div>
                         </div>
                     </div>
@@ -95,7 +96,7 @@
                                 <div class="invoice-info-body">
                                     <div class="invoice-item">
                                         <span class="item-label">Fecha:</span>
-                                        <span class="item-value">@slotStart.ToString("dddd, dd 'de' MMMM 'de' yyyy")</span>
+                                        <span class="item-value">@slotStart.ToString("D", new CultureInfo("es-ES"))</span>
                                     </div>
                                     <div class="invoice-item">
                                         <span class="item-label">Horario:</span>
@@ -149,7 +150,7 @@
                             <li>En caso de cancelación, comunícate con al menos 24 horas de anticipación.</li>
                         </ul>
                     </div>
-                    <br >
+                    <br>
                     <div class="text-center">
                         <a href="@Url.Action("Index", "Home", new { id = servicio.Id, fecha = slotStart.Date })" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-arrow-left me-2"></i>Ir a Inicio
@@ -169,6 +170,7 @@
         </div>
     </div>
 </div>
+
 
 <style>
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');

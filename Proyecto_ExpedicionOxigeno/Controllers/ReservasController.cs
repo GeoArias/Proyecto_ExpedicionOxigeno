@@ -146,6 +146,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
         }
 
+        // GET: Reservas/ConfirmarHorario
+        [HttpGet]
+        public ActionResult ConfirmarHorario()
+        {
+            return View();
+        }
+
         // POST: Reservas/ConfirmarReserva
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -830,7 +837,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     </div>
                     <div class='invoice-item'>
                         <span class='item-label'>Fecha:</span>
-                        <span>{slotStart.ToString("dddd, dd 'de' MMMM 'de' yyyy")}</span>
+                        <span>{char.ToUpper(slotStart.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES"))[0]) + slotStart.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES")).Substring(1)}</span>
                     </div>
                     <div class='invoice-item'>
                         <span class='item-label'>Horario:</span>
