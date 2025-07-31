@@ -66,7 +66,16 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
         // POST : Servicios/Edit/{ID}
         [HttpPost]
-        public async Task<ActionResult> Edit(string id, BookingService service, string[] selectedStaff)
+        public async Task<ActionResult> Edit(
+            string id,
+            BookingService service,
+            string[] selectedStaff,
+            int DurationHours = 0,
+            int DurationMinutes = 0,
+            int PreBufferHours = 0,
+            int PreBufferMinutes = 0,
+            int PostBufferHours = 0,
+            int PostBufferMinutes = 0)
         {
             if (id == null)
             {
@@ -74,8 +83,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
             try
             {
-                // Update staffMemberIds from the form
+                // Actualizar Staff
                 service.StaffMemberIds = selectedStaff?.ToList() ?? new List<string>();
+
+                // Actualizar Duraciones
+                service.DefaultDuration = new TimeSpan(DurationHours, DurationMinutes, 0);
+                service.PreBuffer = new TimeSpan(PreBufferHours, PreBufferMinutes, 0);
+                service.PostBuffer = new TimeSpan(PostBufferHours, PostBufferMinutes, 0);
 
                 var response = await MSBookings_Actions.Update_MSBookingsService(id, service);
                 if (response.IsSuccessStatusCode)
