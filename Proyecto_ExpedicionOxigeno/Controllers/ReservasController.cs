@@ -362,7 +362,14 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             try
             {
-                await MSBookings_Actions.Modify_MSBookingsAppointment(id, nuevaFecha, nuevaHoraInicio, nuevaHoraFin);
+                if (!User.Identity.IsAuthenticated)
+                {
+                    TempData["Error"] = "Debes iniciar sesión para modificar reservas.";
+                    return RedirectToAction("Login", "Account");
+                }
+                // Obtener el objeto de reserva actual
+                var reservas = await MSBookings_Actions.GetAppo(User.Identity.Name);
+                await MSBookings_Actions.Modify_MSBookingsAppointment(id);
                 TempData["Mensaje"] = "Reserva modificada correctamente.";
                 return RedirectToAction("MisReservas");
             }
