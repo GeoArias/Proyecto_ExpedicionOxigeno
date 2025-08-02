@@ -23,7 +23,7 @@ namespace Proyecto_ExpedicionOxigeno.Helpers
                         request.Content = content;
                     var result = await client.SendAsync(request);
 
-                    if (result.StatusCode == System.Net.HttpStatusCode.InternalServerError && retryCount < maxRetries)
+                    if ((result.StatusCode == System.Net.HttpStatusCode.BadGateway || result.StatusCode == System.Net.HttpStatusCode.InternalServerError) && retryCount < maxRetries)
                     {
                         retryCount++;
                         await Task.Delay(500 * retryCount); // Exponential backoff
