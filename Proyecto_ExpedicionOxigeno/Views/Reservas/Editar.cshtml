@@ -1,0 +1,471 @@
+﻿@using Proyecto_ExpedicionOxigeno.Helpers
+@using Proyecto_ExpedicionOxigeno.Models
+@using System.Globalization
+@model BookingAppointmentCustomed
+
+@{
+    ViewBag.Title = "Modificar Reserva";
+    var servicio = ViewBag.Servicio as Microsoft.Graph.Models.BookingService;
+    var fechaSeleccionada = ViewBag.FechaSeleccionada as DateTime? ?? Model.start.dateTime.Date;
+    var availableSlots = ViewBag.AvailableSlots as List<Proyecto_ExpedicionOxigeno.Controllers.TimeSlot> ?? new List<Proyecto_ExpedicionOxigeno.Controllers.TimeSlot>();
+}
+
+<div class="reservation-container">
+    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4"><i class="fas fa-edit me-2"></i>@ViewBag.Title</h1>
+        <p class="lead">Modifica los detalles de tu reserva</p>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger animate__animated animate__shakeX">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="service-card animate__animated animate__fadeInLeft">
+                <div class="service-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="service-title">@servicio.DisplayName</h3>
+                            <div class="service-meta">
+                                <span class="duration">
+                                    <i class="far fa-clock me-1"></i>
+                                    @if (servicio.DefaultDuration.Value.TotalHours >= 1)
+                                    {
+                                        @($"{Math.Floor(servicio.DefaultDuration.Value.TotalHours)}h {servicio.DefaultDuration.Value.Minutes}m")
+                                    }
+                                    else
+                                    {
+                                        @($"{servicio.DefaultDuration.Value.Minutes}m")
+                                    }
+                                </span>
+                                <span class="price">
+                                    <i class="fas fa-tag me-1"></i>
+                                    ₡@string.Format("{0:N0}", servicio.DefaultPrice)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="service-icon">
+                            @{
+                                string iconClass = "fas fa-tree";
+                                if (servicio.DisplayName?.Contains("Escalada") == true)
+                                {
+                                    iconClass = "fas fa-mountain";
+                                }
+                                else if (servicio.DisplayName?.Contains("Cuerdas") == true)
+                                {
+                                    iconClass = "fas fa-route";
+                                }
+                                else if (servicio.DisplayName?.Contains("Glider") == true)
+                                {
+                                    iconClass = "fas fa-wind";
+                                }
+                            }
+                            <i class="@iconClass"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="service-body">
+                    <h5 class="section-title">Reserva Actual</h5>
+                    <div class="current-booking">
+                        <div class="info-row">
+                            <span class="label"><i class="far fa-calendar-alt me-2"></i>Fecha:</span>
+                            <span class="value">@Model.start.dateTime.ToString("D", new CultureInfo("es-ES"))</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label"><i class="far fa-clock me-2"></i>Horario:</span>
+                            <span class="value">@Model.start.dateTime.ToString("hh:mm tt") - @Model.end.dateTime.ToString("hh:mm tt")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="edit-container animate__animated animate__fadeInRight">
+                <h4 class="section-title">Selecciona nueva fecha y horario</h4>
+
+                <!-- Selector de fecha -->
+                <div class="date-picker-floating mb-4">
+                    <div class="date-picker-header">
+                        <i class="fas fa-calendar-alt calendar-icon"></i>
+                        <h4>Cambiar fecha</h4>
+                    </div>
+                    <div class="date-picker-body text-center">
+                        <form id="dateForm" action="@Url.Action("Editar", "Reservas")" method="get" class="mb-0">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <div class="date-picker-container">
+                                <input type="date" id="fecha" name="fecha" class="form-control form-control-lg mx-auto"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                       max="@DateTime.Today.AddMonths(3).ToString("yyyy-MM-dd")"
+                                       value="@fechaSeleccionada.ToString("yyyy-MM-dd")"
+                                       onchange="showLoading(); document.getElementById('dateForm').submit();" />
+                            </div>
+                        </form>
+                        <p class="date-picker-hint">Puedes reservar hasta 3 meses en adelante</p>
+                    </div>
+                </div>
+
+                <!-- Loading overlay -->
+                <div id="loadingOverlay" class="loading-overlay">
+                    <div class="loading-content">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="loading-text">Cargando horarios disponibles</p>
+                        <p class="loading-subtext">Esto puede tomar unos momentos...</p>
+                    </div>
+                </div>
+
+                <!-- Selector de horario -->
+                @if (availableSlots.Count > 0)
+                {
+                    <form action="@Url.Action("Editar", "Reservas")" method="post" class="time-slots-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="nuevaFecha" value="@fechaSeleccionada.ToString("yyyy-MM-dd")" />
+
+                        <div class="time-slots-container">
+                            <h5 class="mb-3">Horarios disponibles:</h5>
+                            <div class="time-slots">
+                                @foreach (var slot in availableSlots)
+                                {
+                                    <div class="time-slot-item">
+                                        <input type="radio" name="horarioSeleccionado" id="slot_@slot.StartTime.ToString("HHmm")"
+                                               value="@slot.StartTime.ToString("HH:mm")|@slot.EndTime.ToString("HH:mm")" required />
+                                        <label for="slot_@slot.StartTime.ToString("HHmm")">
+                                            <div class="time-slot-content">
+                                                <span class="time">@slot.StartTime.ToString("hh:mm tt") - @slot.EndTime.ToString("hh:mm tt")</span>
+                                                <span class="status">Disponible</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="buttons-container mt-4">
+                            <a href="@Url.Action("MisReservas", "Reservas")" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-Primary-ExpOxi btn-lg">
+                                <i class="fas fa-save me-2"></i>Modificar Reserva
+                            </button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No hay horarios disponibles para esta fecha. Por favor, seleccione otra fecha.
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("MisReservas", "Reservas")" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Volver a Mis Reservas
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    /* General styling */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .reservation-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Service Card Styling */
+    .service-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .service-header {
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .service-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .service-icon {
+        font-size: 2.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .service-body {
+        padding: 1.5rem;
+    }
+
+    .section-title {
+        border-bottom: 2px solid #f0f0f0;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        color: #343a40;
+    }
+
+    .current-booking {
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border-left: 4px solid #fa8f23;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed #e9ecef;
+    }
+
+    .label {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .value {
+        color: #212529;
+    }
+
+    /* Edit Container */
+    .edit-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    /* Date Picker Styling */
+    .date-picker-floating {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .date-picker-header {
+        background: linear-gradient(135deg, #d97d1f 0%, #fa8f23 100%);
+        color: white;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .calendar-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .date-picker-body {
+        padding: 1.5rem;
+    }
+
+    .date-picker-hint {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        margin-bottom: 0;
+    }
+
+    /* Time Slots Styling */
+    .time-slots {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .time-slot-item input[type="radio"] {
+        display: none;
+    }
+
+    .time-slot-content {
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .time-slot-item input[type="radio"]:checked + label .time-slot-content {
+        border-color: #fa8f23;
+        background-color: rgba(250, 143, 35, 0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .time {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #212529;
+        margin-bottom: 0.5rem;
+    }
+
+    .status {
+        font-size: 0.9rem;
+        color: #28a745;
+    }
+
+    /* Buttons */
+    .buttons-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .btn-Primary-ExpOxi {
+        background-color: #fa8f23;
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 50px;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-Primary-ExpOxi:hover {
+        background-color: #e67b0f;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .btn-outline-secondary {
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .buttons-container {
+            flex-direction: column-reverse;
+        }
+    }
+
+
+    /* Loading overlay styling */
+    .loading-overlay {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.9);
+        z-index: 1000;
+        border-radius: 16px;
+        backdrop-filter: blur(2px);
+    }
+
+    .loading-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .loading-text {
+        margin-top: 1rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #fa8f23;
+    }
+
+    .loading-subtext {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        color: #fa8f23 !important;
+    }
+
+    .time-slots-container {
+        position: relative;
+    }
+</style>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Procesamiento del formulario de selección de horario
+            $('.time-slots-form').on('submit', function (e) {
+                e.preventDefault();
+
+                var selectedSlot = $('input[name="horarioSeleccionado"]:checked').val();
+                if (!selectedSlot) {
+                    alert('Por favor selecciona un horario disponible.');
+                    return false;
+                }
+
+                var times = selectedSlot.split('|');
+                var nuevaHoraInicio = times[0];
+                var nuevaHoraFin = times[1];
+
+                // Añadir los campos ocultos para enviar
+                $(this).append('<input type="hidden" name="nuevaHoraInicio" value="' + nuevaHoraInicio + '">');
+                $(this).append('<input type="hidden" name="nuevaHoraFin" value="' + nuevaHoraFin + '">');
+
+                // Mostrar indicador de carga al enviar el formulario
+                showLoading();
+
+                // Enviar el formulario
+                this.submit();
+            });
+        });
+
+        // Función para mostrar el overlay de carga
+        function showLoading() {
+            // Mostrar overlay encima del contenedor de slots
+            var overlay = document.getElementById('loadingOverlay');
+            var container = document.querySelector('.time-slots-container');
+
+            if (overlay && container) {
+                // Colocar el overlay encima del contenedor
+                overlay.style.position = 'absolute';
+                overlay.style.top = container.offsetTop + 'px';
+                overlay.style.left = container.offsetLeft + 'px';
+                overlay.style.width = container.offsetWidth + 'px';
+                overlay.style.height = container.offsetHeight + 'px';
+                overlay.style.display = 'block';
+            }
+        }
+    </script>
+}

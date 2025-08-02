@@ -161,7 +161,7 @@ namespace Proyecto_ExpedicionOxigeno.Services
             catch (Exception ex)
             {
                 resultado.Exito = false;
-                resultado.Mensaje = "Error interno del servidor";
+                resultado.Mensaje = "Error interno del servidor: "+ ex.Message;
                 return resultado;
             }
         }

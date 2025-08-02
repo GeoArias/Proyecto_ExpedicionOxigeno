@@ -218,7 +218,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 try
                 {
                     var response = await GraphApiHelper.SendGraphRequestAsync(
-                        $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers", 
+                        $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers",
                         HttpMethod.Get);
 
                     if (response.IsSuccessStatusCode)
@@ -553,6 +553,40 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             return servicesList;
         }
+        public static async Task<BookingAppointmentCustomed> Get_MSBookingsAppointment(string id)
+        {
+            try
+            {
+                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{id}", HttpMethod.Get);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var settings = new JsonSerializerSettings
+                    {
+                        Converters = new List<JsonConverter> {
+                            new GraphTimeSpanConverter(),
+                            new GraphTimeConverter(),
+                            new KiotaDateConverter()
+                        },
+                        NullValueHandling = NullValueHandling.Ignore
+                    };
+                    return JObject.Parse(content).ToObject<BookingAppointmentCustomed>(
+                        JsonSerializer.Create(settings));
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
+        }
 
         public static async Task<HttpResponseMessage> Cancel_MSBookingsAppointment(string appointmentId)
         {
@@ -563,33 +597,42 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return response;
         }
 
-        public static async Task Modify_MSBookingsAppointment(string appointmentId, DateTime nuevaFecha, DateTime nuevaHoraInicio, DateTime nuevaHoraFin)
+        public static async Task<HttpResponseMessage> Modify_MSBookingsAppointment(BookingAppointment appointment)
         {
-            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}";
 
-            var patchData = new
+            try
             {
-                start = new
+                // Create a JObject from the BookingService
+                JObject serviceObj = JObject.FromObject(appointment, JsonSerializer.Create(new JsonSerializerSettings
                 {
-                    dateTime = nuevaHoraInicio.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    timeZone = "America/Costa_Rica"
+                    Converters = new List<JsonConverter> {
+                    new GraphTimeSpanConverter(),
+                    new GraphTimeConverter()
                 },
-                end = new
-                {
-                    dateTime = nuevaHoraFin.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    timeZone = "America/Costa_Rica"
-                }
-            };
+                    NullValueHandling = NullValueHandling.Ignore,
+                    ContractResolver = new IgnoreKiotaPropertiesResolver()
+                }));
 
-            var content = new StringContent(JsonConvert.SerializeObject(patchData), System.Text.Encoding.UTF8, "application/json");
-            var response = await GraphApiHelper.SendGraphRequestAsync(url, new HttpMethod("PATCH"), content);
-
-            if (!response.IsSuccessStatusCode)
+                string jsonData = serviceObj.ToString(Formatting.None);
+                var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
+                var response = await GraphApiHelper.SendGraphRequestAsync(
+                    $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/appointments/{appointment.Id}",
+                    new HttpMethod("PATCH"),
+                    content
+                );
+                return response;
+            }
+            catch (HttpRequestException ex)
             {
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                throw new Exception($"No se pudo modificar la reserva: {errorMessage}");
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
             }
         }
+
+
 
 
 
@@ -652,7 +695,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 writer.WriteNull();
             }
         }
-        
+
     }
 
 }

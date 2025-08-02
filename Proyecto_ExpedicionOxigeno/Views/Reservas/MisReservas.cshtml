@@ -1,334 +1,592 @@
-@using Proyecto_ExpedicionOxigeno.Helpers
-@using Proyecto_ExpedicionOxigeno.Models
-@model List<BookingAppointmentCustomed>
+@inherits System.Web.Mvc.WebViewPage
+@using System.Linq
+@using System.Globalization
+@using System.Web.Mvc
 @{
     ViewBag.Title = "Mis Reservas";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var reservas = Model as List<Proyecto_ExpedicionOxigeno.Models.BookingAppointmentCustomed>;
     var now = DateTime.Now;
-    var futuras = Model.Where(r => r.end?.dateTime.ToCostaRicaTime() >= now).OrderBy(r => r.start?.dateTime).ToList();
-    var pasadas = Model.Where(r => r.end?.dateTime.ToCostaRicaTime() < now).OrderByDescending(r => r.start?.dateTime).ToList();
+    var futuras = reservas != null
+        ? reservas
+            .Where(r => r.end != null && r.end.dateTime != null && r.end.dateTime >= now)
+            .OrderBy(r => r.start != null && r.start.dateTime != null ? r.start.dateTime : DateTime.MinValue)
+            .ToList()
+        : new List<Proyecto_ExpedicionOxigeno.Models.BookingAppointmentCustomed>();
+    var pasadas = reservas != null
+        ? reservas
+            .Where(r => r.end != null && r.end.dateTime != null && r.end.dateTime < now)
+            .OrderByDescending(r => r.start != null && r.start.dateTime != null ? r.start.dateTime : DateTime.MinValue)
+            .ToList()
+        : new List<Proyecto_ExpedicionOxigeno.Models.BookingAppointmentCustomed>();
 }
 
-<div class="reservation-container">
-    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
-        <h1 class="display-4">Mis Reservas</h1>
-        <p class="lead">Gestiona tus próximas actividades en Expedición Oxígeno</p>
-    </div>
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger animate__animated animate__shakeX">
-            <span class="me-2"><i class="fas fa-exclamation-circle"></i></span>@TempData["Error"]
+<main class="container py-4">
+    <section class="section-padding">
+        <div class="text-center mb-5">
+            <div class="section-badge">MI CUENTA</div>
+            <h2 class="section-title">Mis Reservas</h2>
+            <p class="section-text">Gestiona tus próximas actividades en Expedición Oxígeno</p>
         </div>
-    }
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success animate__animated animate__fadeIn">
-            <span class="me-2"><i class="fas fa-check-circle"></i></span>@TempData["Success"]
-        </div>
-    }
 
-    <!-- Próximas Reservas -->
-    <div class="mb-5">
-        <h2 class="mb-4"><i class="fas fa-calendar-check me-2"></i>Próximas Reservas</h2>
-        @if (!futuras.Any())
+        @if (TempData["Error"] != null)
         {
-            <div class="text-center py-5 animate__animated animate__fadeIn">
-                <div class="mb-4"><i class="fas fa-calendar-times fa-4x text-muted"></i></div>
-                <h4 class="text-muted">No tienes reservas futuras activas</h4>
-                <p class="text-muted mb-4">¡Es momento de vivir nuevas aventuras!</p>
-                <a href="@Url.Action("Index", "Reservas")" class="btn btn-Primary-ExpOxi mt-3">
-                    <span class="me-2"><i class="fas fa-plus-circle"></i></span>Hacer una nueva reserva
-                </a>
+            <div class="alert alert-danger animate__animated animate__shakeX">
+                <span class="me-2"><i class="fas fa-exclamation-circle"></i></span>@TempData["Error"]
             </div>
         }
-        else
+        @if (TempData["Success"] != null || TempData["Mensaje"] != null)
         {
-            <div class="row row-cols-1 row-cols-md-2 g-4">
-                @foreach (var reserva in futuras)
-                {
-                    var fecha = reserva.start?.dateTime.ToCostaRicaTime();
-                    var horaInicio = reserva.start?.dateTime.ToCostaRicaTime();
-                    var horaFin = reserva.end?.dateTime.ToCostaRicaTime();
-                    var cultura = new System.Globalization.CultureInfo("es-ES");
-                    var fechaTexto = fecha?.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura);
-                    var fechaFormateada = char.ToUpper(fechaTexto[0]) + fechaTexto.Substring(1);
-                    var horaInicioFormateada = horaInicio?.ToString("hh:mm tt");
-                    var horaFinFormateada = horaFin?.ToString("hh:mm tt");
+            <div class="alert alert-success animate__animated animate__fadeIn">
+                <span class="me-2"><i class="fas fa-check-circle"></i></span>@(TempData["Success"] ?? TempData["Mensaje"])
+            </div>
+        }
 
-                    <div class="col animate__animated animate__fadeIn">
-                        <div class="card h-100 reservation-card">
-                            <div class="card-header">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">@reserva.ServiceName</h5>
+        <!-- Próximas Reservas -->
+        <div class="mb-5">
+            <div class="reservation-section-header">
+                <h3><i class="fas fa-calendar-check me-2"></i>Próximas Reservas</h3>
+                @if (futuras.Any())
+                {
+                    <a href="@Url.Action("Index", "Reservas")" class="btn btn-Primary-ExpOxi">
+                        <i class="fas fa-plus-circle me-2"></i>Nueva Reserva
+                    </a>
+                }
+            </div>
+
+            @if (!futuras.Any())
+            {
+                <div class="empty-state animate__animated animate__fadeIn">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <h4>No tienes reservas futuras activas</h4>
+                    <p>¡Es momento de vivir nuevas aventuras!</p>
+                    <a href="@Url.Action("Index", "Reservas")" class="btn btn-Primary-ExpOxi mt-3">
+                        <i class="fas fa-plus-circle me-2"></i>Hacer una nueva reserva
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var reserva in futuras)
+                    {
+                        var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
+                        var fecha = reserva.start != null && reserva.start.dateTime != null
+                            ? TimeZoneInfo.ConvertTimeFromUtc(reserva.start.dateTime, timeZone)
+                            : DateTime.MinValue;
+                        var horaInicio = fecha;
+                        var horaFin = reserva.end != null && reserva.end.dateTime != null
+                            ? TimeZoneInfo.ConvertTimeFromUtc(reserva.end.dateTime, timeZone)
+                            : DateTime.MinValue;
+                        var cultura = new CultureInfo("es-ES");
+                        var fechaTexto = fecha.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura);
+                        var fechaFormateada = char.ToUpper(fechaTexto[0]) + fechaTexto.Substring(1);
+                        var horaInicioFormateada = horaInicio.ToString("hh:mm tt");
+                        var horaFinFormateada = horaFin.ToString("hh:mm tt");
+
+                        string iconClass = "fas fa-tree";
+                        if (reserva.ServiceName?.Contains("Escalada") == true)
+                        {
+                            iconClass = "fas fa-mountain";
+                        }
+                        else if (reserva.ServiceName?.Contains("Cuerdas") == true)
+                        {
+                            iconClass = "fas fa-route";
+                        }
+                        else if (reserva.ServiceName?.Contains("Glider") == true)
+                        {
+                            iconClass = "fas fa-wind";
+                        }
+
+                        <div class="col animate__animated animate__fadeIn">
+                            <div class="reservation-card upcoming-card">
+                                <div class="reservation-header">
+                                    <div class="reservation-title">
+                                        <h5>@reserva.ServiceName</h5>
+                                    </div>
                                     <div class="reservation-icon">
-                                        @if (reserva.ServiceName.Contains("Escalada"))
-                                        {
-                                            <span><i class="fas fa-mountain"></i></span>
-                                        }
-                                        else if (reserva.ServiceName.Contains("Cuerdas"))
-                                        {
-                                            <span><i class="fas fa-route"></i></span>
-                                        }
-                                        else if (reserva.ServiceName.Contains("Glider"))
-                                        {
-                                            <span><i class="fas fa-wind"></i></span>
-                                        }
-                                        else
-                                        {
-                                            <span><i class="fas fa-tree"></i></span>
-                                        }
+                                        <i class="@iconClass"></i>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="reservation-details">
-                                    <div class="detail-item">
-                                        <span><i class="far fa-calendar-alt"></i></span>
-                                        <span>@fechaFormateada</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span><i class="far fa-clock"></i></span>
-                                        <span>@horaInicioFormateada - @horaFinFormateada</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span><i class="fas fa-clock"></i></span>
-                                        <span class="reservation-id">@reserva.Duration</span>
+                                <div class="reservation-body">
+                                    <div class="reservation-details">
+                                        <div class="detail-item">
+                                            <i class="far fa-calendar-alt"></i>
+                                            <span>@fechaFormateada</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <i class="far fa-clock"></i>
+                                            <span>@horaInicioFormateada - @horaFinFormateada</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <i class="fas fa-hourglass-half"></i>
+                                            <span>@reserva.Duration</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-footer">
-                                <div class="d-flex justify-content-between">
-                                    @using (Html.BeginForm("CancelarReserva", "Reservas", FormMethod.Post, new { @class = "d-inline" }))
-                                    {
+                                <div class="reservation-footer">
+                                    <form action="@Url.Action("CancelarReserva", "Reservas")" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        @Html.Hidden("id", reserva.Id)
+                                        <input type="hidden" name="id" value="@reserva.Id" />
                                         <button type="submit" class="btn btn-outline-danger" onclick="return confirm('¿Estás seguro que deseas cancelar esta reserva?')">
-                                            <span class="me-1"><i class="fas fa-times-circle"></i></span>Cancelar
+                                            <i class="fas fa-times-circle me-1"></i>Cancelar
                                         </button>
-                                    }
-                                    <button type="button" class="btn btn-outline-primary" onclick="alert('La funcionalidad para modificar reservas estará disponible próximamente. Por favor, mantente atento a futuras actualizaciones.')">
-                                        <span class="me-1"><i class="fas fa-edit"></i></span>Modificar
+                                    </form>
+                                    <button class="btn btn-icon-round" onclick="mostrarQR('@reserva.Id')" title="Ver código QR">
+                                        <i class="fas fa-qrcode"></i>
                                     </button>
+                                    <button type="button" class="btn btn-outline-info" onclick="mostrarQR('@reserva.Id')">
+                                        <i class="fas fa-qrcode me-1"></i>Ver QR
+                                    </button>
+
                                 </div>
                             </div>
                         </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Reservas Pasadas -->
+        <div>
+            <div class="reservation-section-header">
+                <h3><i class="fas fa-history me-2"></i>Reservas Pasadas</h3>
+            </div>
+
+            @if (!pasadas.Any())
+            {
+                <div class="empty-state animate__animated animate__fadeIn">
+                    <div class="empty-state-icon secondary">
+                        <i class="fas fa-calendar-minus"></i>
                     </div>
+                    <h4>No tienes reservas pasadas</h4>
+                    <p>¡Tus aventuras te esperan!</p>
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var reserva in pasadas)
+                    {
+                        var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
+                        var fecha = reserva.start != null && reserva.start.dateTime != null
+                            ? TimeZoneInfo.ConvertTimeFromUtc(reserva.start.dateTime, timeZone)
+                            : DateTime.MinValue;
+                        var horaInicio = fecha;
+                        var horaFin = reserva.end != null && reserva.end.dateTime != null
+                            ? TimeZoneInfo.ConvertTimeFromUtc(reserva.end.dateTime, timeZone)
+                            : DateTime.MinValue;
+                        var cultura = new CultureInfo("es-ES");
+                        var fechaTexto = fecha.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura);
+                        var fechaFormateada = char.ToUpper(fechaTexto[0]) + fechaTexto.Substring(1);
+                        var horaInicioFormateada = horaInicio.ToString("hh:mm tt");
+                        var horaFinFormateada = horaFin.ToString("hh:mm tt");
 
+                        string iconClass = "fas fa-tree";
+                        if (reserva.ServiceName?.Contains("Escalada") == true)
+                        {
+                            iconClass = "fas fa-mountain";
+                        }
+                        else if (reserva.ServiceName?.Contains("Cuerdas") == true)
+                        {
+                            iconClass = "fas fa-route";
+                        }
+                        else if (reserva.ServiceName?.Contains("Glider") == true)
+                        {
+                            iconClass = "fas fa-wind";
+                        }
 
-                }
-            </div>
-        }
-    </div>
-
-    <!-- Reservas Pasadas -->
-    <div>
-        <h2 class="mb-4"><i class="fas fa-history me-2"></i>Reservas Pasadas</h2>
-        @if (!pasadas.Any())
-        {
-            <div class="text-center py-5 animate__animated animate__fadeIn">
-                <div class="mb-4"><i class="fas fa-calendar-minus fa-4x text-muted"></i></div>
-                <h4 class="text-muted">No tienes reservas pasadas</h4>
-                <p class="text-muted mb-4">¡Tus aventuras te esperan!</p>
-            </div>
-        }
-        else
-        {
-            <div class="row row-cols-1 row-cols-md-2 g-4">
-                @foreach (var reserva in pasadas)
-                {
-                    var fecha = reserva.start?.dateTime.ToCostaRicaTime();
-                    var horaInicio = reserva.start?.dateTime.ToCostaRicaTime();
-                    var horaFin = reserva.end?.dateTime.ToCostaRicaTime();
-                    var cultura = new System.Globalization.CultureInfo("es-ES");
-                    var fechaTexto = fecha?.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura);
-                    var fechaFormateada = char.ToUpper(fechaTexto[0]) + fechaTexto.Substring(1);
-                    var horaInicioFormateada = horaInicio?.ToString("hh:mm tt");
-                    var horaFinFormateada = horaFin?.ToString("hh:mm tt");
-
-                    <div class="col animate__animated animate__fadeIn">
-                        <div class="card h-100 reservation-card reservation-card-past">
-                            <div class="card-header bg-secondary">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">@reserva.ServiceName</h5>
-                                    <div class="reservation-icon">
-                                        @if (reserva.ServiceName.Contains("Escalada"))
-                                        {
-                                            <span><i class="fas fa-mountain"></i></span>
-                                        }
-                                        else if (reserva.ServiceName.Contains("Cuerdas"))
-                                        {
-                                            <span><i class="fas fa-route"></i></span>
-                                        }
-                                        else if (reserva.ServiceName.Contains("Glider"))
-                                        {
-                                            <span><i class="fas fa-wind"></i></span>
-                                        }
-                                        else
-                                        {
-                                            <span><i class="fas fa-tree"></i></span>
-                                        }
+                        <div class="col animate__animated animate__fadeIn">
+                            <div class="reservation-card past-card">
+                                <div class="reservation-header">
+                                    <div class="reservation-title">
+                                        <h5>@reserva.ServiceName</h5>
+                                    </div>
+                                    <div class="reservation-icon past">
+                                        <i class="@iconClass"></i>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="reservation-details">
-                                    <div class="detail-item">
-                                        <span><i class="far fa-calendar-alt"></i></span>
-                                        <span>@fechaFormateada</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span><i class="far fa-clock"></i></span>
-                                        <span>@horaInicioFormateada - @horaFinFormateada</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span><i class="fas fa-clock"></i></span>
-                                        <span class="reservation-id">@reserva.Duration</span>
+                                <div class="reservation-body">
+                                    <div class="reservation-details">
+                                        <div class="detail-item">
+                                            <i class="far fa-calendar-alt"></i>
+                                            <span>@fechaFormateada</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <i class="far fa-clock"></i>
+                                            <span>@horaInicioFormateada - @horaFinFormateada</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <i class="fas fa-hourglass-half"></i>
+                                            <span>@reserva.Duration</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-footer text-center">
-                                <span class="badge bg-secondary">Reserva finalizada</span>
+                                <div class="reservation-footer text-center">
+                                    <span class="reservation-completed">
+                                        <i class="fas fa-check-circle me-2"></i>Reserva finalizada
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
+            }
+        </div>
+    </section>
+    <!-- Modal para mostrar QR -->
+    <div class="modal" id="qrModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Código QR de Reserva</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="qrImage" src="" alt="Código QR" class="img-fluid">
+                    <p class="mt-3 text-muted">Presenta este código QR al llegar para confirmar tu Reserva</p>
+                </div>
             </div>
-        }
+        </div>
     </div>
-</div>
+    <style>
+        .qr-container {
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</main>
 
 <style>
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
 
-    .reservation-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem 1rem;
+    /*QR Button*/
+    .btn-icon-round {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #17a2b8;
+        color: white;
+        border: none;
+        transition: all 0.3s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
+        .btn-icon-round:hover {
+            background-color: #138496;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+
+    .section-padding {
+        padding: 60px 0 40px 0;
+    }
+
+    .section-badge {
+        display: inline-block;
+        background-color: rgba(250, 143, 35, 0.1);
+        color: #fa8f23;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 8px 18px;
+        border-radius: 50px;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+    }
+
+    .section-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: #212529;
+    }
+
+    .section-text {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 700px;
+        margin: 0 auto 30px auto;
+    }
+
+    .reservation-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 0.75rem;
+    }
+
+        .reservation-section-header h3 {
+            color: #343a40;
+            font-weight: 600;
+            margin: 0;
+        }
+
     .reservation-card {
-        transition: all 0.3s ease;
+        background-color: white;
+        border-radius: 15px;
         overflow: hidden;
-        border-radius: 12px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-        border: none;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        position: relative;
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
 
         .reservation-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
 
-    .reservation-card-past {
-        opacity: 0.7;
-        filter: grayscale(0.2);
+    .upcoming-card {
+        border-top: 4px solid #fa8f23;
     }
 
-    .card-header {
-        background: linear-gradient(135deg, #F89026 0%, #D3901B 100%);
-        color: white;
-        border-bottom: none;
-        padding: 1rem 1.25rem;
+    .past-card {
+        border-top: 4px solid #6c757d;
     }
 
-    .reservation-card-past .card-header {
-        background: #6c757d !important;
-        color: #fff;
+    .reservation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+    }
+
+    .reservation-title h5 {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0;
     }
 
     .reservation-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
         font-size: 1.8rem;
-        color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 5px 15px rgba(250, 143, 35, 0.2);
+    }
+
+        .reservation-icon.past {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.2);
+        }
+
+    .reservation-body {
+        padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+        flex-grow: 1;
     }
 
     .reservation-details {
-        display: flex;
-        flex-direction: column;
-        gap: 0.8rem;
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        padding: 1rem;
     }
 
     .detail-item {
         display: flex;
         align-items: center;
-        gap: 0.8rem;
+        margin-bottom: 0.75rem;
+        color: #495057;
     }
+
+        .detail-item:last-child {
+            margin-bottom: 0;
+        }
 
         .detail-item i {
-            color: #F89026;
-            font-size: 1.1rem;
+            margin-right: 0.75rem;
             width: 20px;
             text-align: center;
+            color: #fa8f23;
         }
 
-    .reservation-id {
-        font-size: 0.8rem;
+    .past-card .detail-item i {
         color: #6c757d;
-        font-family: monospace;
-        word-break: break-all;
     }
 
-    .card-footer {
-        background-color: #f8f9fa;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 1rem 1.25rem;
+    .reservation-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-top: 1px solid #f0f0f0;
     }
 
-    .reservation-card-past .card-footer {
-        background-color: #e9ecef;
-    }
-
-    /* Modal customization */
-    .modal-content {
-        border-radius: 12px;
+    .btn-Primary-ExpOxi {
+        background-color: #fa8f23;
+        color: white;
+        font-weight: 600;
         border: none;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        border-radius: 50px;
+        padding: 0.5rem 1.5rem;
+        transition: all 0.3s;
     }
 
-    .modal-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .modal-footer {
-        background-color: #f8f9fa;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .alert {
-        border-radius: 8px;
-    }
-
-    /* Animations */
-    .animate__animated {
-        animation-duration: 0.8s;
-    }
-
-    /* Responsive adjustments */
-    @@media (max-width: 768px) {
-        .reservation-details {
-            gap: 0.5rem;
+        .btn-Primary-ExpOxi:hover {
+            background-color: #e67b0f;
+            color: white;
+            box-shadow: 0 5px 15px rgba(250, 143, 35, 0.3);
+            transform: translateY(-2px);
         }
 
-        .card-footer .d-flex {
+    .btn-outline-primary, .btn-outline-danger {
+        border-radius: 50px;
+        font-weight: 600;
+        padding: 0.5rem 1.25rem;
+        transition: all 0.3s;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #fa8f23;
+            border-color: #fa8f23;
+            color: white;
+            box-shadow: 0 5px 15px rgba(250, 143, 35, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: white;
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
+            transform: translateY(-2px);
+        }
+
+    .reservation-completed {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+
+    .empty-state {
+        background-color: white;
+        border-radius: 15px;
+        padding: 3rem 2rem;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 5px 15px rgba(250, 143, 35, 0.2);
+    }
+
+        .empty-state-icon.secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.2);
+        }
+
+    .empty-state h4 {
+        color: #343a40;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    @@media (max-width: 992px) {
+        .section-padding {
+            padding: 40px 0 20px 0;
+        }
+
+        .reservation-section-header {
             flex-direction: column;
-            gap: 0.5rem;
+            align-items: flex-start;
+            gap: 1rem;
         }
 
-        .card-footer .btn {
-            width: 100%;
+        .reservation-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
         }
+    }
+
+    @@media (max-width: 576px) {
+        .reservation-footer {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+            .reservation-footer .btn {
+                width: 100%;
+            }
     }
 </style>
 
-@section scripts {
-    <script>
-        $(document).ready(function () {
-            // Agregar efecto de entrada escalonada a las tarjetas
-            $(".row .col").each(function (index) {
-                $(this).css("animation-delay", (index * 0.1) + "s");
-            });
-        });
-    </script>
+
+<script>
+    function mostrarQR(codigo) {
+    // Show loading spinner
+    document.getElementById('qrModal').querySelector('.modal-body').innerHTML = `
+        <div class="qr-container">
+            <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Show the modal
+    var modal = new bootstrap.Modal(document.getElementById('qrModal'), { backdrop: false });
+    modal.show();
+
+    // Create image and set source with proper error handling
+    var img = new Image();
+    img.onload = function() {
+        document.getElementById('qrModal').querySelector('.modal-body').innerHTML = `
+            <img src="${img.src}" alt="Código QR" class="img-fluid">
+            <p class="mt-3 text-muted">Presenta este código QR al finalizar tu servicio para obtener tu sello</p>
+        `;
+    };
+    img.onerror = function() {
+        document.getElementById('qrModal').querySelector('.modal-body').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>Error al cargar el código QR
+            </div>
+        `;
+    };
+    img.src = '@Url.Action("GenerarQRReserva", "Reservas")?codigo=' + encodeURIComponent(codigo);
 }
+</script>
