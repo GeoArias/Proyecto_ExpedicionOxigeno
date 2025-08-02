@@ -1,5 +1,6 @@
 ﻿using Microsoft.Graph.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Proyecto_ExpedicionOxigeno.Helpers;
 using Proyecto_ExpedicionOxigeno.Models;
@@ -19,6 +20,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
     public static class MSBookings_Actions
     {
         private static string businessId = ConfigurationManager.AppSettings["ida:MSFTBookingsBusiness"];
+        private static int maxRetries = int.Parse(ConfigurationManager.AppSettings["ida:MaxRetryGraphCalls"]);
         private static string GetServicesUrl(string businessId) =>
             $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/services";
 
@@ -92,13 +94,14 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                         Converters = new List<JsonConverter> {
                             new GraphTimeSpanConverter(),
                             new GraphTimeConverter(),
-                            new KiotaDateConverter() // <-- Agrega aquí
+                            new KiotaDateConverter()
                         },
-                        NullValueHandling = NullValueHandling.Ignore
+                        NullValueHandling = NullValueHandling.Ignore,
+                        ContractResolver = new IgnoreKiotaPropertiesResolver()
                     };
 
-                    List<BookingService> servicesList = servicesArray.ToObject<List<BookingService>>(
-                        JsonSerializer.Create(settings));
+                    List<BookingService> servicesList = JsonConvert.DeserializeObject<List<BookingService>>(
+    servicesArray.ToString(), settings);
                     return servicesList;
                 }
                 else
@@ -119,36 +122,48 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // Get: Servicio/ID
         public static async Task<BookingService> Get_MSBookingsService(string serviceId)
         {
-            try
+            int retryCount = 0;
+
+            while (true)
             {
-                var response = await GraphApiHelper.SendGraphRequestAsync($"{GetServicesUrl(businessId)}/{serviceId}", HttpMethod.Get);
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var settings = new JsonSerializerSettings
+                    var response = await GraphApiHelper.SendGraphRequestAsync($"{GetServicesUrl(businessId)}/{serviceId}", HttpMethod.Get);
+                    if (response.IsSuccessStatusCode)
                     {
-                        Converters = new List<JsonConverter> {
-                            new GraphTimeSpanConverter(),
-                            new GraphTimeConverter(),
-                            new KiotaDateConverter() // <-- Agrega aquí
-                        },
-                        NullValueHandling = NullValueHandling.Ignore
-                    };
-                    return JObject.Parse(content).ToObject<BookingService>(
-                        JsonSerializer.Create(settings));
+                        var content = await response.Content.ReadAsStringAsync();
+                        var settings = new JsonSerializerSettings
+                        {
+                            Converters = new List<JsonConverter> {
+                        new GraphTimeSpanConverter(),
+                        new GraphTimeConverter(),
+                        new KiotaDateConverter()
+                    },
+                            NullValueHandling = NullValueHandling.Ignore,
+                            ContractResolver = new IgnoreKiotaPropertiesResolver()
+                        };
+                        return JObject.Parse(content).ToObject<BookingService>(
+                            JsonSerializer.Create(settings));
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError && retryCount < maxRetries)
+                    {
+                        retryCount++;
+                        await Task.Delay(500 * retryCount); // Exponential backoff
+                        continue;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
-                else
+                catch (HttpRequestException ex)
                 {
-                    return null;
+                    throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
                 }
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error inesperado: {ex.Message}", ex);
+                catch (Exception ex)
+                {
+                    throw new Exception($"Error inesperado: {ex.Message}", ex);
+                }
             }
         }
 
@@ -157,17 +172,25 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             try
             {
-                var settings = new JsonSerializerSettings
+                // Create a JObject from the BookingService
+                JObject serviceObj = JObject.FromObject(service, JsonSerializer.Create(new JsonSerializerSettings
                 {
                     Converters = new List<JsonConverter> {
-                        new GraphTimeSpanConverter(),
-                        new GraphTimeConverter()
-                    },
-                    NullValueHandling = NullValueHandling.Ignore
-                };
-                string jsonData = JsonConvert.SerializeObject(service, settings);
+                    new GraphTimeSpanConverter(),
+                    new GraphTimeConverter(),
+                    new StringEnumConverter { CamelCaseText = true }
+                },
+                    NullValueHandling = NullValueHandling.Ignore,
+                    ContractResolver = new IgnoreKiotaPropertiesResolver()
+                }));
+
+                string jsonData = serviceObj.ToString(Formatting.None);
                 var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
-                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/services/{serviceId}", new HttpMethod("PATCH"), content);
+                var response = await GraphApiHelper.SendGraphRequestAsync(
+                    $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/services/{serviceId}",
+                    new HttpMethod("PATCH"),
+                    content
+                );
                 return response;
             }
             catch (HttpRequestException ex)
@@ -188,45 +211,58 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         //
         public static async Task<List<BookingStaffMember>> Get_MSBookingsStaffs()
         {
-            try
+            int retryCount = 0;
+
+            while (true)
             {
-                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers", HttpMethod.Get);
-
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    var content = response.Content;
-                    var jsonString = await content.ReadAsStringAsync();
-                    // Parse the JSON string to a JArray
-                    var jsonObject = JObject.Parse(jsonString);
-                    var staffArray = jsonObject["value"] as JArray;
+                    var response = await GraphApiHelper.SendGraphRequestAsync(
+                        $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/staffMembers", 
+                        HttpMethod.Get);
 
-                    // Convert JArray to List<BookingStaffMember> with our custom settings
-                    var settings = new JsonSerializerSettings
+                    if (response.IsSuccessStatusCode)
                     {
-                        Converters = new List<JsonConverter> {
-                            new GraphTimeSpanConverter(),
-                            new GraphTimeConverter(),
-                            new KiotaDateConverter() // <-- Agrega aquí
-                        },
-                        NullValueHandling = NullValueHandling.Ignore
-                    };
+                        var content = response.Content;
+                        var jsonString = await content.ReadAsStringAsync();
+                        // Parse the JSON string to a JArray
+                        var jsonObject = JObject.Parse(jsonString);
+                        var staffArray = jsonObject["value"] as JArray;
 
-                    List<BookingStaffMember> staffList = staffArray.ToObject<List<BookingStaffMember>>(
-                        JsonSerializer.Create(settings));
-                    return staffList;
+                        // Convert JArray to List<BookingStaffMember> with our custom settings
+                        var settings = new JsonSerializerSettings
+                        {
+                            Converters = new List<JsonConverter> {
+                                new GraphTimeSpanConverter(),
+                                new GraphTimeConverter(),
+                                new KiotaDateConverter()
+                            },
+                            NullValueHandling = NullValueHandling.Ignore
+                        };
+
+                        List<BookingStaffMember> staffList = staffArray.ToObject<List<BookingStaffMember>>(
+                            JsonSerializer.Create(settings));
+                        return staffList;
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError && retryCount < maxRetries)
+                    {
+                        retryCount++;
+                        await Task.Delay(500 * retryCount); // Exponential backoff
+                        continue;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
-                else
+                catch (HttpRequestException ex)
                 {
-                    return null;
+                    throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
                 }
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error inesperado: {ex.Message}", ex);
+                catch (Exception ex)
+                {
+                    throw new Exception($"Error inesperado: {ex.Message}", ex);
+                }
             }
         }
         public static async Task<BookingStaffMember> Get_MSBookingsStaff(string staffID)
@@ -419,7 +455,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     var settings = new JsonSerializerSettings
                     {
                         DateTimeZoneHandling = DateTimeZoneHandling.Local,
-                        DateFormatHandling =DateFormatHandling.IsoDateFormat,
+                        DateFormatHandling = DateFormatHandling.IsoDateFormat,
                         DateParseHandling = DateParseHandling.DateTime,
                         NullValueHandling = NullValueHandling.Ignore
                     };
@@ -450,19 +486,19 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         //
         //  Microsoft Bookings: Appointments
         //
-        public static async Task<HttpResponseMessage> Create_MSBookingsAppointment(string serviceId, string staffId,DateTime start,DateTime end,string customerName,string customerEmail,string customerPhone)
+        public static async Task<HttpResponseMessage> Create_MSBookingsAppointment(string serviceId, string staffId, DateTime start, DateTime end, string customerName, string customerEmail, string customerPhone)
         {
             string url = $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/appointments";
-            var appointment = new 
+            var appointment = new
             {
                 serviceId = serviceId,
                 staffMemberIds = new List<string> { staffId },
-                start = new 
+                start = new
                 {
                     dateTime = start.ToString("yyyy-MM-ddTHH:mm:ss"),
                     timeZone = TimeZoneInfo.Local.Id
                 },
-                end = new 
+                end = new
                 {
                     dateTime = end.ToString("yyyy-MM-ddTHH:mm:ss"),
                     timeZone = TimeZoneInfo.Local.Id
@@ -521,7 +557,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         public static async Task<HttpResponseMessage> Cancel_MSBookingsAppointment(string appointmentId)
         {
             string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}/cancel";
-            var patchData = new { cancellationMessage = "Cancelado por el usuario"};
+            var patchData = new { cancellationMessage = "Cancelado por el usuario" };
             var content = new StringContent(JsonConvert.SerializeObject(patchData), System.Text.Encoding.UTF8, "application/json");
             var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Post, content);
             return response;
@@ -673,5 +709,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 writer.WriteNull();
             }
         }
+        
     }
+
 }
+

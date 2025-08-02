@@ -408,6 +408,62 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return RedirectToAction("Reviews");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CanjearSellos(string userId)
+        {
+            if (!User.IsInRole("Administrador") && !User.IsInRole("Empleado"))
+            {
+                return Json(new { exito = false, mensaje = "No autorizado." });
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { exito = false, mensaje = "Usuario no especificado." });
+            }
+
+            using (var db = new ApplicationDbContext())
+            {
+                var usuario = db.Users.FirstOrDefault(u => u.Id == userId);
+                if (usuario == null)
+                {
+                    return Json(new { exito = false, mensaje = "Usuario no encontrado." });
+                }
+
+                var sellos = db.Sellos
+                    .Where(s => s.UserId == userId && !s.UsadoEnPase)
+                    .OrderBy(s => s.FechaObtencion)
+                    .Take(5)
+                    .ToList();
+
+                if (sellos.Count < 5)
+                {
+                    return Json(new { exito = false, mensaje = "El usuario no tiene suficientes sellos para canjear." });
+                }
+
+                foreach (var sello in sellos)
+                {
+                    sello.UsadoEnPase = true;
+                }
+
+                // Opcional: Generar un PaseExpedicion aquí si lo deseas
+                var pase = new PaseExpedicion
+                {
+                    UserId = userId,
+                    CodigoPase = Guid.NewGuid().ToString("N").ToUpper(),
+                    FechaGeneracion = DateTime.Now,
+                    FechaExpiracion = DateTime.Now.AddDays(90),
+                    Utilizado = false,
+                    SellosUsados = Newtonsoft.Json.JsonConvert.SerializeObject(sellos.Select(s => s.Id).ToList())
+                };
+                db.PasesExpedicion.Add(pase);
+
+                await db.SaveChangesAsync();
+
+                return Json(new { exito = true, mensaje = "Sellos canjeados y pase generado correctamente.", codigoPase = pase.CodigoPase });
+            }
+        }
+
 
 
 

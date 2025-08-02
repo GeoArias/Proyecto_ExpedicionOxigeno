@@ -6,6 +6,17 @@
 @{
     ViewBag.Title = "Administrar Usuarios";
     var userManager = HttpContext.Current.GetOwinContext().GetUserManager<Proyecto_ExpedicionOxigeno.ApplicationUserManager>();
+    bool esAdmin = User.IsInRole("Administrador");
+    string searchTerm = Request.QueryString["search"] ?? "";
+    var usuariosFiltrados = string.IsNullOrWhiteSpace(searchTerm)
+        ? Model
+        : Model.Where(u =>
+            (!string.IsNullOrEmpty(u.Nombre) && u.Nombre.ToLower().Contains(searchTerm.ToLower())) ||
+            (!string.IsNullOrEmpty(u.Email) && u.Email.ToLower().Contains(searchTerm.ToLower()))
+        );
+
+    // Contexto para consultar sellos
+    var db = new Proyecto_ExpedicionOxigeno.Models.ApplicationDbContext();
 }
 
 <main class="container py-4">
@@ -33,9 +44,11 @@
             <table class="table table-bordered table-striped align-middle shadow-sm bg-white rounded">
                 <thead class="table-dark">
                     <tr>
+                        <th>Nombre</th>
                         <th>Correo electrónico</th>
                         <th>Correo confirmado</th>
                         <th>Roles</th>
+                        <th>Sellos acumulados</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -43,9 +56,15 @@
                     @foreach (var user in Model)
                     {
                         var roles = userManager.GetRoles(user.Id);
+                        // Obtener cantidad de sellos activos (no usados en pase)
+                        var sellos = db.Sellos.Where(s => s.UserId == user.Id && !s.UsadoEnPase).ToList();
+
                         <tr>
                             <td>
-                                <span class="fw-bold text-primary">@user.Email</span>
+                                <span class="fw-bold text-primary">@user.Nombre</span>
+                            </td>
+                            <td>
+                                <span>@user.Email</span>
                             </td>
                             <td>
                                 @if (user.EmailConfirmed)
@@ -60,14 +79,29 @@
                             <td>
                                 <span>
                                     @string.Join(", ", roles)
-                                    <button type="button"
-                                            class="btn btn-outline-primary btn-sm ms-2 edit-role-link align-middle"
-                                            title="Editar rol"
-                                            data-userid="@user.Id"
-                                            data-roles="@string.Join(",", roles)">
-                                        <i class="bi bi-pencil-square"></i> Editar
-                                    </button>
+                                    @if (esAdmin)
+                                    {
+                                        <button type="button"
+                                                class="btn btn-outline-primary btn-sm ms-2 edit-role-link align-middle"
+                                                title="Editar rol"
+                                                data-userid="@user.Id"
+                                                data-roles="@string.Join(",", roles)">
+                                            <i class="bi bi-pencil-square"></i> Editar
+                                        </button>
+                                    }
                                 </span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success">@sellos.Count</span>
+                                @if (sellos.Count <= 5)
+                                {
+                                    <form method="post" action="@Url.Action("CanjearSellos", "Administracion", new { id = user.Id })" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-warning btn-sm ms-2 canjear-sellos-btn" onclick="return confirm('Esta acción consumirá 5 sellos de fidelidad inmediatamente. Solo debe ejecutarse cuando el usuario esté presente en el negocio, ¿desea proceder?');">
+                                            <i class="fas fa-gift"></i> Canjear
+                                        </button>
+                                    </form>
+                                }
                             </td>
                             <td>
                                 <form method="post" action="@Url.Action("EliminarUsuario", "Administracion", new { id = user.Id })" class="d-inline">

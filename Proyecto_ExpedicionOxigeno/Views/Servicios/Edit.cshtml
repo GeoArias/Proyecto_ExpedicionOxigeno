@@ -67,6 +67,8 @@
             </div>
             <div class="service-body">
                 @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+                @Html.AntiForgeryToken()
+
                 @Html.HiddenFor(model => model.Id)
 
                 <div class="row g-3">
@@ -125,6 +127,7 @@
                     <small class="form-text text-muted">Selecciona uno o más miembros del personal.</small>
                 </div>
 
+
                 <div class="row g-3 mt-3">
                     <div class="form-group col-md-4">
                         @Html.Label("Pre-buffer")
@@ -147,7 +150,6 @@
                         <small class="form-text text-muted">Tiempo después de finalizar el servicio.</small>
                     </div>
                 </div>
-
                 <div class="text-end mt-4">
                     <button type="submit" class="btn btn-Primary-ExpOxi btn-lg px-5 animate__animated animate__pulse animate__infinite animate__slower">
                         <i class="fas fa-save me-2"></i>Guardar Cambios
@@ -160,7 +162,6 @@
         </div>
     }
 </div>
-
 <style>
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
