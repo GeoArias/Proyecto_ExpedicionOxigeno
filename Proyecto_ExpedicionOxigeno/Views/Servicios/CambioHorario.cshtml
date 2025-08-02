@@ -1,0 +1,341 @@
+﻿@using Microsoft.Graph.Models
+@model BookingService
+
+@{
+    ViewBag.Title = "Cambiar Horario del Servicio";
+    var customAvailabilities = Model.SchedulingPolicy?.CustomAvailabilities ?? new List<BookingsAvailabilityWindow>();
+    var daysOfWeek = new[] {
+        new { Name = "lunes", Value = "monday" },
+        new { Name = "martes", Value = "tuesday" },
+        new { Name = "miércoles", Value = "wednesday" },
+        new { Name = "jueves", Value = "thursday" },
+        new { Name = "viernes", Value = "friday" },
+        new { Name = "sábado", Value = "saturday" },
+        new { Name = "domingo", Value = "sunday" }
+    };
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger text-center mb-4 animate__animated animate__fadeInDown" role="alert" style="border-radius:0;">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @TempData["Error"]
+    </div>
+}
+
+<div class="reservation-container">
+    <div class="page-header text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4"><i class="fas fa-calendar-alt me-2"></i>Cambiar Horario del Servicio</h1>
+        <p class="lead">Gestiona la disponibilidad especial por intervalos de fechas</p>
+    </div>
+
+    @using (Html.BeginForm("CambioHorario", "Servicios", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.Id)
+
+        <div class="service-detail-card animate__animated animate__fadeInUp">
+            <div class="service-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="service-title">@Model.DisplayName</h3>
+                        <div class="service-meta">
+                            <span class="duration">
+                                <i class="far fa-clock me-1"></i>
+                                @if (Model.DefaultDuration?.TotalHours >= 1)
+                                {
+                                    @($"{Math.Floor(Model.DefaultDuration.Value.TotalHours)}h {Model.DefaultDuration.Value.Minutes}m")
+                                }
+                                else
+                                {
+                                    @($"{Model.DefaultDuration?.Minutes ?? 0}m")
+                                }
+                            </span>
+                            <span class="price">
+                                <i class="fas fa-tag me-1"></i>
+                                ₡@string.Format("{0:N0}", Model.DefaultPrice)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="service-icon">
+                        @{
+                            string iconClass = "fas fa-tree";
+                            if (Model.DisplayName?.Contains("Escalada") == true)
+                            {
+                                iconClass = "fas fa-mountain";
+                            }
+                            else if (Model.DisplayName?.Contains("Cuerdas") == true)
+                            {
+                                iconClass = "fas fa-route";
+                            }
+                            else if (Model.DisplayName?.Contains("Glider") == true)
+                            {
+                                iconClass = "fas fa-wind";
+                            }
+                        }
+                        <i class="@iconClass"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="service-body">
+                <label class="form-label fw-bold">Disponibilidad especial por intervalo de fechas</label>
+                <div id="customAvailabilitiesContainer">
+                    @if (customAvailabilities.Count > 0)
+                    {
+                        for (int i = 0; i < customAvailabilities.Count; i++)
+                        {
+                            var availability = customAvailabilities[i];
+                            <div class="card p-3 mb-3 customAvailabilityBlock">
+                                <div class="row mb-2">
+                                    <div class="col-md-3">
+                                        <label for="CustomAvailabilities_@(i)_StartDate" class="form-label">Inicio</label>
+                                        <input type="date" name="CustomAvailabilities[@i].StartDate" id="CustomAvailabilities_@(i)_StartDate" class="form-control"
+                                               value="@(availability.StartDate?.DateTime.ToString("yyyy-MM-dd") ?? "")" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="CustomAvailabilities_@(i)_EndDate" class="form-label">Fin (incluido)</label>
+                                        <input type="date" name="CustomAvailabilities[@i].EndDate" id="CustomAvailabilities_@(i)_EndDate" class="form-control"
+                                               value="@(availability.EndDate?.DateTime.ToString("yyyy-MM-dd") ?? "")" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="CustomAvailabilities_@(i)_AvailabilityType" class="form-label">Tipo de disponibilidad</label>
+                                        <select name="CustomAvailabilities[@i].AvailabilityType" id="CustomAvailabilities_@(i)_AvailabilityType" class="form-select" onchange="toggleCustomTimes(this)">
+                                            <option value="NotBookable" @(availability.AvailabilityType?.ToString() == "NotBookable" ? "selected" : "")>No se puede reservar</option>
+                                            <option value="CustomWeeklyHours" @(availability.AvailabilityType?.ToString() == "CustomWeeklyHours" ? "selected" : "")>Horario personalizado (con periodicidad semanal)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="customTimesSection_@i" style="display:@(availability.AvailabilityType?.ToString() == "CustomWeeklyHours" ? "" : "none");">
+                                    <table class="table table-bordered align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Día</th>
+                                                <th>Hora inicio</th>
+                                                <th>Hora fin</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @for (int d = 0; d < daysOfWeek.Length; d++)
+                                            {
+                                                var day = daysOfWeek[d];
+                                                var businessHour = availability.BusinessHours?.FirstOrDefault(bh => bh.Day.ToString().ToLower().Trim() == day.Value.ToLower().Trim());
+                                                string startTime = "";
+                                                string endTime = "";
+                                                if (businessHour != null && businessHour.TimeSlots != null && businessHour.TimeSlots.Count > 0)
+                                                {
+                                                    startTime = businessHour.TimeSlots[0].StartTime != null ? businessHour.TimeSlots[0].StartTime.ToString() : "";
+                                                    endTime = businessHour.TimeSlots[0].EndTime != null ? businessHour.TimeSlots[0].EndTime.ToString() : "";
+                                                }
+                                                <tr>
+                                                    <td>
+                                                        @day.Name
+                                                        <input type="hidden" name="CustomAvailabilities[@i].BusinessHours[@d].Day" value="@day.Value" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="time" name="CustomAvailabilities[@i].BusinessHours[@d].TimeSlots[0].StartTime" class="form-control"
+                                                               value="@(string.IsNullOrEmpty(startTime) ? "" : startTime.Substring(0,5))" step="1" />
+                                                        <input type="hidden" name="CustomAvailabilities[@i].BusinessHours[@d].TimeSlots[0].StartTimeFull"
+                                                               value="@startTime" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="time" name="CustomAvailabilities[@i].BusinessHours[@d].TimeSlots[0].EndTime" class="form-control"
+                                                               value="@(string.IsNullOrEmpty(endTime) ? "" : endTime.Substring(0,5))" step="1" />
+                                                        <input type="hidden" name="CustomAvailabilities[@i].BusinessHours[@d].TimeSlots[0].EndTimeFull"
+                                                               value="@endTime" />
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    <small class="form-text text-muted">Configura los horarios para cada día de la semana.</small>
+                                </div>
+                                <div class="text-end mt-2">
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomAvailabilityBlock(this)">
+                                        <i class="fas fa-trash-alt"></i> Eliminar intervalo
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center mb-3 animate__animated animate__fadeIn">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No hay intervalos de disponibilidad especial configurados. Haz clic en el botón de abajo para crear uno nuevo.
+                        </div>
+                    }
+                    <!-- Hidden template for new blocks -->
+                    <div id="customAvailabilityTemplate" style="display:none;">
+                        <div class="card p-3 mb-3 customAvailabilityBlock">
+                            <div class="row mb-2">
+                                <div class="col-md-3">
+                                    <label class="form-label">Inicio</label>
+                                    <input type="date" class="form-control" name="CustomAvailabilities[0].StartDate" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Fin (incluido)</label>
+                                    <input type="date" class="form-control" name="CustomAvailabilities[0].EndDate" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tipo de disponibilidad</label>
+                                    <select class="form-select" onchange="toggleCustomTimes(this)">
+                                        <option value="NotBookable">No se puede reservar</option>
+                                        <option value="CustomWeeklyHours">Horario personalizado (con periodicidad semanal)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="customTimesSection_0" style="display:none;">
+                                <!-- Table for weekly hours (puede llenarse dinámicamente) -->
+                            </div>
+                            <div class="text-end mt-2">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomAvailabilityBlock(this)">
+                                    <i class="fas fa-trash-alt"></i> Eliminar intervalo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-link" onclick="addCustomAvailabilityBlock()">
+                    <i class="fas fa-plus"></i> Establecer una disponibilidad diferente para un intervalo de fechas
+                </button>
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-Primary-ExpOxi btn-lg px-5 animate__animated animate__pulse animate__infinite animate__slower">
+                        <i class="fas fa-save me-2"></i>Guardar Cambios
+                    </button>
+                    <a href="@Url.Action("Index", "Servicios")" class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a la lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function toggleCustomTimes(select) {
+            var timesSection = select.closest('.card').querySelector('[id^="customTimesSection"]');
+            if (select.value === 'customWeeklyHours') {
+                timesSection.style.display = '';
+            } else {
+                timesSection.style.display = 'none';
+            }
+        }
+
+        function addCustomAvailabilityBlock() {
+            var container = document.getElementById('customAvailabilitiesContainer');
+            var blocks = container.querySelectorAll('.customAvailabilityBlock');
+            var lastIndex = blocks.length - 1;
+            var lastBlock = blocks[lastIndex];
+            var clone = lastBlock.cloneNode(true);
+            // Limpia los valores del clon
+            clone.querySelectorAll('input').forEach(function (input) { input.value = ""; });
+            clone.querySelectorAll('select').forEach(function (select) { select.selectedIndex = 0; });
+            clone.querySelector('[id^="customTimesSection"]').style.display = 'none';
+            container.appendChild(clone);
+        }
+
+        function removeCustomAvailabilityBlock(btn) {
+            var block = btn.closest('.customAvailabilityBlock');
+            var container = document.getElementById('customAvailabilitiesContainer');
+            block.remove();
+        }
+    </script>
+}
+
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .reservation-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .service-detail-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .service-header {
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .service-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .service-icon {
+        font-size: 2.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .service-body {
+        padding: 2rem;
+    }
+
+    .form-label {
+        color: #212529;
+        font-weight: 600;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        font-size: 1.05rem;
+    }
+
+        .form-control:focus {
+            border-color: #fa8f23;
+            box-shadow: 0 0 0 2px rgba(250, 143, 35, 0.15);
+        }
+
+    .btn-Primary-ExpOxi {
+        background-color: #fa8f23;
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 50px;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+        .btn-Primary-ExpOxi:hover {
+            background-color: #e67b0f;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+    .btn-outline-secondary {
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        .service-body {
+            padding: 1rem;
+        }
+
+        .service-header {
+            padding: 1rem;
+        }
+    }
+</style>

@@ -307,9 +307,11 @@
     <Compile Include="Helpers\BookingsQRHelper.cs" />
     <Compile Include="Helpers\DateTimeExtensions.cs" />
     <Compile Include="Helpers\GraphApiHelper.cs" />
+    <Compile Include="Helpers\GraphDateConverter.cs" />
     <Compile Include="Helpers\GraphTimeConverter.cs" />
     <Compile Include="Helpers\GraphTimeSpanConverter.cs" />
     <Compile Include="Helpers\GraphTokenProvider.cs" />
+    <Compile Include="Helpers\IgnoreKiotaPropertiesResolver.cs" />
     <Compile Include="Migrations\202506170558195_MigracionInicial.cs" />
     <Compile Include="Migrations\202506170558195_MigracionInicial.Designer.cs">
       <DependentUpon>202506170558195_MigracionInicial.cs</DependentUpon>
@@ -353,6 +355,7 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\BookingAppointmentCustomed.cs" />
+    <Compile Include="Models\BookingServiceEditViewModel.cs" />
     <Compile Include="Models\BookingServiceSimple.cs" />
     <Compile Include="Models\BookingStaffAvailability.cs" />
     <Compile Include="Models\CodigoQR.cs" />
@@ -461,6 +464,7 @@
     <Content Include="Views\Home\IndexVPrior.cshtml" />
     <Content Include="Views\Administracion\Index.cshtml" />
     <Content Include="Views\Servicios\Details.cshtml" />
+    <Content Include="Views\Servicios\CambioHorario.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

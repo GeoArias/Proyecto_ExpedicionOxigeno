@@ -358,6 +358,11 @@
                 // Mostrar el botón de envío cuando se selecciona una tarjeta
                 $(".submit-container").addClass("animate__animated animate__fadeInUp");
 
+                // Cambiar texto de todos los botones a "Seleccionar"
+                $(".btn-select-service").html('<i class="fas fa-check-circle me-2"></i>Seleccionar');
+                // Cambiar texto solo del seleccionado a "Seleccionado"
+                $(this).find(".btn-select-service").html('<i class="fas fa-check-circle me-2"></i>Seleccionado');
+
                 // Scroll suave al botón de envío si está fuera de la vista
                 if (!isElementInViewport($(".submit-container")[0])) {
                     $('html, body').animate({

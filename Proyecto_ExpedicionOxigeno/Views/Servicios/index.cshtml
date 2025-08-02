@@ -44,7 +44,12 @@
                         iconClass = "fas fa-wind";
                     }
                     <div class="col">
-                        <div class="service-card animate__animated animate__fadeInUp">
+                        <div class="service-card animate__animated animate__fadeInUp position-relative">
+                            <a href="@Url.Action("CambioHorario", "Servicios", new { id = item.Id })"
+                               class="horario-icon-link"
+                               title="Editar horarios">
+                                <i class="fas fa-calendar-alt"></i>
+                            </a>
                             <div class="service-icon">
                                 <i class="@iconClass"></i>
                             </div>
@@ -103,6 +108,7 @@
     .section-padding {
         padding: 60px 0 40px 0;
     }
+
     .section-badge {
         display: inline-block;
         background-color: rgba(250, 143, 35, 0.1);
@@ -114,18 +120,21 @@
         margin-bottom: 16px;
         letter-spacing: 1px;
     }
+
     .section-title {
         font-size: 2.2rem;
         font-weight: 700;
         margin-bottom: 18px;
         color: #212529;
     }
+
     .section-text {
         font-size: 1.1rem;
         color: #6c757d;
         max-width: 700px;
         margin: 0 auto 30px auto;
     }
+
     .service-card {
         background-color: white;
         border-radius: 15px;
@@ -140,10 +149,12 @@
         flex-direction: column;
         justify-content: flex-start;
     }
-    .service-card:hover {
-        transform: translateY(-8px) scale(1.03);
-        box-shadow: 0 15px 30px rgba(250,143,35,0.13);
-    }
+
+        .service-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(250,143,35,0.13);
+        }
+
     .service-icon {
         width: 70px;
         height: 70px;
@@ -157,12 +168,14 @@
         margin: 0 auto 18px;
         box-shadow: 0 4px 16px rgba(250,143,35,0.13);
     }
+
     .service-title {
         font-weight: 600;
         margin-bottom: 10px;
         font-size: 1.2rem;
         color: #212529;
     }
+
     .service-meta {
         display: flex;
         justify-content: space-between;
@@ -171,44 +184,143 @@
         margin-bottom: 10px;
         font-size: 1rem;
     }
+
     .service-duration, .service-price {
         display: flex;
         align-items: center;
         font-weight: 500;
         color: #495057;
     }
-    .service-duration i, .service-price i {
-        margin-right: 5px;
-        color: #fa8f23;
-    }
+
+        .service-duration i, .service-price i {
+            margin-right: 5px;
+            color: #fa8f23;
+        }
+
     .btn-outline-primary, .btn-outline-warning, .btn-outline-danger {
         border-radius: 50px;
         font-weight: 600;
         min-width: 110px;
         transition: all 0.2s;
     }
-    .btn-outline-primary:hover {
-        background: #fa8f23;
-        color: #fff;
-        border-color: #fa8f23;
+
+        .btn-outline-primary:hover {
+            background: #fa8f23;
+            color: #fff;
+            border-color: #fa8f23;
+        }
+
+        .btn-outline-warning:hover {
+            background: #ffc107;
+            color: #fff;
+            border-color: #ffc107;
+        }
+
+        .btn-outline-danger:hover {
+            background: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+    /* Horario icon styles */
+    .horario-icon-link {
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        z-index: 2;
+        text-decoration: none;
+        border-radius: 50%;
+        outline: none;
+        transition: box-shadow 0.2s, transform 0.2s;
+        box-shadow: 0 2px 8px rgba(250,143,35,0.13);
+        cursor: pointer;
+        /* For focus accessibility */
     }
-    .btn-outline-warning:hover {
-        background: #ffc107;
+
+        .horario-icon-link:focus .horario-icon-bg,
+        .horario-icon-link:hover .horario-icon-bg {
+            background: linear-gradient(135deg, #ff7e00 0%, #fa8f23 100%);
+            box-shadow: 0 4px 16px rgba(250,143,35,0.23), 0 0 0 4px rgba(250,143,35,0.12);
+            transform: scale(1.12) rotate(-8deg);
+        }
+
+    .horario-icon-bg {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        border-radius: 50%;
         color: #fff;
-        border-color: #ffc107;
+        font-size: 1.35rem;
+        border: 2.5px solid #fff;
+        box-shadow: 0 2px 8px rgba(250,143,35,0.13);
+        transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+        outline: none;
+        cursor: pointer;
+        animation: pulse-shadow 1.5s infinite alternate;
     }
-    .btn-outline-danger:hover {
-        background: #dc3545;
-        color: #fff;
-        border-color: #dc3545;
+
+    .horario-icon-link:active .horario-icon-bg {
+        transform: scale(0.96);
+        box-shadow: 0 1px 4px rgba(250,143,35,0.18);
     }
+
+    @@keyframes pulse-shadow {
+        0% {
+            box-shadow: 0 2px 8px rgba(250,143,35,0.13);
+        }
+
+        100% {
+            box-shadow: 0 0 0 6px rgba(250,143,35,0.10);
+        }
+    }
+
     @@media (max-width: 992px) {
-        .section-padding { padding: 40px 0 20px 0; }
-        .service-card { padding: 20px 10px 15px 10px; }
-        .service-icon { width: 55px; height: 55px; font-size: 1.3rem; }
+        .section-padding {
+            padding: 40px 0 20px 0;
+        }
+
+        .service-card {
+            padding: 20px 10px 15px 10px;
+        }
+
+        .service-icon {
+            width: 55px;
+            height: 55px;
+            font-size: 1.3rem;
+        }
+
+        .horario-icon-bg {
+            width: 32px;
+            height: 32px;
+            font-size: 1.05rem;
+        }
+
+        .horario-icon-link {
+            top: 10px;
+            right: 10px;
+        }
     }
+
     @@media (max-width: 768px) {
-        .section-title { font-size: 1.5rem; }
-        .service-card { padding: 15px 5px 10px 5px; }
+        .section-title {
+            font-size: 1.5rem;
+        }
+
+        .service-card {
+            padding: 15px 5px 10px 5px;
+        }
+
+        .horario-icon-bg {
+            width: 26px;
+            height: 26px;
+            font-size: 0.95rem;
+        }
+
+        .horario-icon-link {
+            top: 7px;
+            right: 7px;
+        }
     }
 </style>
