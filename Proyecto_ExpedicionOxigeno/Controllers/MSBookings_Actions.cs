@@ -553,32 +553,39 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             return servicesList;
         }
-        public static async Task<List<BookingAppointmentCustomed>> Get_MSBookingsAppointment(string id)
+        public static async Task<BookingAppointmentCustomed> Get_MSBookingsAppointment(string id)
         {
-            string url = $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/appointments";
-            var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Get);
-            var content = response.Content;
-            var jsonString = await content.ReadAsStringAsync();
-            // Parse the JSON string to a JArray
-            var jsonObject = JObject.Parse(jsonString);
-            var servicesArray = jsonObject["value"] as JArray;
-
-            // Convert JArray to List<BookingService> with our custom settings
-            var settings = new JsonSerializerSettings
+            try
             {
-                Converters = new List<JsonConverter> {
+                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{id}", HttpMethod.Get);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var settings = new JsonSerializerSettings
+                    {
+                        Converters = new List<JsonConverter> {
                             new GraphTimeSpanConverter(),
-                            new GraphTimeConverter()
+                            new GraphTimeConverter(),
+                            new KiotaDateConverter()
                         },
-                NullValueHandling = NullValueHandling.Ignore
-            };
-
-            List<BookingAppointmentCustomed> servicesList = servicesArray.ToObject<List<BookingAppointmentCustomed>>(
-                JsonSerializer.Create(settings));
-            //Filtrar los servicios por el email del cliente
-            servicesList = servicesList.Where(a => a.CustomerEmailAddress.Equals(email, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            return servicesList;
+                        NullValueHandling = NullValueHandling.Ignore
+                    };
+                    return JObject.Parse(content).ToObject<BookingAppointmentCustomed>(
+                        JsonSerializer.Create(settings));
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error al realizar la solicitud HTTP: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
         }
 
         public static async Task<HttpResponseMessage> Cancel_MSBookingsAppointment(string appointmentId)
@@ -592,8 +599,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
         public static async Task<HttpResponseMessage> Modify_MSBookingsAppointment(BookingAppointment appointment)
         {
-            string getUrl = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointment.Id}";
-            string patchUrl = getUrl;
 
             try
             {
@@ -602,8 +607,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 {
                     Converters = new List<JsonConverter> {
                     new GraphTimeSpanConverter(),
-                    new GraphTimeConverter(),
-                    new StringEnumConverter { CamelCaseText = true }
+                    new GraphTimeConverter()
                 },
                     NullValueHandling = NullValueHandling.Ignore,
                     ContractResolver = new IgnoreKiotaPropertiesResolver()
@@ -612,7 +616,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 string jsonData = serviceObj.ToString(Formatting.None);
                 var content = new StringContent(jsonData, System.Text.Encoding.UTF8, "application/json");
                 var response = await GraphApiHelper.SendGraphRequestAsync(
-                    $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointment.Id}",
+                    $"https://graph.microsoft.com/beta/solutions/bookingBusinesses/{businessId}/appointments/{appointment.Id}",
                     new HttpMethod("PATCH"),
                     content
                 );

@@ -6,14 +6,20 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Proyecto_ExpedicionOxigeno.Helpers;
 using Proyecto_ExpedicionOxigeno.Models;
+using Proyecto_ExpedicionOxigeno.Services;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
+using ZXing;
+using ZXing.Common;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
@@ -368,8 +374,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("Login", "Account");
                 }
                 // Obtener el objeto de reserva actual
-                var reservas = await MSBookings_Actions.GetAppo(User.Identity.Name);
-                await MSBookings_Actions.Modify_MSBookingsAppointment(id);
+                var reservas = await MSBookings_Actions.Get_MSBookingsAppointment(id);
+                // await MSBookings_Actions.Modify_MSBookingsAppointment(id);
                 TempData["Mensaje"] = "Reserva modificada correctamente.";
                 return RedirectToAction("MisReservas");
             }
@@ -949,7 +955,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // POST: Reservas/Editar
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Editar(string id, DateTime nuevaFecha, string nuevaHoraInicio, string nuevaHoraFin)
+        public async Task<ActionResult> Editar(string id, DateTime nuevaFecha, string nuevaHoraInicio, string nuevaHoraFin, BookingAppointmentCustomed appointment)
         {
             if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(nuevaHoraInicio) || string.IsNullOrEmpty(nuevaHoraFin))
             {
@@ -959,6 +965,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             try
             {
+                //var appointment = await MSBookings_Actions.Get_MSBookingsAppointment(id);
+
                 // Combinar fecha con hora
                 DateTime horaInicio = DateTime.ParseExact(nuevaHoraInicio, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
                 DateTime horaFin = DateTime.ParseExact(nuevaHoraFin, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
@@ -966,11 +974,51 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 DateTime fechaHoraInicio = new DateTime(nuevaFecha.Year, nuevaFecha.Month, nuevaFecha.Day, horaInicio.Hour, horaInicio.Minute, 0);
                 DateTime fechaHoraFin = new DateTime(nuevaFecha.Year, nuevaFecha.Month, nuevaFecha.Day, horaFin.Hour, horaFin.Minute, 0);
 
-                // Ejecutar la modificación usando customerName, no customerId
-                await MSBookings_Actions.Modify_MSBookingsAppointment(id, fechaHoraInicio, fechaHoraInicio, fechaHoraFin);
+                // Actualizar el objeto appointment con las nuevas fechas
+                if (appointment.start == null)
+                    appointment.start = new TimesBooking();
+                if (appointment.end == null)
+                    appointment.end = new TimesBooking();
 
-                TempData["Mensaje"] = "Reserva modificada correctamente.";
-                return RedirectToAction("MisReservas");
+                appointment.start.dateTime = fechaHoraInicio;
+                appointment.start.timeZone = TimeZoneInfo.Local.Id;
+                appointment.end.dateTime = fechaHoraFin;
+                appointment.end.timeZone = TimeZoneInfo.Local.Id;
+                // Ejecutar la modificación usando customerName, no customerId
+
+                var result = await MSBookings_Actions.Modify_MSBookingsAppointment(appointment);
+
+                
+                if (result.IsSuccessStatusCode)
+                {
+                    // Obtener el appointment actualizado para enviar el correo de confirmación
+                    var appointmentUpdated = await MSBookings_Actions.Get_MSBookingsAppointment(id);
+                    // Obtener el servicio de la reserva
+                    var servicio = await MSBookings_Actions.Get_MSBookingsService(appointmentUpdated.ServiceId);
+
+                    TempData["Mensaje"] = "Reserva modificada correctamente.";
+                    await EnviarCorreoConfirmacion(id,servicio, fechaHoraInicio, fechaHoraFin, appointment);
+                    return RedirectToAction("MisReservas");
+                }
+                else
+                {
+                    TempData["Error"] = $"Error al modificar la reserva: {result.ReasonPhrase}";
+
+                    // Recuperar la reserva para recargar la vista en caso de error
+                    var emailUsuario = User.Identity.Name;
+                    var reservas = await MSBookings_Actions.GetAppointmentsByEmail(emailUsuario);
+                    var reserva = reservas.FirstOrDefault(r => r.Id == id);
+
+                    if (reserva == null)
+                        return RedirectToAction("MisReservas");
+
+                    ViewBag.FechaSeleccionada = nuevaFecha;
+                    ViewBag.AvailableSlots = new List<TimeSlot>(); // Opcionalmente: recalcular si querés
+
+                    return View("Editar", reserva);
+                }
+
+                
             }
             catch (Exception ex)
             {
@@ -988,6 +1036,48 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 ViewBag.AvailableSlots = new List<TimeSlot>(); // Opcionalmente: recalcular si querés
 
                 return View("Editar", reserva);
+            }
+        }
+        // GET: Reservas/GenerarQRReserva
+        [HttpGet]
+        public ActionResult GenerarQRReserva(string codigo)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(codigo))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Código no proporcionado");
+                }
+
+                var imagen = GenerarImagenQR(codigo);
+                return File(imagen, "image/png");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error generando QR: {ex.Message}");
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, "Error al generar código QR");
+            }
+        }
+        public byte[] GenerarImagenQR(string codigo, int width = 300, int height = 300)
+        {
+            var writer = new BarcodeWriter
+            {
+                Format = BarcodeFormat.QR_CODE,
+                Options = new EncodingOptions
+                {
+                    Height = height,
+                    Width = width,
+                    Margin = 1
+                }
+            };
+
+            using (var bitmap = writer.Write(codigo))
+            {
+                using (var stream = new MemoryStream())
+                {
+                    bitmap.Save(stream, ImageFormat.Png);
+                    return stream.ToArray();
+                }
             }
         }
     }
