@@ -461,6 +461,7 @@
     <Content Include="Views\Home\IndexVPrior.cshtml" />
     <Content Include="Views\Administracion\Index.cshtml" />
     <Content Include="Views\Servicios\Details.cshtml" />
+    <Content Include="Views\Reservas\Editar.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -95,7 +95,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
                 // Generar slots disponibles según la duración del servicio
                 ViewBag.Servicio = servicio;
-                var availableSlots = await GenerateAvailableTimeSlotsAsync(staffAvailability, servicio.DefaultDuration.Value, fecha.Value);
+                var availableSlots = await GenerateAvailableTimeSlotsAsync(staffAvailability, servicio.DefaultDuration.Value, fecha.Value, servicio);
 
                 // Pasar datos a la vista
                 ViewBag.AvailableSlots = availableSlots;
@@ -299,7 +299,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
 
 
-
                 return View(userAppointments);
             }
             catch (Exception ex)
@@ -359,62 +358,39 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ModificarReserva(string id, string nuevaFecha, string nuevaHoraInicio, string nuevaHoraFin)
+        public async Task<ActionResult> ModificarReserva(string id, DateTime nuevaFecha, DateTime nuevaHoraInicio, DateTime nuevaHoraFin)
         {
-            if (!User.Identity.IsAuthenticated)
-            {
-                TempData["Error"] = "Debes iniciar sesión para modificar reservas.";
-                return RedirectToAction("Login", "Account");
-            }
-
             try
             {
-                if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(nuevaFecha) ||
-                    string.IsNullOrEmpty(nuevaHoraInicio) || string.IsNullOrEmpty(nuevaHoraFin))
-                {
-                    TempData["Error"] = "Todos los campos son obligatorios.";
-                    return RedirectToAction("MisReservas");
-                }
-
-                // Validar que la fecha no sea anterior a hoy
-                DateTime fechaSeleccionada = DateTime.Parse(nuevaFecha);
-                if (fechaSeleccionada.Date < DateTime.Today)
-                {
-                    TempData["Error"] = "No puedes modificar una reserva para una fecha pasada.";
-                    return RedirectToAction("MisReservas");
-                }
-
-                // Construir las fechas y horas completas
-                DateTime nuevaHoraInicioCompleta = DateTime.Parse($"{nuevaFecha} {nuevaHoraInicio}");
-                DateTime nuevaHoraFinCompleta = DateTime.Parse($"{nuevaFecha} {nuevaHoraFin}");
-
-                // Validar que la hora de inicio sea anterior a la hora de fin
-                if (nuevaHoraInicioCompleta >= nuevaHoraFinCompleta)
-                {
-                    TempData["Error"] = "La hora de inicio debe ser anterior a la hora de fin.";
-                    return RedirectToAction("MisReservas");
-                }
-
-                // Validar que la nueva hora no sea en el pasado
-                if (nuevaHoraInicioCompleta <= DateTime.Now)
-                {
-                    TempData["Error"] = "No puedes modificar una reserva para un horario pasado.";
-                    return RedirectToAction("MisReservas");
-                }
-
-                await MSBookings_Actions.Modify_MSBookingsAppointment(id, fechaSeleccionada, nuevaHoraInicioCompleta, nuevaHoraFinCompleta);
-
-                TempData["Success"] = "Reserva modificada correctamente.";
+                await MSBookings_Actions.Modify_MSBookingsAppointment(id, nuevaFecha, nuevaHoraInicio, nuevaHoraFin);
+                TempData["Mensaje"] = "Reserva modificada correctamente.";
+                return RedirectToAction("MisReservas");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Error al modificar la reserva: {ex.Message}";
-            }
+                TempData["Error"] = "Error al modificar la reserva: " + ex.Message;
 
-            return RedirectToAction("MisReservas");
+                // ✅ Intentamos reconstruir el modelo si ocurrió error
+                var reservas = await MSBookings_Actions.GetAppointmentsByEmail(User.Identity.Name);
+                var reserva = reservas.FirstOrDefault(r => r.Id == id);
+
+                if (reserva == null)
+                    return RedirectToAction("MisReservas");
+
+                // Necesitás esto para que no reviente la vista:
+                ViewBag.AvailableSlots = new List<TimeSlot>(); // O los slots correctos si querés
+                ViewBag.FechaSeleccionada = nuevaFecha;
+
+                return View("Editar", reserva);
+            }
         }
+
         // Método auxiliar para generar slots disponibles según duración del servicio
-        private async Task<List<TimeSlot>> GenerateAvailableTimeSlotsAsync(BookingStaffAvailabilityCollectionResponse staffAvailability, TimeSpan serviceDuration, DateTime selectedDate)
+        private async Task<List<TimeSlot>> GenerateAvailableTimeSlotsAsync(
+    BookingStaffAvailabilityCollectionResponse staffAvailability,
+    TimeSpan serviceDuration,
+    DateTime selectedDate,
+    BookingService servicio)
         {
             List<TimeSlot> availableSlots = new List<TimeSlot>();
 
@@ -424,9 +400,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
                 if (staffAvailability?.Value == null)
                     return availableSlots;
-
-                // Obtener el servicio actual del ViewBag (asumimos que se ha pasado a este método)
-                BookingService servicio = ViewBag.Servicio as BookingService;
 
                 // Determinar los tiempos de buffer (usar 0 si son nulos)
                 TimeSpan preBuffer = servicio.PreBuffer ?? TimeSpan.Zero;
@@ -595,7 +568,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 // Crear el código QR (usando la misma URL que en la vista)
                 string qrCodeUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={booking.Id}&code=Code128&dpi=96";
 
-                // Crear el cuerpo del correo electrónico usando el mismo diseño que en Confirmacion.cshtml
+                // Crear el cuerpo del correo electrónico usando el mismo diseño que in Confirmacion.cshtml
                 string asunto = "Confirmación de tu reserva - Expedición Oxígeno";
                 string cuerpo = $@"
 <!DOCTYPE html>
@@ -913,11 +886,108 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             }
         }
 
+        // GET: Reservas/Editar/{id}
+        public async Task<ActionResult> Editar(string id, DateTime? fecha)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para modificar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
 
+            if (string.IsNullOrEmpty(id))
+            {
+                TempData["Error"] = "ID de reserva no válido.";
+                return RedirectToAction("MisReservas");
+            }
+
+            var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+            var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
+            var reservas = await MSBookings_Actions.GetAppointmentsByEmail(user.Email);
+            var reserva = reservas.FirstOrDefault(r => r.Id == id);
+
+            if (reserva == null)
+            {
+                TempData["Error"] = "Reserva no encontrada.";
+                return RedirectToAction("MisReservas");
+            }
+
+            // Obtener el servicio de la reserva
+            var servicio = await MSBookings_Actions.Get_MSBookingsService(reserva.ServiceId);
+            if (servicio == null)
+            {
+                TempData["Error"] = "Servicio no encontrado.";
+                return RedirectToAction("MisReservas");
+            }
+
+            // Determinar la fecha a consultar (por defecto la de la reserva)
+            var fechaSeleccionada = fecha ?? reserva.start.dateTime.Date;
+
+            // Obtener staff asignado al servicio
+            var staffIds = servicio.StaffMemberIds;
+            string userTimeZone = "Central America Standard Time";
+            var staffAvailability = await MSBookings_Actions.Get_MSBookingsStaffAvailability(
+                staffIds, fechaSeleccionada, fechaSeleccionada.AddDays(1), userTimeZone);
+
+            // Generar slots disponibles
+            var availableSlots = await GenerateAvailableTimeSlotsAsync(staffAvailability, servicio.DefaultDuration.Value, fechaSeleccionada, servicio);
+
+            ViewBag.Servicio = servicio;
+            ViewBag.AvailableSlots = availableSlots;
+            ViewBag.FechaSeleccionada = fechaSeleccionada;
+
+            return View(reserva);
+        }
+
+        // POST: Reservas/Editar
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Editar(string id, DateTime nuevaFecha, string nuevaHoraInicio, string nuevaHoraFin)
+        {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(nuevaHoraInicio) || string.IsNullOrEmpty(nuevaHoraFin))
+            {
+                TempData["Error"] = "Todos los campos son obligatorios.";
+                return RedirectToAction("MisReservas");
+            }
+
+            try
+            {
+                // Combinar fecha con hora
+                DateTime horaInicio = DateTime.ParseExact(nuevaHoraInicio, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+                DateTime horaFin = DateTime.ParseExact(nuevaHoraFin, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+
+                DateTime fechaHoraInicio = new DateTime(nuevaFecha.Year, nuevaFecha.Month, nuevaFecha.Day, horaInicio.Hour, horaInicio.Minute, 0);
+                DateTime fechaHoraFin = new DateTime(nuevaFecha.Year, nuevaFecha.Month, nuevaFecha.Day, horaFin.Hour, horaFin.Minute, 0);
+
+                // Ejecutar la modificación usando customerName, no customerId
+                await MSBookings_Actions.Modify_MSBookingsAppointment(id, fechaHoraInicio, fechaHoraInicio, fechaHoraFin);
+
+                TempData["Mensaje"] = "Reserva modificada correctamente.";
+                return RedirectToAction("MisReservas");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al modificar la reserva: {ex.Message}";
+
+                // Recuperar la reserva para recargar la vista en caso de error
+                var emailUsuario = User.Identity.Name;
+                var reservas = await MSBookings_Actions.GetAppointmentsByEmail(emailUsuario);
+                var reserva = reservas.FirstOrDefault(r => r.Id == id);
+
+                if (reserva == null)
+                    return RedirectToAction("MisReservas");
+
+                ViewBag.FechaSeleccionada = nuevaFecha;
+                ViewBag.AvailableSlots = new List<TimeSlot>(); // Opcionalmente: recalcular si querés
+
+                return View("Editar", reserva);
+            }
+        }
     }
 
-    // Clase auxiliar para representar un slot de tiempo disponible
-    public class TimeSlot
+
+        // Clase auxiliar para representar un slot de tiempo disponible
+        public class TimeSlot
     {
         public DateTime StartTime { get; set; }  // Hora visible de inicio (después del preBuffer)
         public DateTime EndTime { get; set; }    // Hora visible de fin (antes del postBuffer)

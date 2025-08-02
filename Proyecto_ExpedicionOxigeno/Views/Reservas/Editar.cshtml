@@ -1,0 +1,96 @@
+@using Proyecto_ExpedicionOxigeno.Controllers
+@model Proyecto_ExpedicionOxigeno.Models.BookingAppointmentCustomed
+
+@{
+    ViewBag.Title = "Modificar Reserva";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var cultura = new System.Globalization.CultureInfo("es-ES");
+    var availableSlots = ViewBag.AvailableSlots as List<TimeSlot> ?? new List<TimeSlot>();
+    var fechaSeleccionada = (DateTime)(ViewBag.FechaSeleccionada ?? DateTime.Today);
+}
+
+<h2>Modificar Reserva</h2>
+
+@if (Model == null || Model.start?.dateTime == null || Model.end?.dateTime == null)
+{
+    <div class="alert alert-danger">
+        Error: No se pudo cargar la información de la reserva. Por favor, regresa a <a href="@Url.Action("MisReservas", "Reservas")">Mis Reservas</a>.
+    </div>
+}
+else
+{
+    var fechaLocal = Model.start.dateTime.ToLocalTime();
+    var horaInicioLocal = Model.start.dateTime.ToLocalTime();
+    var horaFinLocal = Model.end.dateTime.ToLocalTime();
+
+    <div class="card mt-4">
+        <div class="card-body">
+            @using (Html.BeginForm("Editar", "Reservas", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.Hidden("id", Model.Id)
+
+                <div class="mb-3">
+                    <label class="form-label">Fecha actual</label>
+                    <input type="text" class="form-control"
+                           value="@(fechaLocal.ToString("dddd, dd 'de' MMMM 'de' yyyy", cultura))"
+                           readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Hora actual</label>
+                    <input type="text" class="form-control"
+                           value="@(horaInicioLocal.ToString("hh:mm tt", cultura)) - @(horaFinLocal.ToString("hh:mm tt", cultura))"
+                           readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label for="nuevaFecha" class="form-label">Nueva fecha</label>
+                    <input type="date" class="form-control" name="nuevaFecha" id="nuevaFecha" value="@fechaSeleccionada.ToString("yyyy-MM-dd")" required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="nuevaHoraInicio" class="form-label">Nuevo horario disponible</label>
+                    <select class="form-control" name="nuevaHoraInicio" id="nuevaHoraInicio" required>
+                        <option value="">Selecciona un horario</option>
+                        @if (availableSlots.Any())
+                        {
+                            foreach (var slot in availableSlots)
+                            {
+                                <option value="@slot.StartTime.ToString("HH:mm")" data-end="@slot.EndTime.ToString("HH:mm")">
+                                    @slot.StartTime.ToString("hh:mm tt") - @slot.EndTime.ToString("hh:mm tt")
+                                </option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="">No hay horarios disponibles para esta fecha</option>
+                        }
+                    </select>
+                </div>
+
+                <input type="hidden" name="nuevaHoraFin" id="nuevaHoraFin" />
+
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                <a href="@Url.Action("MisReservas", "Reservas")" class="btn btn-secondary ms-2">Cancelar</a>
+            }
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        // Al seleccionar un horario, poner la hora de fin en el hidden
+        document.getElementById('nuevaHoraInicio')?.addEventListener('change', function () {
+            var selected = this.options[this.selectedIndex];
+            document.getElementById('nuevaHoraFin').value = selected.getAttribute('data-end');
+        });
+
+        // Recargar la página al cambiar la fecha para mostrar nuevos horarios
+        document.getElementById('nuevaFecha')?.addEventListener('change', function () {
+            var url = '@Url.Action("Editar", "Reservas", new { id = Model?.Id })' + '?fecha=' + this.value;
+            window.location.href = url;
+        });
+    </script>
+}

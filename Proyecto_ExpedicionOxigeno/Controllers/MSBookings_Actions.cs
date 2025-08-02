@@ -529,31 +529,88 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
         public static async Task Modify_MSBookingsAppointment(string appointmentId, DateTime nuevaFecha, DateTime nuevaHoraInicio, DateTime nuevaHoraFin)
         {
-            string url = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}";
+            string getUrl = $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{appointmentId}";
+            string patchUrl = getUrl;
 
-            var patchData = new
+            try
             {
-                start = new
+                // Obtener la reserva original
+                var getResponse = await GraphApiHelper.SendGraphRequestAsync(getUrl, HttpMethod.Get);
+                if (!getResponse.IsSuccessStatusCode)
                 {
-                    dateTime = nuevaHoraInicio.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    timeZone = "America/Costa_Rica"
-                },
-                end = new
-                {
-                    dateTime = nuevaHoraFin.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    timeZone = "America/Costa_Rica"
+                    var errorGet = await getResponse.Content.ReadAsStringAsync();
+                    throw new Exception($"No se pudo obtener la reserva original. Código: {getResponse.StatusCode}. Error: {errorGet}");
                 }
-            };
 
-            var content = new StringContent(JsonConvert.SerializeObject(patchData), System.Text.Encoding.UTF8, "application/json");
-            var response = await GraphApiHelper.SendGraphRequestAsync(url, new HttpMethod("PATCH"), content);
+                var originalContent = await getResponse.Content.ReadAsStringAsync();
+                var originalObj = JObject.Parse(originalContent);
 
-            if (!response.IsSuccessStatusCode)
+                // Obtener los datos del cliente necesarios
+                var customerName = originalObj["customerName"]?.ToString();
+                var customerEmailAddress = originalObj["customerEmailAddress"]?.ToString();
+                var customerPhone = originalObj["customerPhone"]?.ToString();
+
+                if (string.IsNullOrWhiteSpace(customerName))
+                {
+                    throw new Exception("La reserva no contiene un 'customerName'. Microsoft Bookings requiere este campo para modificar la reserva.");
+                }
+
+                // Construir el cuerpo del PATCH
+                var patchData = new
+                {
+                    start = new
+                    {
+                        dateTime = nuevaHoraInicio.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        timeZone = "America/Costa_Rica"
+                    },
+                    end = new
+                    {
+                        dateTime = nuevaHoraFin.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        timeZone = "America/Costa_Rica"
+                    },
+                    customerName = customerName,
+                    customerEmailAddress = customerEmailAddress,
+                    customerPhone = customerPhone
+                };
+
+                string jsonBody = JsonConvert.SerializeObject(patchData, Formatting.Indented);
+                var content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+
+                System.Diagnostics.Debug.WriteLine("====== PATCH BOOKING APPOINTMENT ======");
+                System.Diagnostics.Debug.WriteLine($"PATCH URL: {patchUrl}");
+                System.Diagnostics.Debug.WriteLine($"PATCH BODY:\n{jsonBody}");
+
+                // Enviar PATCH
+                var patchResponse = await GraphApiHelper.SendGraphRequestAsync(patchUrl, new HttpMethod("PATCH"), content);
+
+                if (!patchResponse.IsSuccessStatusCode)
+                {
+                    var patchError = await patchResponse.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine("PATCH FAILED");
+                    System.Diagnostics.Debug.WriteLine($"Status Code: {patchResponse.StatusCode}");
+                    System.Diagnostics.Debug.WriteLine($"Reason: {patchResponse.ReasonPhrase}");
+                    System.Diagnostics.Debug.WriteLine($"Response Content:\n{patchError}");
+
+                    throw new Exception($"No se pudo modificar la reserva.\nCódigo: {patchResponse.StatusCode}\nRazón: {patchResponse.ReasonPhrase}\nDetalles: {patchError}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("PATCH exitoso.");
+                }
+            }
+            catch (HttpRequestException httpEx)
             {
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                throw new Exception($"No se pudo modificar la reserva: {errorMessage}");
+                System.Diagnostics.Debug.WriteLine($"HttpRequestException: {httpEx.Message}");
+                throw new Exception("Error de red al intentar modificar la reserva.", httpEx);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Exception general: {ex.Message}");
+                throw new Exception("Ocurrió un error inesperado al modificar la reserva.", ex);
             }
         }
+
+
 
 
 

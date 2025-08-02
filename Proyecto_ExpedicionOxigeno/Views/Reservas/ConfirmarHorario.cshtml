@@ -1,12 +1,17 @@
-﻿@model dynamic
+﻿@using System
+@using System.Web.Mvc
 @using System.Globalization
+@inherits System.Web.Mvc.WebViewPage
 @{
+    Layout = "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Confirmar reserva";
+
     var servicio = ViewBag.Servicio as Microsoft.Graph.Models.BookingService;
     var slotStart = (DateTime)ViewBag.SlotStart;
     var slotEnd = (DateTime)ViewBag.SlotEnd;
     var bookingRef = "EXP-" + DateTime.Now.ToString("yyyyMMdd") + "-" + new Random().Next(1000, 9999);
 }
+
 
 <div class="reservation-container">
     <div class="page-header text-center mb-4 animate__animated animate__fadeIn">
