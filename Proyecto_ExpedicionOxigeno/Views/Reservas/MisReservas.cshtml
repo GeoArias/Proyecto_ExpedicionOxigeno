@@ -130,17 +130,16 @@
                                     <form action="@Url.Action("CancelarReserva", "Reservas")" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@reserva.Id" />
-                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('¿Estás seguro que deseas cancelar esta reserva?')">
+                                        <button type="button" class="btn btn-outline-danger cancelar-btn">
                                             <i class="fas fa-times-circle me-1"></i>Cancelar
                                         </button>
                                     </form>
-                                    <button class="btn btn-icon-round" onclick="mostrarQR('@reserva.Id')" title="Ver código QR">
-                                        <i class="fas fa-qrcode"></i>
-                                    </button>
+                                    <a href="@Url.Action("Editar", "Reservas", new { id = reserva.Id })" class="btn btn-outline-warning">
+                                        <i class="fas fa-edit me-1"></i>Modificar Reserva
+                                    </a>
                                     <button type="button" class="btn btn-outline-info" onclick="mostrarQR('@reserva.Id')">
                                         <i class="fas fa-qrcode me-1"></i>Ver QR
                                     </button>
-
                                 </div>
                             </div>
                         </div>
@@ -588,5 +587,30 @@
         `;
     };
     img.src = '@Url.Action("GenerarQRReserva", "Reservas")?codigo=' + encodeURIComponent(codigo);
-}
+    }
+
 </script>
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            $('.cancelar-btn').on('click', function () {
+                var $form = $(this).closest('form');
+                Swal.fire({
+                    title: '¿Cancelar reserva?',
+                    text: "Esta acción no se puede deshacer.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, cancelar',
+                    cancelButtonText: 'No, mantener'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+}
