@@ -233,35 +233,13 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                             new GraphTimeConverter()
                         },
                         NullValueHandling = NullValueHandling.Ignore,
-
                     };
                     var responseContent = await appointment.Content.ReadAsStringAsync();
 
-
-                    // Convert JArray to List<BookingStaffMember>
                     BookingAppointment appointmentMS = JObject.Parse(responseContent).ToObject<BookingAppointment>(
                         JsonSerializer.Create(settings));
 
-                    // === AGREGAR SELLO ===
-                    var db = new ApplicationDbContext();
-
-                    // Generar un código QR (puedes usar el ID de la reserva como base)
-                    string codigoQR = appointmentMS.Id;
-
-                    var nuevoSello = new Sello
-                    {
-                        UserId = user.Id,
-                        CodigoQR = codigoQR,
-                        Servicio = servicio.DisplayName,
-                        FechaObtencion = DateTime.Now,
-                        ReservaId = appointmentMS.Id,
-                        UsadoEnPase = false
-                    };
-
-                    db.Sellos.Add(nuevoSello);
-                    db.SaveChanges();
-
-                    TempData["Success"] = "¡Reserva confirmada con éxito y se otorgó un sello!";
+                    TempData["Success"] = "¡Reserva confirmada con éxito!";
                     // Pasar los datos a la vista de confirmación
                     ViewBag.Servicio = servicio;
                     ViewBag.SlotStart = slotStart;
@@ -304,6 +282,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 var userAppointments = await MSBookings_Actions.GetAppointmentsByEmail(user.Email);
 
 
+                // Bloque temporal para depuración: imprime los Ids de reservas pasadas
+foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
+{
+    System.Diagnostics.Debug.WriteLine($"Reserva pasada: Id={a.Id}, Servicio={a.ServiceName}, End={a.end?.dateTime}");
+}
 
                 return View(userAppointments);
             }
@@ -578,9 +561,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     logoUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}{logoUrl}";
                 }
 
-                // Crear el código QR (usando la misma URL que en la vista)
-                string qrCodeUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={booking.Id}&code=Code128&dpi=96";
-
                 // Crear el cuerpo del correo electrónico usando el mismo diseño que in Confirmacion.cshtml
                 string asunto = "Confirmación de tu reserva - Expedición Oxígeno";
                 string cuerpo = $@"
@@ -810,10 +790,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                             {(servicio.DefaultDuration.Value.TotalHours >= 1 ? $"{Math.Floor(servicio.DefaultDuration.Value.TotalHours)} horas {servicio.DefaultDuration.Value.Minutes} minutos" : $"{servicio.DefaultDuration.Value.Minutes} minutos")}
                         </span>
                     </div>
-                    <div class='invoice-item'>
-                        <span class='item-label'>Descripción:</span>
-                        <span style='color: #6c757d; font-style: italic;'>{servicio.Description}</span>
-                    </div>
+                   
+<div class=""invoice-item"" style=""display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px dashed #e9ecef; padding: 10px 0;"">
+    <span class=""item-label"" style=""font-weight: 600; margin-bottom: 5px;"">Descripción:</span>
+    <span style=""color: #6c757d; font-style: italic; white-space: pre-line; word-break: break-word;"">{servicio.Description}</span>
+</div>
+
                 </div>
 
                 <div class='invoice-info-card'>
@@ -853,10 +835,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     <div class='payment-notice'>
                         <strong>Información de pago:</strong> El pago se realiza directamente en las cajas de Expedición Oxígeno.
                     </div>
-                </div>
-
-                <div class='barcode-section'>
-                    <img src='{qrCodeUrl}' alt='Código QR' style='max-width: 200px;'>
                 </div>
 
                 <div class='important-notes'>
@@ -1093,5 +1071,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         public DateTime BufferStartTime { get; set; }  // Hora real de inicio incluyendo preBuffer
         public DateTime BufferEndTime { get; set; }    // Hora real de fin incluyendo postBuffer
     }
+
 
 }

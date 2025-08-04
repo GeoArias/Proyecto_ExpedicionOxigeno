@@ -658,6 +658,35 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             var id = jobj?["id"];
             // Hacer algo con el ID si es necesario
         }
+
+        public static async Task EnviarCorreosSeguimientoPendientes(string userEmail)
+        {
+            var reservas = await MSBookings_Actions.GetAppointmentsByEmail(userEmail);
+            var db = new ApplicationDbContext();
+
+            foreach (var reserva in reservas.Where(r => r.end?.dateTime < DateTime.Now))
+            {
+                // Verifica si ya existe una reseña para este usuario y servicio
+                bool yaTieneResena = db.Reviews.Any(r =>
+                    r.Nombre == userEmail && r.Servicio == reserva.ServiceName && r.Fecha > reserva.end.dateTime);
+
+                if (!yaTieneResena)
+                {
+                    string reviewLink = $"https://localhost:44399/Review/ReviewUser?serviceId={reserva.ServiceId}";
+                    string body = $@"
+                        Hola, por favor deja tu reseña para el servicio {reserva.ServiceName} del {reserva.start.dateTime:dd/MM/yyyy}:
+                        <a href='{reviewLink}'>Deja tu reseña aquí</a>
+                    ";
+                    // Envía el correo (usa tu EmailService)
+                    await new EmailService().SendAsync(new Microsoft.AspNet.Identity.IdentityMessage
+                    {
+                        Destination = userEmail,
+                        Subject = "¡Ayúdanos con tu reseña!",
+                        Body = body
+                    });
+                }
+            }
+        }
     }
 
     internal class KiotaDateConverter : JsonConverter
