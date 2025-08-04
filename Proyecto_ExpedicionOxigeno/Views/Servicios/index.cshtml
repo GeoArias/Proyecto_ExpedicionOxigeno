@@ -2,6 +2,7 @@
 @model List<BookingService>
 @{
     ViewBag.Title = "Servicios";
+    bool esAdmin = User.IsInRole("Administrador");
 }
 
 <main class="container py-4">
@@ -45,11 +46,14 @@
                     }
                     <div class="col">
                         <div class="service-card animate__animated animate__fadeInUp position-relative">
-                            <a href="@Url.Action("CambioHorario", "Servicios", new { id = item.Id })"
-                               class="horario-icon-link"
-                               title="Editar horarios">
-                                <i class="fas fa-calendar-alt"></i>
-                            </a>
+                            @if (esAdmin)
+                            {
+                                <a href="@Url.Action("CambioHorario", "Servicios", new { id = item.Id })"
+                                   class="horario-icon-link"
+                                   title="Editar horarios">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </a>
+                            }
                             <div class="service-icon">
                                 <i class="@iconClass"></i>
                             </div>
@@ -75,13 +79,17 @@
                                 <a href="@Url.Action("Details", "Servicios", new { id = item.Id })" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> Ver detalles
                                 </a>
-                                <a href="@Url.Action("Edit", "Servicios", new { id = item.Id })" class="btn btn-sm btn-outline-warning">
-                                    <i class="bi bi-pencil-square"></i> Editar
-                                </a>
-                                <a href="@Url.Action("Delete", "Servicios", new { id = item.Id })" class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('¿Seguro que deseas eliminar este servicio?');">
-                                    <i class="bi bi-trash"></i> Eliminar
-                                </a>
+                                @if (esAdmin)
+                                {
+                                    <a href="@Url.Action("Edit", "Servicios", new { id = item.Id })" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </a>
+                                    @*<a href="@Url.Action("Delete", "Servicios", new { id = item.Id })" class="btn btn-sm btn-outline-danger"
+               onclick="return confirm('¿Seguro que deseas eliminar este servicio?');">
+                <i class="bi bi-trash"></i> Eliminar
+            </a>*@
+                                }
+
                             </div>
                         </div>
                     </div>
