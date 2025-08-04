@@ -357,206 +357,207 @@
                 {
                     <p class="text-muted">No hay reseñas con los filtros seleccionados.</p>
                 }
+                @*
+        <h4 class="mb-3" style="color: #000;">Déjanos tu reseña:</h4>
 
-                <h4 class="mb-3" style="color: #000;">Déjanos tu reseña:</h4>
+        @if (!Request.IsAuthenticated)
+        {
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
+                Comentar / Enviar reseña
+            </button>
+        }
+        else
+        {
+            <form method="post" action="/Home/Index" onsubmit="return validarComentario()">
+                @Html.AntiForgeryToken()
 
-                @if (!Request.IsAuthenticated)
-                {
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
-                        Comentar / Enviar reseña
-                    </button>
-                }
-                else
-                {
-                    <form method="post" action="/Home/Index" onsubmit="return validarComentario()">
-                        @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label for="Comentario" class="form-label">Comentario</label>
+                    <textarea class="form-control" id="Comentario" name="Comentario" rows="4"
+                              placeholder="¿Qué te pareció tu experiencia?" minlength="4" required></textarea>
+                    <div id="comentario-error" class="text-danger mt-1" style="display:none;">
+                        El comentario debe tener al menos 4 caracteres. Por favor, escribe una reseña más detallada.
+                    </div>
+                </div>
 
-                        <div class="mb-3">
-                            <label for="Comentario" class="form-label">Comentario</label>
-                            <textarea class="form-control" id="Comentario" name="Comentario" rows="4"
-                                      placeholder="¿Qué te pareció tu experiencia?" minlength="4" required></textarea>
-                            <div id="comentario-error" class="text-danger mt-1" style="display:none;">
-                                El comentario debe tener al menos 4 caracteres. Por favor, escribe una reseña más detallada.
-                            </div>
-                        </div>
+                <div class="mb-3">
+                    <label for="Calificacion" class="form-label">Calificación</label>
+                    <select class="form-select" id="Calificacion" name="Calificacion" required>
+                        <option value="">Seleccione una calificación</option>
+                        <option value="5">★★★★★ - Excelente</option>
+                        <option value="4">★★★★☆ - Muy bueno</option>
+                        <option value="3">★★★☆☆ - Bueno</option>
+                        <option value="2">★★☆☆☆ - Regular</option>
+                        <option value="1">★☆☆☆☆ - Malo</option>
+                    </select>
+                </div>
 
-                        <div class="mb-3">
-                            <label for="Calificacion" class="form-label">Calificación</label>
-                            <select class="form-select" id="Calificacion" name="Calificacion" required>
-                                <option value="">Seleccione una calificación</option>
-                                <option value="5">★★★★★ - Excelente</option>
-                                <option value="4">★★★★☆ - Muy bueno</option>
-                                <option value="3">★★★☆☆ - Bueno</option>
-                                <option value="2">★★☆☆☆ - Regular</option>
-                                <option value="1">★☆☆☆☆ - Malo</option>
-                            </select>
-                        </div>
+                <div class="mb-3">
+                    <label for="Servicio" class="form-label">Tipo de servicio</label>
+                    <select class="form-select" id="Servicio" name="Servicio" required>
+                        <option value="">Seleccione un servicio</option>
+                        <option value="Parque de Cuerdas">Parque de Cuerdas</option>
+                        <option value="Pared de Escalada">Pared de Escalada</option>
+                        <option value="Roll Glider">Roll Glider</option>
+                    </select>
+                </div>
 
-                        <div class="mb-3">
-                            <label for="Servicio" class="form-label">Tipo de servicio</label>
-                            <select class="form-select" id="Servicio" name="Servicio" required>
-                                <option value="">Seleccione un servicio</option>
-                                <option value="Parque de Cuerdas">Parque de Cuerdas</option>
-                                <option value="Pared de Escalada">Pared de Escalada</option>
-                                <option value="Roll Glider">Roll Glider</option>
-                            </select>
-                        </div>
+                <button type="submit" class="btn btn-success">Enviar reseña</button>
+            </form>
 
-                        <button type="submit" class="btn btn-success">Enviar reseña</button>
-                    </form>
+            <script>
+                function validarComentario() {
+                    const comentario = document.getElementById("Comentario").value.trim();
+                    const error = document.getElementById("comentario-error");
 
-                    <script>
-                        function validarComentario() {
-                            const comentario = document.getElementById("Comentario").value.trim();
-                            const error = document.getElementById("comentario-error");
-
-                            if (comentario.length < 4) {
-                                error.style.display = "block";
-                                return false;
-                            }
-
-                            error.style.display = "none";
-                            return true;
-                        }
-                    </script>
-
-                }
-            </div>
-
-            <div class="col-md-5 d-none d-md-block">
-                <img src="/Content/Images/resena.jpg" alt="Opiniones de clientes" class="img-fluid rounded shadow-sm ai-style-change-1">
-            </div>
-        </div>
-    </section>
-
-
-    <section id="contacto" class="mt-5 mb-5">
-        <h2 class="text-center" style="color: #000;">Contacto</h2>
-        <div class="row justify-content-center align-items-center">
-            <div class="col-md-7">
-                <p>
-                    Ubicación: O2<br />
-                    Horario: De lunes a viernes de 1:00pm a 7:00pm. <br />
-                    Sábados y domingos de 12:00pm a 7:00pm.<br />
-                    Número Telefónico: 2520-2100
-                </p>
-
-                @if (!Request.IsAuthenticated)
-                {
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
-                        Enviar consulta
-                    </button>
-                }
-                else
-                {
-                    <form method="post" action="/Home/GuardarContacto">
-                        @Html.AntiForgeryToken()
-
-                        <div class="mb-3">
-                            <label for="Consulta" class="form-label">Escríbenos tu consulta:</label>
-                            <textarea class="form-control" id="Consulta" name="Consulta" rows="3" placeholder="¿Cuál es tu consulta?"></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="Telefono" class="form-label">Número de teléfono:</label>
-                            <input type="tel" class="form-control" id="Telefono" name="Telefono" placeholder="Ej: 8888-8888">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="Email" class="form-label">Correo electrónico:</label>
-                            <input type="email" class="form-control" id="Email" name="Email" placeholder="correo@ejemplo.com">
-                        </div>
-
-                        <button type="submit" class="btn btn-success">Enviar</button>
-                    </form>
-                }
-            </div>
-            <div class="col-md-5 d-none d-md-block">
-                <img src="/Content/Images/contacto.jpg" alt="Opiniones de clientes" class="img-fluid rounded shadow-sm ai-style-change-1">
-            </div>
-        </div>
-    </section>
-</main>
-
-<!-- SIN la clase d-none -->
-<div class="floating-reserve-btn" id="botonReserva">
-    <a href="/reservas" class="btn btn-Primary-ExpOxi btn-lg pulse-btn">
-        <i class="fas fa-calendar-check"></i> ¡RESERVA YA!
-    </a>
-</div>
-
-<style>
-    body, html {
-        overflow-x: clip;
-    }
-</style>
-
-
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
-    @if (TempData["ResenaGuardada"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: '¡Gracias por tu reseña!',
-                text: 'Una vez verificada, la agregaremos a la página principal.',
-                confirmButtonColor: '#198754'
-            });
-        </script>
-    }
-
-    @if (TempData["MensajeEnviado"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: '¡Consulta enviada!',
-                text: 'Una vez revisada, te contactaremos al correo.',
-                confirmButtonColor: '#198754'
-            });
-        </script>
-    }
-
-    @if (TempData["RegistroExitoso"] != null)
-    {
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: '¡Registro exitoso!',
-                text: 'Gracias por registrarte. Te llegará un correo a la dirección brindada con un enlace para confirmar tu cuenta.',
-                confirmButtonColor: '#198754'
-            });
-        </script>
-    }
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const boton = document.getElementById('botonReserva');
-            const hero = document.querySelector('.hero-banner');
-
-            function toggleBoton() {
-                if (!boton) return;
-
-                if (hero) {
-                    const heroBottom = hero.offsetTop + hero.offsetHeight;
-                    if (window.scrollY > heroBottom - 50) {
-                        boton.classList.remove('d-none');
-                    } else {
-                        boton.classList.add('d-none');
+                    if (comentario.length < 4) {
+                        error.style.display = "block";
+                        return false;
                     }
-                } else {
-                    // Si no hay HeroBanner, mostrar siempre
-                    boton.classList.remove('d-none');
+
+                    error.style.display = "none";
+                    return true;
                 }
+            </script>
+
+        }
+                *@
+            </div>
+
+                    <div class="col-md-5 d-none d-md-block">
+                        <img src="/Content/Images/resena.jpg" alt="Opiniones de clientes" class="img-fluid rounded shadow-sm ai-style-change-1">
+                    </div>
+                </div>
+            </section>
+
+
+            <section id="contacto" class="mt-5 mb-5">
+                <h2 class="text-center" style="color: #000;">Contacto</h2>
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-md-7">
+                        <p>
+                            Ubicación: O2<br />
+                            Horario: De lunes a viernes de 1:00pm a 7:00pm. <br />
+                            Sábados y domingos de 12:00pm a 7:00pm.<br />
+                            Número Telefónico: 2520-2100
+                        </p>
+
+                        @if (!Request.IsAuthenticated)
+                        {
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
+                                Enviar consulta
+                            </button>
+                        }
+                        else
+                        {
+                            <form method="post" action="/Home/GuardarContacto">
+                                @Html.AntiForgeryToken()
+
+                                <div class="mb-3">
+                                    <label for="Consulta" class="form-label">Escríbenos tu consulta:</label>
+                                    <textarea class="form-control" id="Consulta" name="Consulta" rows="3" placeholder="¿Cuál es tu consulta?"></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="Telefono" class="form-label">Número de teléfono:</label>
+                                    <input type="tel" class="form-control" id="Telefono" name="Telefono" placeholder="Ej: 8888-8888">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="Email" class="form-label">Correo electrónico:</label>
+                                    <input type="email" class="form-control" id="Email" name="Email" placeholder="correo@ejemplo.com">
+                                </div>
+
+                                <button type="submit" class="btn btn-success">Enviar</button>
+                            </form>
+                        }
+                    </div>
+                    <div class="col-md-5 d-none d-md-block">
+                        <img src="/Content/Images/contacto.jpg" alt="Opiniones de clientes" class="img-fluid rounded shadow-sm ai-style-change-1">
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- SIN la clase d-none -->
+        <div class="floating-reserve-btn" id="botonReserva">
+            <a href="/reservas" class="btn btn-Primary-ExpOxi btn-lg pulse-btn">
+                <i class="fas fa-calendar-check"></i> ¡RESERVA YA!
+            </a>
+        </div>
+
+        <style>
+            body, html {
+                overflow-x: clip;
+            }
+        </style>
+
+
+        @section Scripts {
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+            @if (TempData["ResenaGuardada"] != null)
+            {
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Gracias por tu reseña!',
+                        text: 'Una vez verificada, la agregaremos a la página principal.',
+                        confirmButtonColor: '#198754'
+                    });
+                </script>
             }
 
-            window.addEventListener('scroll', toggleBoton);
-            toggleBoton(); // 👈 Esto es lo que faltaba
-        });
-    </script>
+            @if (TempData["MensajeEnviado"] != null)
+            {
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Consulta enviada!',
+                        text: 'Una vez revisada, te contactaremos al correo.',
+                        confirmButtonColor: '#198754'
+                    });
+                </script>
+            }
+
+            @if (TempData["RegistroExitoso"] != null)
+            {
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Registro exitoso!',
+                        text: 'Gracias por registrarte. Te llegará un correo a la dirección brindada con un enlace para confirmar tu cuenta.',
+                        confirmButtonColor: '#198754'
+                    });
+                </script>
+            }
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const boton = document.getElementById('botonReserva');
+                    const hero = document.querySelector('.hero-banner');
+
+                    function toggleBoton() {
+                        if (!boton) return;
+
+                        if (hero) {
+                            const heroBottom = hero.offsetTop + hero.offsetHeight;
+                            if (window.scrollY > heroBottom - 50) {
+                                boton.classList.remove('d-none');
+                            } else {
+                                boton.classList.add('d-none');
+                            }
+                        } else {
+                            // Si no hay HeroBanner, mostrar siempre
+                            boton.classList.remove('d-none');
+                        }
+                    }
+
+                    window.addEventListener('scroll', toggleBoton);
+                    toggleBoton(); // 👈 Esto es lo que faltaba
+                });
+            </script>
 
 
-}
+        }

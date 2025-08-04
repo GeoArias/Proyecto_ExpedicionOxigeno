@@ -1,0 +1,51 @@
+﻿@{
+    ViewBag.Title = "Deja tu Reseña";
+}
+<main class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <h2 class="mb-4">¿Qué te pareció la experiencia en @ViewBag.ServiceName?</h2>
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+            else
+            {
+                <form method="post" action="@Url.Action("ReviewUser", "Review")">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="serviceId" value="@ViewBag.ServiceId" />
+                    <div class="mb-3">
+                        <label for="calificacion" class="form-label">Calificación</label>
+                        <select class="form-select" id="calificacion" name="calificacion" required>
+                            <option value="">Selecciona una calificación</option>
+                            <option value="5">★★★★★ - Excelente</option>
+                            <option value="4">★★★★☆ - Muy bueno</option>
+                            <option value="3">★★★☆☆ - Bueno</option>
+                            <option value="2">★★☆☆☆ - Regular</option>
+                            <option value="1">★☆☆☆☆ - Malo</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comentario" class="form-label">Comentario</label>
+                        <textarea class="form-control" id="comentario" name="comentario" rows="4" required minlength="4"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-Primary-ExpOxi">Enviar reseña</button>
+                </form>
+            }
+        </div>
+    </div>
+</main>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (TempData["Mensaje"] != null)
+    {
+        <script>Swal.fire({
+                icon: 'success',
+                title: '¡Gracias por tu reseña!',
+                html: 'Una vez verificada, será mostrada en la página principal.',
+                confirmButtonColor: '#fa8f23',
+                confirmButtonText: 'Aceptar'
+            });</script>
+    }
+}
