@@ -8,6 +8,12 @@
     var servicio = ViewBag.Servicio as Microsoft.Graph.Models.BookingService;
     var fechaSeleccionada = ViewBag.FechaSeleccionada as DateTime? ?? Model.start.dateTime.Date;
     var availableSlots = ViewBag.AvailableSlots as List<Proyecto_ExpedicionOxigeno.Controllers.TimeSlot> ?? new List<Proyecto_ExpedicionOxigeno.Controllers.TimeSlot>();
+
+    // Conversión de hora UTC a hora local de Costa Rica
+    var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
+    var fechaInicioLocal = TimeZoneInfo.ConvertTimeFromUtc(Model.start.dateTime, timeZone);
+    var fechaFinLocal = TimeZoneInfo.ConvertTimeFromUtc(Model.end.dateTime, timeZone);
+    var cultura = new CultureInfo("es-ES");
 }
 
 <div class="reservation-container">
@@ -73,11 +79,11 @@
                     <div class="current-booking">
                         <div class="info-row">
                             <span class="label"><i class="far fa-calendar-alt me-2"></i>Fecha:</span>
-                            <span class="value">@Model.start.dateTime.ToString("D", new CultureInfo("es-ES"))</span>
+                            <span class="value">@fechaInicioLocal.ToString("D", cultura)</span>
                         </div>
                         <div class="info-row">
                             <span class="label"><i class="far fa-clock me-2"></i>Horario:</span>
-                            <span class="value">@Model.start.dateTime.ToString("hh:mm tt") - @Model.end.dateTime.ToString("hh:mm tt")</span>
+                            <span class="value">@fechaInicioLocal.ToString("hh:mm tt") - @fechaFinLocal.ToString("hh:mm tt")</span>
                         </div>
                     </div>
                 </div>
@@ -172,7 +178,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>  
 
 <style>
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
@@ -357,12 +363,12 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
-    .btn-Primary-ExpOxi:hover {
-        background-color: #e67b0f;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
+        .btn-Primary-ExpOxi:hover {
+            background-color: #e67b0f;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
 
     .btn-outline-secondary {
         border-radius: 50px;
