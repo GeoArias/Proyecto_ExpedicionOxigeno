@@ -341,6 +341,19 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
                     TempData["Error"] = "ID de reserva no válido.";
                     return RedirectToAction("MisReservas");
                 }
+                var reserva = await MSBookings_Actions.Get_MSBookingsAppointment(id);
+
+                if (reserva == null)
+                {
+                    TempData["Error"] = "Reserva no encontrada.";
+                    return RedirectToAction("MisReservas");
+                }
+                if (reserva.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name)
+                {
+                    // El usuario no es el dueño de la reserva
+                    TempData["Error"] = "No tienes permiso para cancelar esta reserva.";
+                    return RedirectToAction("MisReservas");
+                }
 
                 var response = await MSBookings_Actions.Cancel_MSBookingsAppointment(id);
 
@@ -1015,7 +1028,7 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
                     TempData["Error"] = "No tienes permiso para modificar esta reserva.";
                     return RedirectToAction("MisReservas");
                 }
-
+                 
                 // Ejecutar la modificación usando el ID
                 var result = await MSBookings_Actions.Modify_MSBookingsAppointment(appointment);
 
