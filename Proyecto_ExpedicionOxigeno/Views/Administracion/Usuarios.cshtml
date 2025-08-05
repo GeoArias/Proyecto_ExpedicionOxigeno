@@ -93,23 +93,30 @@
                             </td>
                             <td>
                                 <span class="fw-bold text-success">@sellos.Count</span>
-                                @if (sellos.Count <= 5)
+                                @if (sellos.Count >= 5)
                                 {
-                                    <form method="post" action="@Url.Action("CanjearSellos", "Administracion", new { id = user.Id })" class="d-inline">
+                                    <form method="post" action="@Url.Action("CanjearSellos", "Administracion", new { userId = user.Id })" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-warning btn-sm ms-2 canjear-sellos-btn" onclick="return confirm('Esta acción consumirá 5 sellos de fidelidad inmediatamente. Solo debe ejecutarse cuando el usuario esté presente en el negocio, ¿desea proceder?');">
-                                            <i class="fas fa-gift"></i> Canjear
+                                            <i class="fas fa-gift"></i> Canjear 
                                         </button>
                                     </form>
                                 }
                             </td>
                             <td>
-                                <form method="post" action="@Url.Action("EliminarUsuario", "Administracion", new { id = user.Id })" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">
-                                        <i class="fas fa-trash-alt"></i> Eliminar
-                                    </button>
-                                </form>
+                                @if (User.IsInRole("Administrador"))
+                                {
+                                    if (!roles.Contains("Administrador") && System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"] != user.Email)
+                                    {
+                                        <form method="post" action="@Url.Action("EliminarUsuario", "Administracion", new { id = user.Id })" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">
+                                                <i class="fas fa-trash-alt"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    }
+                                }
+
                             </td>
                         </tr>
                     }

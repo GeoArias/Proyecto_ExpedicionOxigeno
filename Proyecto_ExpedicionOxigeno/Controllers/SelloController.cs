@@ -32,14 +32,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 .OrderByDescending(s => s.FechaObtencion)
                 .ToListAsync();
 
-            var pases = await _context.PasesExpedicion
-                .Where(p => p.UserId == userId)
-                .OrderByDescending(p => p.FechaGeneracion)
-                .ToListAsync();
 
             ViewBag.Estadisticas = estadisticas;
-            ViewBag.Pases = pases;
-
 
 
             return View(sellos);

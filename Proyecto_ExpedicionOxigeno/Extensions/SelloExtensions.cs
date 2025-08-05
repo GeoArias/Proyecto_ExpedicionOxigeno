@@ -15,13 +15,6 @@ namespace Proyecto_ExpedicionOxigeno.Extensions
                 .CountAsync();
         }
 
-        // Extensión para obtener pases disponibles
-        public static async Task<int> ObtenerPasesDisponiblesAsync(this ApplicationUser user, ApplicationDbContext context)
-        {
-            return await context.PasesExpedicion
-                .Where(p => p.UserId == user.Id && !p.Utilizado && p.FechaExpiracion > System.DateTime.Now)
-                .CountAsync();
-        }
 
         // Extensión para verificar si puede obtener pase
         public static async Task<bool> PuedeObtenerPaseAsync(this ApplicationUser user, ApplicationDbContext context)

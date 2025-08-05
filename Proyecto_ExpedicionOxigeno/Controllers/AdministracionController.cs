@@ -53,8 +53,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // GET: /Administracion/Usuarios
         public ActionResult Usuarios()
         {
-            // Verificar si el usuario es administrador
-            if (!User.IsInRole("Administrador"))
+            // Verificar si el usuario es administrador o empleado
+            if (!(User.IsInRole("Administrador") || User.IsInRole("Empleado")))
             {
                 return new HttpUnauthorizedResult();
             }
@@ -89,6 +89,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 TempData["Mensaje"] = "Usuario no encontrado.";
                 return RedirectToAction("Usuarios");
             }
+            if(user.Email.ToLower().Trim() == ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim())
+            {
+                TempData["Mensaje"] = "El administrador primario no se puede eliminar";
+                return RedirectToAction("Usuarios");
+            }
 
             // Eliminar el usuario
             var result = userManager.Delete(user);
@@ -106,86 +111,6 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         }
 
 
-
-
-
-
-
-
-
-
-        // GET: Administracion/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-
-        // GET: Administracion/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Administracion/Create
-        [HttpPost]
-        public ActionResult Create(FormCollection collection)
-        {
-            try
-            {
-                // TODO: Add insert logic here
-
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Administracion/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: Administracion/Edit/5
-        [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
-        {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Administracion/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: Administracion/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                return View();
-            }
-        }
 
         //
         //      Roles
@@ -297,8 +222,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [HttpGet]
         public ActionResult Consultas()
         {
-            // Verificar si el usuario es administrador
-            if (!User.IsInRole("Administrador"))
+            // Verificar si el usuario es administrador o empleado
+            if (!(User.IsInRole("Administrador") || User.IsInRole("Empleado")))
             {
                 return new HttpUnauthorizedResult();
             }
@@ -314,8 +239,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ResponderConsulta(int Id, string ParaEmail, string Respuesta)
         {
-            // Verifica que el usuario sea administrador
-            if (!User.IsInRole("Administrador"))
+            // Verificar si el usuario es administrador o empleado
+            if (!(User.IsInRole("Administrador") || User.IsInRole("Empleado")))
             {
                 return new HttpUnauthorizedResult();
             }
@@ -375,8 +300,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [HttpGet]
         public ActionResult Reviews()
         {
-            // Verificar si el usuario es administrador
-            if (!User.IsInRole("Administrador"))
+            // Verificar si el usuario es administrador o empleado
+            if (!(User.IsInRole("Administrador") || User.IsInRole("Empleado")))
             {
                 return new HttpUnauthorizedResult();
             }
@@ -394,6 +319,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult CambiarMostrarReview(int id)
         {
+            // Verificar si el usuario es administrador o empleado
+            if (!(User.IsInRole("Administrador")))
+            {
+                return new HttpUnauthorizedResult();
+            }
             using (var db = new Proyecto_ExpedicionOxigeno.Models.ApplicationDbContext())
             {
                 var review = db.Reviews.Find(id);
@@ -414,12 +344,14 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             if (!User.IsInRole("Administrador") && !User.IsInRole("Empleado"))
             {
-                return Json(new { exito = false, mensaje = "No autorizado." });
+                TempData["Error"] = "Usuario no cuenta con suficientes permisos";
+                return RedirectToAction("Usuarios");
             }
 
             if (string.IsNullOrEmpty(userId))
             {
-                return Json(new { exito = false, mensaje = "Usuario no especificado." });
+                TempData["Error"] = "Usuario no especificado";
+                return RedirectToAction("Usuarios");
             }
 
             using (var db = new ApplicationDbContext())
@@ -427,7 +359,8 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 var usuario = db.Users.FirstOrDefault(u => u.Id == userId);
                 if (usuario == null)
                 {
-                    return Json(new { exito = false, mensaje = "Usuario no encontrado." });
+                    TempData["Error"] = "Usuario no encontrado";
+                    return RedirectToAction("Usuarios");
                 }
 
                 var sellos = db.Sellos
@@ -438,29 +371,18 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
                 if (sellos.Count < 5)
                 {
-                    return Json(new { exito = false, mensaje = "El usuario no tiene suficientes sellos para canjear." });
+                    TempData["Error"] = "Usuario no tiene suficientes sellos por canjear";
+                    return RedirectToAction("Usuarios");
                 }
 
                 foreach (var sello in sellos)
                 {
                     sello.UsadoEnPase = true;
                 }
-
-                // Opcional: Generar un PaseExpedicion aquí si lo deseas
-                var pase = new PaseExpedicion
-                {
-                    UserId = userId,
-                    CodigoPase = Guid.NewGuid().ToString("N").ToUpper(),
-                    FechaGeneracion = DateTime.Now,
-                    FechaExpiracion = DateTime.Now.AddDays(90),
-                    Utilizado = false,
-                    SellosUsados = Newtonsoft.Json.JsonConvert.SerializeObject(sellos.Select(s => s.Id).ToList())
-                };
-                db.PasesExpedicion.Add(pase);
-
                 await db.SaveChangesAsync();
 
-                return Json(new { exito = true, mensaje = "Sellos canjeados y pase generado correctamente.", codigoPase = pase.CodigoPase });
+                TempData["Mensaje"] = "Sellos canjeados y pase generado correctamente.";
+                return RedirectToAction("Usuarios");
             }
         }
 

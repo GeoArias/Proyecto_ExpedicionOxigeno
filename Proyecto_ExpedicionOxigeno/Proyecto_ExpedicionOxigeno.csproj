@@ -364,6 +364,10 @@
     <Compile Include="Migrations\202507141655382_AddSistemaSellos.Designer.cs">
       <DependentUpon>202507141655382_AddSistemaSellos.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202508050132185_EliminarPases.cs" />
+    <Compile Include="Migrations\202508050132185_EliminarPases.Designer.cs">
+      <DependentUpon>202508050132185_EliminarPases.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\BookingAppointmentCustomed.cs" />
@@ -376,7 +380,6 @@
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Contacto.cs" />
-    <Compile Include="Models\PaseExpedicion.cs" />
     <Compile Include="Models\Review.cs" />
     <Compile Include="Models\Sellos.cs" />
     <Compile Include="Models\ValidacionQR.cs" />
@@ -517,6 +520,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202507141655382_AddSistemaSellos.resx">
       <DependentUpon>202507141655382_AddSistemaSellos.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202508050132185_EliminarPases.resx">
+      <DependentUpon>202508050132185_EliminarPases.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

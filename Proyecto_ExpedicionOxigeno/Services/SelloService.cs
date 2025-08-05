@@ -141,9 +141,7 @@ namespace Proyecto_ExpedicionOxigeno.Services
 
                     if (sellosDisponibles >= SELLOS_PARA_PASE)
                     {
-                        var paseGenerado = await GenerarPaseExpedicionAsync(qr.UserId);
                         resultado.PaseGenerado = true;
-                        resultado.CodigoPase = paseGenerado.CodigoPase;
                         resultado.Mensaje += " ¡Felicidades! Has obtenido un pase a expedición.";
                     }
                     else
@@ -166,38 +164,6 @@ namespace Proyecto_ExpedicionOxigeno.Services
             }
         }
 
-        // Generar pase de expedición
-        private async Task<PaseExpedicion> GenerarPaseExpedicionAsync(string userId)
-        {
-            // Obtener los 5 sellos más antiguos no utilizados
-            var sellosParaPase = await _context.Sellos
-                .Where(s => s.UserId == userId && !s.UsadoEnPase)
-                .OrderBy(s => s.FechaObtencion)
-                .Take(SELLOS_PARA_PASE)
-                .ToListAsync();
-
-            // Marcar los sellos como utilizados
-            foreach (var sello in sellosParaPase)
-            {
-                sello.UsadoEnPase = true;
-            }
-
-            // Crear el pase
-            var pase = new PaseExpedicion
-            {
-                UserId = userId,
-                CodigoPase = GenerarCodigoUnico(),
-                FechaGeneracion = DateTime.Now,
-                FechaExpiracion = DateTime.Now.AddDays(90), // Válido por 90 días
-                Utilizado = false,
-                SellosUsados = JsonConvert.SerializeObject(sellosParaPase.Select(s => s.Id).ToList())
-            };
-
-            _context.PasesExpedicion.Add(pase);
-            await _context.SaveChangesAsync();
-
-            return pase;
-        }
 
         // Obtener estadísticas de sellos de un usuario
         public async Task<EstadisticasSellos> ObtenerEstadisticasAsync(string userId)
@@ -210,15 +176,11 @@ namespace Proyecto_ExpedicionOxigeno.Services
                 .Where(s => s.UserId == userId)
                 .CountAsync();
 
-            var pasesDisponibles = await _context.PasesExpedicion
-                .Where(p => p.UserId == userId && !p.Utilizado && p.FechaExpiracion > DateTime.Now)
-                .CountAsync();
 
             return new EstadisticasSellos
             {
                 SellosActivos = sellosActivos,
                 SellosTotal = sellosTotal,
-                PasesDisponibles = pasesDisponibles,
                 SellosRestantes = Math.Max(0, SELLOS_PARA_PASE - sellosActivos)
             };
         }
