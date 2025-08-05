@@ -77,24 +77,50 @@
 
                     @if (availableSlots != null && availableSlots.Any())
                     {
-                        <div class="timeslots-container">
-                            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
-                                @foreach (var slot in availableSlots)
-                                {
-                                    <div class="col animate__animated animate__fadeIn">
-                                        <form action="@Url.Action("ElegirHorario", "Reservas")" method="post">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="serviceId" value="@servicio.Id" />
-                                            <input type="hidden" name="slotStart" value="@slot.StartTime.ToString("o")" />
-                                            <input type="hidden" name="slotEnd" value="@slot.EndTime.ToString("o")" />
-                                            <button type="submit" class="timeslot-btn">
-                                                <span class="time-value">@slot.StartTime.ToString("hh:mm tt")</span>
-                                            </button>
-                                        </form>
-                                    </div>
-                                }
+                        // Verificar si hay slots futuros disponibles, y si hay un cupo que la fecha actual esté entre StartTime y EndTime mostrar como En curso
+                        var futureSlots = availableSlots.Where(slot => slot.EndTime >= DateTime.Now).ToList();
+
+                        if (futureSlots.Any())
+                        {
+                            <div class="timeslots-container">
+                                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+                                    @foreach (TimeSlot slot in futureSlots)
+                                    {
+                                        bool isInProgress = (DateTime.Now >= slot.StartTime && DateTime.Now <= slot.EndTime);
+
+                                        <div class="col animate__animated animate__fadeIn">
+                                            @if (isInProgress)
+                                            {
+                                                <div class="timeslot-btn in-progress">
+                                                    <span class="time-value">@slot.StartTime.ToString("hh:mm tt")</span>
+                                                    <span class="status-badge">En curso</span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <form action="@Url.Action("ElegirHorario", "Reservas")" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="serviceId" value="@servicio.Id" />
+                                                    <input type="hidden" name="slotStart" value="@slot.StartTime.ToString("o")" />
+                                                    <input type="hidden" name="slotEnd" value="@slot.EndTime.ToString("o")" />
+                                                    <button type="submit" class="timeslot-btn">
+                                                        <span class="time-value">@slot.StartTime.ToString("hh:mm tt")</span>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    }
+                                </div>
                             </div>
-                        </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning animate__animated animate__fadeIn">
+                                <i class="fas fa-clock me-2"></i>
+                                Los horarios disponibles para hoy ya han pasado.
+                                <a href="@Url.Action("Index", "Reservas")" class="alert-link">Selecciona otra fecha</a> para continuar con tu reserva.
+                            </div>
+                        }
                     }
                     else
                     {
@@ -105,11 +131,11 @@
                         </div>
                     }
 
-                <div class="text-center mt-4">
-                    <a href="@Url.Action("Index", "Reservas")" class="btn btn-outline-secondary mx-1">
-                        <i class="fas fa-arrow-left me-2"></i>Cambiar servicio o fecha
-                    </a>
-                </div>
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("Index", "Reservas")" class="btn btn-outline-secondary mx-1">
+                            <i class="fas fa-arrow-left me-2"></i>Cambiar servicio o fecha
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

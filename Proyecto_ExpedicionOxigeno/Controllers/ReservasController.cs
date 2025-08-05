@@ -52,6 +52,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // GET: Reservas/SeleccionarServicio
         public async Task<ActionResult> SeleccionarServicio(string id, DateTime? fecha)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para realizar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
             if (string.IsNullOrEmpty(id))
             {
                 TempData["Error"] = "Debes seleccionar un servicio.";
@@ -103,6 +108,16 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 ViewBag.Servicio = servicio;
                 var availableSlots = await GenerateAvailableTimeSlotsAsync(staffAvailability, servicio.DefaultDuration.Value, fecha.Value, servicio);
 
+
+                // Excluir horario ya pasados
+                availableSlots = availableSlots.Where(slot => slot.EndTime >= DateTime.Now).ToList();
+
+                // Verificar si sí hay slots, sino devolver al usuario a la página anterior
+                if (availableSlots.Count == 0)
+                {
+                    TempData["Error"] = "No hay horarios disponibles para la fecha seleccionada";
+                    return RedirectToAction("Index");
+                }
                 // Pasar datos a la vista
                 ViewBag.AvailableSlots = availableSlots;
                 ViewBag.FechaSeleccionada = fecha.Value;
@@ -121,6 +136,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ElegirHorario(string serviceId, DateTime slotStart, DateTime slotEnd)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para realizar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
             if (string.IsNullOrEmpty(serviceId) || slotStart == null || slotEnd == null)
             {
                 TempData["Error"] = "Información incompleta para la reserva.";
@@ -156,6 +176,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [HttpGet]
         public ActionResult ConfirmarHorario()
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para realizar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
             return View();
         }
 
@@ -164,6 +189,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ConfirmarReserva(string serviceId, DateTime slotStart, DateTime slotEnd)
         {
+
             // Validar que el usuario esté autenticado
             if (!User.Identity.IsAuthenticated)
             {
@@ -894,12 +920,17 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
 
             var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
             var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
-            var reservas = await MSBookings_Actions.GetAppointmentsByEmail(user.Email);
-            var reserva = reservas.FirstOrDefault(r => r.Id == id);
+            var reserva = await MSBookings_Actions.Get_MSBookingsAppointment(id);
 
             if (reserva == null)
             {
                 TempData["Error"] = "Reserva no encontrada.";
+                return RedirectToAction("MisReservas");
+            }
+            if (reserva.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name)
+            {
+                // El usuario no es el dueño de la reserva
+                TempData["Error"] = "No tienes permiso para modificar esta reserva.";
                 return RedirectToAction("MisReservas");
             }
 
@@ -935,6 +966,12 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Editar(string id, DateTime nuevaFecha, string nuevaHoraInicio, string nuevaHoraFin, BookingAppointmentCustomed appointment)
         {
+            // Validar que el usuario esté autenticado
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para realizar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
             if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(nuevaHoraInicio) || string.IsNullOrEmpty(nuevaHoraFin))
             {
                 TempData["Error"] = "Todos los campos son obligatorios.";
@@ -943,8 +980,7 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
 
             try
             {
-                //var appointment = await MSBookings_Actions.Get_MSBookingsAppointment(id);
-
+                
                 // Combinar fecha con hora
                 DateTime horaInicio = DateTime.ParseExact(nuevaHoraInicio, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
                 DateTime horaFin = DateTime.ParseExact(nuevaHoraFin, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
@@ -962,8 +998,25 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
                 appointment.start.timeZone = TimeZoneInfo.Local.Id;
                 appointment.end.dateTime = fechaHoraFin;
                 appointment.end.timeZone = TimeZoneInfo.Local.Id;
-                // Ejecutar la modificación usando customerName, no customerId
 
+                //Verificar que el usuario actual sea el dueño de la reserva y que la reserva exista
+
+                var Previousappointment = await MSBookings_Actions.Get_MSBookingsAppointment(id);
+                if (Previousappointment == null)
+                {
+                    // La reserva no pudo ser encontrada
+                    TempData["Error"] = "La reserva no pudo ser encontrada";
+                    return RedirectToAction("MisReservas");
+                }
+                
+                if (Previousappointment.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name)
+                {
+                    // El usuario no es el dueño de la reserva
+                    TempData["Error"] = "No tienes permiso para modificar esta reserva.";
+                    return RedirectToAction("MisReservas");
+                }
+
+                // Ejecutar la modificación usando el ID
                 var result = await MSBookings_Actions.Modify_MSBookingsAppointment(appointment);
 
                 
