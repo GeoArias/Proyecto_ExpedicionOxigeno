@@ -7,6 +7,7 @@
     ViewBag.Title = "Administrar Usuarios";
     var userManager = HttpContext.Current.GetOwinContext().GetUserManager<Proyecto_ExpedicionOxigeno.ApplicationUserManager>();
     bool esAdmin = User.IsInRole("Administrador");
+    bool esEmpleado = User.IsInRole("Empleado");
     string searchTerm = Request.QueryString["search"] ?? "";
     var usuariosFiltrados = string.IsNullOrWhiteSpace(searchTerm)
         ? Model
@@ -79,7 +80,7 @@
                             <td>
                                 <span>
                                     @string.Join(", ", roles)
-                                    @if (esAdmin)
+                                    @if (esAdmin && System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim() != user.Email.ToString().ToLower().Trim())
                                     {
                                         <button type="button"
                                                 class="btn btn-outline-primary btn-sm ms-2 edit-role-link align-middle"
@@ -104,9 +105,9 @@
                                 }
                             </td>
                             <td>
-                                @if (User.IsInRole("Administrador"))
+                                @if (esAdmin)
                                 {
-                                    if (!roles.Contains("Administrador") && System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"] != user.Email)
+                                    if (!(roles.Contains("Administrador")) && System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim() != user.Email.ToString().ToLower().Trim())
                                     {
                                         <form method="post" action="@Url.Action("EliminarUsuario", "Administracion", new { id = user.Id })" class="d-inline">
                                             @Html.AntiForgeryToken()
