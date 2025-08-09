@@ -1,15 +1,29 @@
 ﻿@model IEnumerable<Proyecto_ExpedicionOxigeno.Models.Sello>
+@using Microsoft.AspNet.Identity
 @{
     ViewBag.Title = "Mis Sellos";
     var estadisticas = ViewBag.Estadisticas as Proyecto_ExpedicionOxigeno.Services.EstadisticasSellos;
+    bool esAdmin = User.IsInRole("Administrador");
 }
 
 <div class="container mt-4">
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success text-center mb-4">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Mensaje"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger text-center mb-4">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
     <h2><i class="fas fa-stamp"></i> Mis Sellos de Expedición</h2>
 
-    <!-- Panel de estadísticas -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h3>@estadisticas.SellosActivos</h3>
@@ -17,7 +31,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h3>@estadisticas.SellosTotal</h3>
@@ -25,7 +39,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h3>@estadisticas.SellosRestantes</h3>
@@ -35,7 +49,6 @@
         </div>
     </div>
 
-    <!-- Progreso hacia el próximo pase -->
     <div class="card mb-4">
         <div class="card-header">
             <h5><i class="fas fa-trophy"></i> Progreso hacia Pase de Expedición</h5>
@@ -43,7 +56,7 @@
         <div class="card-body">
             <div class="progress mb-2">
                 <div class="progress-bar" role="progressbar"
-                     style="width: @(    ((estadisticas.SellosActivos * 100) / 5)<=100?((estadisticas.SellosActivos * 100) / 5):100    )%"
+                     style="width: @( ((estadisticas.SellosActivos * 100) / 5) <= 100 ? ((estadisticas.SellosActivos * 100) / 5) : 100 )%"
                      aria-valuenow="@estadisticas.SellosActivos"
                      aria-valuemin="0"
                      aria-valuemax="5">
@@ -63,8 +76,41 @@
         </div>
     </div>
 
+    @if (esAdmin)
+    {
+        <div class="card mb-4">
+            <div class="card-header" style="background: linear-gradient(90deg,#fa8f23,#28a745); color: #fff;">
+                <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Administrar Sellos Manualmente</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6 class="mb-2 text-success"><i class="fas fa-plus-circle me-2"></i>Otorgar Sello</h6>
+                        @using (Html.BeginForm("OtorgarSelloManual", "Sello", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="text" name="userId" class="form-control mb-2" placeholder="ID de usuario" required />
+                            <button type="submit" class="btn btn-Primary-ExpOxi w-100">
+                                <i class="fas fa-plus"></i> Otorgar sello
+                            </button>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-2 text-danger"><i class="fas fa-trash-alt me-2"></i>Eliminar Último Sello</h6>
+                        @using (Html.BeginForm("EliminarUltimoSelloUsuario", "Sello", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="text" name="userId" class="form-control mb-2" placeholder="ID de usuario" required />
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-trash"></i> Eliminar último sello
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
-    <!-- Historial de sellos -->
     <div class="card">
         <div class="card-header">
             <h5><i class="fas fa-history"></i> Historial de Sellos</h5>
@@ -103,6 +149,17 @@
                                                 onclick="mostrarQR('@sello.CodigoQR')">
                                             <i class="fas fa-qrcode"></i> Ver QR
                                         </button>
+                                        @if (esAdmin)
+                                        {
+                                            using (Html.BeginForm("EliminarSello", "Sello", FormMethod.Post, new { @class = "d-inline" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@sello.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger ms-1">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            }
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -122,7 +179,6 @@
     </div>
 </div>
 
-<!-- Modal para mostrar QR -->
 <div class="modal" id="qrModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -140,8 +196,7 @@
 <script>
 function mostrarQR(codigo) {
     document.getElementById('qrImage').src = '@Url.Action("GenerarQR", "Sello")?codigo=' + codigo;
-    
     var modal = new bootstrap.Modal(document.getElementById('qrModal'), { backdrop: false });
     modal.show();
 }
-</script>                       
+</script>
