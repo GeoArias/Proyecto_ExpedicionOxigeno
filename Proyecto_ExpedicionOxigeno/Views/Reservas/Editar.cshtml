@@ -6,14 +6,20 @@
 @{
     ViewBag.Title = "Modificar Reserva";
     var servicio = ViewBag.Servicio as Microsoft.Graph.Models.BookingService;
-    var fechaSeleccionada = ViewBag.FechaSeleccionada as DateTime? ?? Model.start.dateTime.Date;
+    var fechaSeleccionada = ViewBag.FechaSeleccionada as DateTime? ?? (Model?.start?.dateTime ?? DateTime.Today).Date;
     var availableSlots = ViewBag.AvailableSlots as List<Proyecto_ExpedicionOxigeno.Controllers.TimeSlot> ?? new List<Proyecto_ExpedicionOxigeno.Controllers.TimeSlot>();
 
     // Conversión de hora UTC a hora local de Costa Rica
     var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
-    var fechaInicioLocal = TimeZoneInfo.ConvertTimeFromUtc(Model.start.dateTime, timeZone);
-    var fechaFinLocal = TimeZoneInfo.ConvertTimeFromUtc(Model.end.dateTime, timeZone);
+    var fechaInicioUtc = Model?.start?.dateTime;
+    var fechaFinUtc = Model?.end?.dateTime;
     var cultura = new CultureInfo("es-ES");
+
+    // Validación para mostrar mensaje si la fecha/hora no está disponible
+    bool fechaValida = fechaInicioUtc != null && fechaInicioUtc != DateTime.MinValue;
+    bool horaValida = fechaInicioUtc != null && fechaFinUtc != null && fechaInicioUtc != DateTime.MinValue && fechaFinUtc != DateTime.MinValue;
+    var fechaInicioLocal = fechaValida ? TimeZoneInfo.ConvertTimeFromUtc(fechaInicioUtc.Value, timeZone) : (DateTime?)null;
+    var fechaFinLocal = horaValida ? TimeZoneInfo.ConvertTimeFromUtc(fechaFinUtc.Value, timeZone) : (DateTime?)null;
 }
 
 <div class="reservation-container">
@@ -79,11 +85,25 @@
                     <div class="current-booking">
                         <div class="info-row">
                             <span class="label"><i class="far fa-calendar-alt me-2"></i>Fecha:</span>
-                            <span class="value">@fechaInicioLocal.ToString("D", cultura)</span>
+                            @if (!fechaValida)
+                            {
+                                <span class="value text-warning">Fecha no disponible</span>
+                            }
+                            else
+                            {
+                                <span class="value">@fechaInicioLocal.Value.ToString("D", cultura)</span>
+                            }
                         </div>
                         <div class="info-row">
                             <span class="label"><i class="far fa-clock me-2"></i>Horario:</span>
-                            <span class="value">@fechaInicioLocal.ToString("hh:mm tt") - @fechaFinLocal.ToString("hh:mm tt")</span>
+                            @if (!horaValida)
+                            {
+                                <span class="value text-warning">Horario no disponible</span>
+                            }
+                            else
+                            {
+                                <span class="value">@fechaInicioLocal.Value.ToString("hh:mm tt") - @fechaFinLocal.Value.ToString("hh:mm tt")</span>
+                            }
                         </div>
                     </div>
                 </div>
@@ -178,7 +198,7 @@
             </div>
         </div>
     </div>
-</div>  
+</div>
 
 <style>
     @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');

@@ -687,6 +687,11 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 }
             }
         }
+
+        internal static async Task<BookingStaffAvailabilityCollectionResponse> Get_MSBookingsStaffAvailability(List<string> staffIds, DateTime? fechaSeleccionada, object value, string userTimeZone)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     internal class KiotaDateConverter : JsonConverter
