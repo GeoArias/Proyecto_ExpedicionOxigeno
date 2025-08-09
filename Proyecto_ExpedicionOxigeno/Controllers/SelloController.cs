@@ -24,18 +24,16 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         // Vista principal de sellos del usuario
         public async Task<ActionResult> Index()
         {
-            var userId = User.Identity.GetUserId();
+            var userId = User.Identity.GetUserId(); // <-- SIEMPRE usa el ID aquí
+
             var estadisticas = await _selloService.ObtenerEstadisticasAsync(userId);
 
             var sellos = await _context.Sellos
-                .Where(s => s.UserId == userId)
+                .Where(s => s.UserId == userId) // <-- Aquí también
                 .OrderByDescending(s => s.FechaObtencion)
                 .ToListAsync();
 
-
             ViewBag.Estadisticas = estadisticas;
-
-
             return View(sellos);
         }
 
