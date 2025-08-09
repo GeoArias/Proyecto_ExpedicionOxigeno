@@ -382,6 +382,7 @@
     <Compile Include="Models\Contacto.cs" />
     <Compile Include="Models\Review.cs" />
     <Compile Include="Models\Sellos.cs" />
+    <Compile Include="Models\TimesBooking.cs" />
     <Compile Include="Models\ValidacionQR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\SelloService.cs" />

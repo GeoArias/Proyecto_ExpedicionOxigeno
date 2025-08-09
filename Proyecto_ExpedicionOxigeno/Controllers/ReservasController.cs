@@ -956,16 +956,31 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
             }
 
             // Determinar la fecha a consultar (por defecto la de la reserva)
-            var fechaSeleccionada = fecha ?? reserva.start.dateTime.Date;
+            DateTime? fechaSeleccionada = fecha;
+
+if (!fechaSeleccionada.HasValue)
+{
+    if (reserva != null && reserva.start != null)
+    {
+        fechaSeleccionada = reserva.start.dateTime.Date;
+    }
+    else
+    {
+        // Fallback: use today's date or handle as needed
+        fechaSeleccionada = DateTime.Today;
+        TempData["Error"] = "No se pudo determinar la fecha de la reserva. Se usará la fecha actual.";
+    }
+}
 
             // Obtener staff asignado al servicio
             var staffIds = servicio.StaffMemberIds;
             string userTimeZone = "Central America Standard Time";
             var staffAvailability = await MSBookings_Actions.Get_MSBookingsStaffAvailability(
-                staffIds, fechaSeleccionada, fechaSeleccionada.AddDays(1), userTimeZone);
+                staffIds, fechaSeleccionada.Value, fechaSeleccionada.Value.AddDays(1), userTimeZone);
 
             // Generar slots disponibles
-            var availableSlots = await GenerateAvailableTimeSlotsAsync(staffAvailability, servicio.DefaultDuration.Value, fechaSeleccionada, servicio);
+            var availableSlots = await GenerateAvailableTimeSlotsAsync(
+                staffAvailability, servicio.DefaultDuration.Value, fechaSeleccionada.Value, servicio);
 
             ViewBag.Servicio = servicio;
             ViewBag.AvailableSlots = availableSlots;
