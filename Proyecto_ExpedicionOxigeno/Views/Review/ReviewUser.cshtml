@@ -16,29 +16,32 @@
                 }
                 else
                 {
-                    <form method="post" action="@Url.Action("ReviewUser", "Review")" autocomplete="off">
+                    @* === FORMULARIO MODIFICADO AQUÍ (según tu bloque) === *@
+                    using (Html.BeginForm("ReviewUser", "Review", FormMethod.Post))
+                    {
                         @Html.AntiForgeryToken()
-                        <input type="hidden" name="serviceId" value="@ViewBag.ServiceId" />
+                        <input type="hidden" name="reservaId" value="@ViewBag.ReservaId" />
                         <div class="mb-3">
-                            <label for="calificacion" class="form-label fw-semibold">Calificación</label>
-                            <div class="star-rating mb-2">
-                                @for (int i = 5; i >= 1; i--)
-                                {
-                                    <input type="radio" id="star@i" name="calificacion" value="@i" required />
-                                    <label for="star@i" title="@i estrellas"><i class="fas fa-star"></i></label>
-                                }
-                            </div>
+                            <label for="Calificacion" class="form-label">Calificación</label>
+                            <select class="form-select" id="Calificacion" name="calificacion" required>
+                                <option value="">Seleccione una calificación</option>
+                                <option value="5">★★★★★ - Excelente</option>
+                                <option value="4">★★★★☆ - Muy bueno</option>
+                                <option value="3">★★★☆☆ - Bueno</option>
+                                <option value="2">★★☆☆☆ - Regular</option>
+                                <option value="1">★☆☆☆☆ - Malo</option>
+                            </select>
                         </div>
                         <div class="mb-3">
-                            <label for="comentario" class="form-label fw-semibold">Comentario</label>
-                            <textarea class="form-control" id="comentario" name="comentario" rows="4" required minlength="4" placeholder="Contanos tu experiencia..."></textarea>
+                            <label for="Comentario" class="form-label">Comentario</label>
+                            <textarea class="form-control" id="Comentario" name="comentario" rows="4" required></textarea>
                         </div>
                         <div class="text-end">
                             <button type="submit" class="btn btn-Primary-ExpOxi px-4">
                                 <i class="fas fa-paper-plane me-2"></i>Enviar reseña
                             </button>
                         </div>
-                    </form>
+                    }
                 }
             </div>
         </div>
@@ -54,6 +57,7 @@
         margin-top: 40px;
         margin-bottom: 40px;
     }
+
     .section-badge {
         display: inline-block;
         background-color: rgba(250, 143, 35, 0.1);
@@ -65,43 +69,52 @@
         margin-bottom: 10px;
         letter-spacing: 1px;
     }
+
     .section-title {
         font-size: 2rem;
         font-weight: 700;
         color: #212529;
         margin-bottom: 10px;
     }
+
     .text-highlight {
         color: #fa8f23;
     }
+
     .star-rating {
         display: flex;
         flex-direction: row-reverse;
         justify-content: flex-start;
         gap: 2px;
     }
-    .star-rating input {
-        display: none;
-    }
-    .star-rating label {
-        cursor: pointer;
-        font-size: 2rem;
-        color: #ddd;
-        transition: color 0.2s;
-        padding: 0 2px;
-    }
-    .star-rating input:checked ~ label,
-    .star-rating label:hover,
-    .star-rating label:hover ~ label {
-        color: #ffc107;
-    }
-    .star-rating input:focus ~ label {
-        color: #fa8f23;
-    }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            cursor: pointer;
+            font-size: 2rem;
+            color: #ddd;
+            transition: color 0.2s;
+            padding: 0 2px;
+        }
+
+            .star-rating input:checked ~ label,
+            .star-rating label:hover,
+            .star-rating label:hover ~ label {
+                color: #ffc107;
+            }
+
+        .star-rating input:focus ~ label {
+            color: #fa8f23;
+        }
+
     @@media (max-width: 768px) {
         .review-form-card {
             padding: 20px 10px;
         }
+
         .section-title {
             font-size: 1.3rem;
         }
@@ -113,12 +126,13 @@
     @if (TempData["Mensaje"] != null)
     {
         <script>
-    Swal.fire({
+            Swal.fire({
                 icon: 'success',
                 title: '¡Gracias por tu reseña!',
                 html: 'Una vez verificada, será mostrada en la página principal.',
                 confirmButtonColor: '#fa8f23',
                 confirmButtonText: 'Aceptar'
-            });</script>
+            });
+        </script>
     }
 }
