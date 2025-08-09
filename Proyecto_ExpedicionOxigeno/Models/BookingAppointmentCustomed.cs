@@ -1,19 +1,19 @@
 ﻿using Microsoft.Graph.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Proyecto_ExpedicionOxigeno.Models
 {
-    public class BookingAppointmentCustomed: BookingAppointment
+    public class BookingAppointmentCustomed : BookingAppointment
     {
+       
+
+        [JsonProperty("start")]
+      
         public TimesBooking start { get; set; }
+
+        [JsonProperty("end")]
+       
         public TimesBooking end { get; set; }
-    }
-    public class TimesBooking
-    {
-        public string timeZone { get; set; }
-        public DateTime dateTime { get; set; }
     }
 }

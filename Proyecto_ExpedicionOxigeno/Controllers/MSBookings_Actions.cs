@@ -532,23 +532,22 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             var response = await GraphApiHelper.SendGraphRequestAsync(url, HttpMethod.Get);
             var content = response.Content;
             var jsonString = await content.ReadAsStringAsync();
-            // Parse the JSON string to a JArray
+            System.Diagnostics.Debug.WriteLine("GetAppointmentsByEmail JSON: " + jsonString); // <-- LOG JSON
+
             var jsonObject = JObject.Parse(jsonString);
             var servicesArray = jsonObject["value"] as JArray;
 
-            // Convert JArray to List<BookingService> with our custom settings
             var settings = new JsonSerializerSettings
             {
                 Converters = new List<JsonConverter> {
-                            new GraphTimeSpanConverter(),
-                            new GraphTimeConverter()
-                        },
+                    new GraphTimeSpanConverter(),
+                    new GraphTimeConverter()
+                },
                 NullValueHandling = NullValueHandling.Ignore
             };
 
             List<BookingAppointmentCustomed> servicesList = servicesArray.ToObject<List<BookingAppointmentCustomed>>(
                 JsonSerializer.Create(settings));
-            //Filtrar los servicios por el email del cliente
             servicesList = servicesList.Where(a => a.CustomerEmailAddress.Equals(email, StringComparison.OrdinalIgnoreCase)).ToList();
 
             return servicesList;
@@ -557,10 +556,15 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
         {
             try
             {
-                var response = await GraphApiHelper.SendGraphRequestAsync($"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{id}", HttpMethod.Get);
+                var response = await GraphApiHelper.SendGraphRequestAsync(
+                    $"https://graph.microsoft.com/v1.0/solutions/bookingBusinesses/{businessId}/appointments/{id}", 
+                    HttpMethod.Get);
+
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine("Get_MSBookingsAppointment JSON: " + content); // <-- LOG JSON
+
                     var settings = new JsonSerializerSettings
                     {
                         Converters = new List<JsonConverter> {
