@@ -28,11 +28,10 @@ namespace Proyecto_ExpedicionOxigeno.Models
 
         public DateTime Fecha { get; set; }
 
-        public bool Respondida { get; set; } = false;
+        public bool Respondida { get; set; }
 
         public Contacto()
         {
-            Fecha = DateTime.Now;
         }
     }
 }
