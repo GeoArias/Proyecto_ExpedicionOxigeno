@@ -265,14 +265,18 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     BookingAppointment appointmentMS = JObject.Parse(responseContent).ToObject<BookingAppointment>(
                         JsonSerializer.Create(settings));
 
+                    // Generar el código QR único para la reserva
+                    var qrHelper = new BookingsQRHelper(new SelloService(new ApplicationDbContext()), new ApplicationDbContext());
+                    string codigoQR = await qrHelper.GenerarQRParaReservaAsync(JObject.Parse(responseContent), user.Id);
+
                     TempData["Success"] = "¡Reserva confirmada con éxito!";
-                    // Pasar los datos a la vista de confirmación
                     ViewBag.Servicio = servicio;
                     ViewBag.SlotStart = slotStart;
                     ViewBag.SlotEnd = slotEnd;
                     ViewBag.Booking = appointmentMS;
 
-                    await EnviarCorreoConfirmacion(user.Email, servicio, slotStart, slotEnd, appointmentMS);
+                    // Enviar el correo con el QR
+                    await EnviarCorreoConfirmacion(user.Email, servicio, slotStart, slotEnd, appointmentMS, codigoQR);
 
                     return View("Confirmacion");
                 }
@@ -589,318 +593,53 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
         }
 
 
-        private async Task EnviarCorreoConfirmacion(string email, BookingService servicio, DateTime slotStart, DateTime slotEnd, BookingAppointment booking)
+        private async Task EnviarCorreoConfirmacion(string email, BookingService servicio, DateTime slotStart, DateTime slotEnd, BookingAppointment booking, string codigoQR)
         {
             try
             {
-                // Obtener la URL del logo
-                string logoUrl = Url.Content("~/Resources/Images/logo.png");
-                if (!logoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                {
-                    logoUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}{logoUrl}";
-                }
-
-                // Crear el cuerpo del correo electrónico usando el mismo diseño que in Confirmacion.cshtml
-                string asunto = "Confirmación de tu reserva - Expedición Oxígeno";
+                string asunto = "Confirmación de Reserva - Expedición Oxígeno";
                 string cuerpo = $@"
-<!DOCTYPE html>
-<html lang='es'>
+<html>
 <head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>Confirmación de Reserva</title>
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }}
-        
-        .reservation-container {{
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }}
-        
-        .invoice-card {{
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-bottom: 30px;
-            border: 1px solid #e9ecef;
-        }}
-        
-        .receipt-tear-top, .receipt-tear-bottom {{
-            height: 12px;
-            background-image: linear-gradient(45deg, white 25%, transparent 25%), linear-gradient(-45deg, white 25%, transparent 25%);
-            background-size: 20px 20px;
-            background-position: 0 0;
-            border-bottom: 1px dashed #ddd;
-            margin-bottom: 10px;
-        }}
-        
-        .receipt-tear-bottom {{
-            border-top: 1px dashed #ddd;
-            border-bottom: none;
-            margin-top: 10px;
-            margin-bottom: 0;
-        }}
-        
-        .invoice-header {{
-            padding: 20px;
-            border-bottom: 2px dashed #e9ecef;
-            background-color: #f8f9fa;
-            text-align: center;
-        }}
-        
-        .invoice-logo {{
-            max-height: 60px;
-            width: auto;
-            margin-bottom: 15px;
-        }}
-        
-        .invoice-body {{
-            padding: 20px;
-            position: relative;
-        }}
-        
-        .confirmation-stamp {{
-            color: rgba(40, 167, 69, 0.7);
-            border: 4px solid rgba(40, 167, 69, 0.7);
-            padding: 8px 16px;
-            border-radius: 8px;
-            display: inline-block;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: bold;
-            font-size: 18px;
-            margin: 0 auto 20px auto;
-            display: block;
-            width: fit-content;
-            transform: rotate(5deg);
-        }}
-        
-        .section-title {{
-            border-bottom: 2px solid #f0f0f0;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            color: #212529;
-            font-size: 18px;
-        }}
-        
-        .invoice-info-card {{
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 4px solid #fa8f23;
-        }}
-        
-        .card-title {{
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e9ecef;
-        }}
-        
-        .invoice-item {{
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed #e9ecef;
-        }}
-        
-        .item-label {{
-            font-weight: 600;
-            color: #495057;
-        }}
-        
-        .payment-info {{
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 4px solid #28a745;
-        }}
-        
-        .price-row {{
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
-        }}
-        
-        .total {{
-            font-weight: 700;
-            font-size: 18px;
-            color: #212529;
-            border-top: 2px solid #e9ecef;
-            border-bottom: none !important;
-            padding-top: 10px;
-        }}
-        
-        .payment-notice {{
-            background-color: #d1ecf1;
-            border-radius: 5px;
-            padding: 10px;
-            margin-top: 15px;
-            color: #0c5460;
-        }}
-        
-        .barcode-section {{
-            text-align: center;
-            margin: 20px 0;
-        }}
-        
-        .important-notes {{
-            background-color: #fff8e1;
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 20px;
-            border-left: 4px solid #ffc107;
-        }}
-        
-        .important-notes h5 {{
-            color: #ff9800;
-            margin-bottom: 10px;
-        }}
-        
-        .important-notes ul {{
-            margin: 0;
-            padding-left: 20px;
-        }}
-        
-        .important-notes li {{
-            margin-bottom: 5px;
-            color: #795548;
-        }}
-        
-        .invoice-footer {{
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-top: 2px dashed #e9ecef;
-            text-align: center;
-        }}
-    </style>
+  <meta charset='utf-8'>
+  <title>Confirmación de Reserva - Expedición Oxígeno</title>
 </head>
-<body>
-    <div class='reservation-container'>
-        <div style='text-align: center; margin-bottom: 20px;'>
-            <h1 style='color: #212529;'>Confirmación de Reserva</h1>
-            <p style='color: #6c757d;'>¡Tu aventura está a punto de comenzar!</p>
-        </div>
-
-        <div class='invoice-card'>
-            <!-- Receipt Top Tear -->
-            <div class='receipt-tear-top'></div>
-
-            <!-- Receipt Header -->
-            <div class='invoice-header'>
-                <img src='{logoUrl}' alt='ExpediCheck Logo' class='invoice-logo'>
-                <h2 style='margin: 0; color: #212529;'>Expedición Oxígeno</h2>
-                <p style='margin: 5px 0 0 0; color: #6c757d;'>Centro Comercial Oxígeno, Heredia</p>
-                <p style='margin: 5px 0 0 0; color: #6c757d;'>Fecha: {booking.CreatedDateTime.Value.ToString("dd/MM/yyyy")}</p>
-            </div>
-
-            <!-- Receipt Body -->
-            <div class='invoice-body'>
-                <div class='confirmation-stamp'>CONFIRMADO</div>
-
-                <h3 class='section-title'>
-                    <img src='https://cdn-icons-png.flaticon.com/512/1611/1611154.png' alt='✓' style='width: 20px; height: 20px; margin-right: 10px;'>
-                    Detalles de la Reserva
-                </h3>
-
-                <div class='invoice-info-card'>
-                    <div class='card-title'>
-                        <img src='https://cdn-icons-png.flaticon.com/512/189/189664.png' alt='i' style='width: 16px; height: 16px; margin-right: 10px;'>
-                        Información del Servicio
-                    </div>
-                    <div class='invoice-item'>
-                        <span class='item-label'>Servicio:</span>
-                        <span>{servicio.DisplayName}</span>
-                    </div>
-                    <div class='invoice-item'>
-                        <span class='item-label'>Duración:</span>
-                        <span>
-                            {(servicio.DefaultDuration.Value.TotalHours >= 1 ? $"{Math.Floor(servicio.DefaultDuration.Value.TotalHours)} horas {servicio.DefaultDuration.Value.Minutes} minutos" : $"{servicio.DefaultDuration.Value.Minutes} minutos")}
-                        </span>
-                    </div>
-                   
-<div class=""invoice-item"" style=""display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px dashed #e9ecef; padding: 10px 0;"">
-    <span class=""item-label"" style=""font-weight: 600; margin-bottom: 5px;"">Descripción:</span>
-    <span style=""color: #6c757d; font-style: italic; white-space: pre-line; word-break: break-word;"">{servicio.Description}</span>
-</div>
-
-                </div>
-
-                <div class='invoice-info-card'>
-                    <div class='card-title'>
-                        <img src='https://cdn-icons-png.flaticon.com/512/747/747310.png' alt='calendar' style='width: 16px; height: 16px; margin-right: 10px;'>
-                        Fecha y Hora
-                    </div>
-                    <div class='invoice-item'>
-                        <span class='item-label'>Fecha:</span>
-                        <span>{char.ToUpper(slotStart.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES"))[0]) + slotStart.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES")).Substring(1)}</span>
-                    </div>
-                    <div class='invoice-item'>
-                        <span class='item-label'>Horario:</span>
-                        <span>{slotStart.ToString("hh:mm tt")} - {slotEnd.ToString("hh:mm tt")}</span>
-                    </div>
-                </div>
-
-                <div class='payment-info'>
-                    <div class='card-title'>
-                        <img src='https://cdn-icons-png.flaticon.com/512/991/991952.png' alt='money' style='width: 16px; height: 16px; margin-right: 10px;'>
-                        Información de Pago
-                    </div>
-                    <div>
-                        <div class='price-row'>
-                            <span>Subtotal:</span>
-                            <span>₡{string.Format("{0:N0}", servicio.DefaultPrice * 0.87)}</span>
-                        </div>
-                        <div class='price-row'>
-                            <span>IVA (13%):</span>
-                            <span>₡{string.Format("{0:N0}", servicio.DefaultPrice * 0.13)}</span>
-                        </div>
-                        <div class='price-row total'>
-                            <span>Total:</span>
-                            <span>₡{string.Format("{0:N0}", servicio.DefaultPrice)}</span>
-                        </div>
-                    </div>
-                    <div class='payment-notice'>
-                        <strong>Información de pago:</strong> El pago se realiza directamente en las cajas de Expedición Oxígeno.
-                    </div>
-                </div>
-
-                <div class='important-notes'>
-                    <h5>Información Importante</h5>
-                    <ul>
-                        <li>Preséntate 15 minutos antes de tu horario reservado.</li>
-                        <li>Usa ropa cómoda y zapatos cerrados.</li>
-                        <li>Sigue todas las instrucciones de seguridad del personal.</li>
-                        <li>En caso de cancelación, comunícate con al menos 24 horas de anticipación.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Receipt Footer -->
-            <div class='invoice-footer'>
-                <p style='margin: 0;'>¡Gracias por tu reserva! Esperamos verte pronto.</p>
-                <p style='margin: 5px 0 0 0; font-size: 12px; color: #6c757d;'>Para cualquier consulta, llama al 2520-2100</p>
-            </div>
-
-            <!-- Receipt Bottom Tear -->
-            <div class='receipt-tear-bottom'></div>
-        </div>
+<body style='background:#f8f9fa; margin:0; padding:0; font-family:Arial,sans-serif;'>
+  <div style='max-width:600px; margin:40px auto; background:#fff; border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.08); border:1px solid #e9ecef; overflow:hidden;'>
+    <div style='background:linear-gradient(135deg,#fa8f23 0%,#ff7e00 100%); padding:32px 24px 24px 24px; text-align:center;'>
+      <img src='{Url.Content("~/Resources/Images/logo.png")}' alt='Expedición Oxígeno' style='height:60px; margin-bottom:16px;' />
+      <h1 style='color:#fff; font-size:2rem; margin:0;'>Expedición Oxígeno</h1>
+      <p style='color:#fff; font-size:1.1rem; margin:8px 0 0 0;'>¡Reserva confirmada!</p>
     </div>
+    <div style='padding:32px 24px;'>
+      <p style='font-size:1.1rem; color:#333; margin-bottom:24px;'>Gracias por reservar en Expedición Oxígeno. Aquí tienes los detalles de tu reserva:</p>
+      <div style='background:#e9f7ef; border-radius:8px; padding:18px 20px; margin-bottom:24px; color:#222; font-size:1rem;'>
+        <strong>Servicio:</strong> {servicio.DisplayName}<br/>
+        <strong>Fecha:</strong> {slotStart.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES"))}<br/>
+        <strong>Horario:</strong> {slotStart.ToString("hh:mm tt")} - {slotEnd.ToString("hh:mm tt")}<br/>
+      </div>
+      <div style='text-align:center; margin:32px 0;'>
+        <img src='{Url.Action("GenerarQRReserva", "Reservas", new { codigo = codigoQR }, Request.Url.Scheme)}' alt='Código QR de Reserva' style='max-width:180px; margin-bottom:10px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);' />
+        <div style='color:#6c757d; font-size:13px; margin-top:8px;'>Presenta este código QR al llegar para validar tu reserva y obtener tu sello</div>
+      </div>
+      <div style='background:#fff8e1; border-radius:8px; padding:18px 20px; margin-bottom:24px; border-left:4px solid #ffc107;'>
+        <h3 style='color:#ff9800; margin-bottom:12px; font-size:1.1rem;'>Información Importante</h3>
+        <ul style='color:#795548; padding-left:18px; margin:0; font-size:1rem;'>
+          <li>Preséntate 15 minutos antes de tu horario reservado.</li>
+          <li>Usa ropa cómoda y zapatos cerrados.</li>
+          <li>Sigue todas las instrucciones de seguridad del personal.</li>
+          <li>En caso de cancelación, comunícate con al menos 24 horas de anticipación.</li>
+        </ul>
+      </div>
+      <div style='text-align:center; margin-top:32px;'>
+        <p style='font-size:1.1rem; color:#28a745; margin:0;'>¡Gracias por tu reserva! Esperamos verte pronto.</p>
+        <p style='font-size:0.95rem; color:#6c757d; margin:8px 0 0 0;'>Para cualquier consulta, llama al <strong>2520-2100</strong></p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>";
 
-                // Enviar el correo electrónico usando el EmailService
                 var emailService = new EmailService();
                 await emailService.SendAsync(new Microsoft.AspNet.Identity.IdentityMessage
                 {
@@ -911,7 +650,6 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
             }
             catch (Exception ex)
             {
-                // Registrar el error pero no afectar el flujo principal
                 System.Diagnostics.Debug.WriteLine($"Error al enviar correo de confirmación: {ex.Message}");
             }
         }
@@ -1056,7 +794,30 @@ if (!fechaSeleccionada.HasValue)
                     var servicio = await MSBookings_Actions.Get_MSBookingsService(appointmentUpdated.ServiceId);
 
                     TempData["Mensaje"] = "Reserva modificada correctamente.";
-                    await EnviarCorreoConfirmacion(id,servicio, fechaHoraInicio, fechaHoraFin, appointment);
+
+                    // Obtener el código QR de la reserva actualizada
+                    string codigoQR = null;
+                    var db = new ApplicationDbContext();
+                    var sello = db.Sellos.FirstOrDefault(s => s.ReservaId == id);
+                    if (sello != null)
+                    {
+                        codigoQR = sello.CodigoQR;
+                    }
+                    else
+                    {
+                        // Si no existe, puedes generar uno nuevo o dejarlo en null
+                        codigoQR = Guid.NewGuid().ToString("N");
+                    }
+
+                    await EnviarCorreoConfirmacion(
+                        Previousappointment.CustomerEmailAddress, // email
+                        servicio,
+                        fechaHoraInicio,
+                        fechaHoraFin,
+                        appointment,
+                        codigoQR
+                    );
+
                     return RedirectToAction("MisReservas");
                 }
                 else
