@@ -83,4 +83,20 @@ namespace Proyecto_ExpedicionOxigeno.Models
         public string SelectedProvider { get; set; }
         public ICollection<System.Web.Mvc.SelectListItem> Providers { get; set; }
     }
+    public class ProfileViewModel
+    {
+        [Required]
+        [Display(Name = "Nombre completo")]
+        public string Nombre { get; set; }
+
+        [Required]
+        [Display(Name = "Teléfono")]
+        [Phone]
+        public string Telefono { get; set; }
+
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Correo electrónico")]
+        public string Email { get; set; }
+    }
 }

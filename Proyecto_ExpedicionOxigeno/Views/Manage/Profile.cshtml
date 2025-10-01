@@ -1,0 +1,259 @@
+@model Proyecto_ExpedicionOxigeno.Models.ProfileViewModel
+@{
+    ViewBag.Title = "Mi Perfil";
+}
+
+<main class="container py-4">
+    <section class="section-padding">
+        <div class="text-center mb-5">
+            <div class="section-badge">MI CUENTA</div>
+            <h2 class="section-title">Gestión de Perfil</h2>
+            <p class="section-text">Actualiza tu información personal o administra tu cuenta</p>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger text-center mb-4 animate__animated animate__shakeX">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+            </div>
+        }
+
+        <div class="row justify-content-center">
+            <div class="col-md-9">
+                <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+                    <div class="card-header text-white py-3" style="background-color: #100b2c;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-circle me-2 fa-lg"></i>
+                            <h5 class="mb-0">Información Personal</h5>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        @using (Html.BeginForm("UpdateProfile", "Manage", FormMethod.Post, new { @class = "needs-validation", role = "form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary("", new { @class = "text-danger" })
+
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="form-floating">
+                                        @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control", placeholder = "Nombre completo" })
+                                        @Html.LabelFor(m => m.Nombre, new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(m => m.Nombre, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        @Html.TextBoxFor(m => m.Telefono, new { @class = "form-control", placeholder = "Teléfono" })
+                                        @Html.LabelFor(m => m.Telefono, new { @class = "form-label" })
+                                        @Html.ValidationMessageFor(m => m.Telefono, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-2">
+                                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Email", disabled = "disabled" })
+                                        @Html.LabelFor(m => m.Email, new { @class = "form-label" })
+                                        <small class="form-text text-muted">Tu correo electrónico no se puede modificar por razones de seguridad.</small>
+                                    </div>
+                                    @Html.HiddenFor(m => m.Email) @* Este campo oculto se enviará con el formulario *@
+                                </div>
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <a href="@Url.Action("ChangePassword", "Manage")" class="btn btn-outline-secondary">
+                                        <i class="fas fa-key me-2"></i>Cambiar contraseña
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                                <div>
+                                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Cancelar
+                                    </a>
+                                </div>
+                                <div>
+                                    <button type="submit" id="btnGuardarCambios" class="btn btn-success me-2 d-none">
+                                        <i class="fas fa-save me-2"></i>Guardar cambios
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 rounded-3 overflow-hidden mt-4">
+                    <div class="card-header text-white py-3" style="background-color: #dc3545;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-2 fa-lg"></i>
+                            <h5 class="mb-0">Eliminar mi cuenta</h5>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted">
+                            Esta acción eliminará permanentemente tu cuenta, toda la información asociada y no podrá ser recuperada.
+                        </p>
+                        <button type="button" class="btn btn-outline-danger" onclick="openDelete()">
+                            <i class="fas fa-trash-alt me-2"></i>Eliminar cuenta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAccountModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Esta acción es <strong>irreversible</strong> y no se puede deshacer.
+                </div>
+                <p class="mb-1">Al eliminar tu cuenta:</p>
+                <ul class="mb-3">
+                    <li>Se perderá toda tu información personal</li>
+                    <li>Se eliminarán tus sellos acumulados</li>
+                    <li>No podrás acceder a tu historial de reservas</li>
+                    <li>Tu cuenta no podrá ser recuperada</li>
+                </ul>
+                <p>¿Estás seguro de que deseas proceder?</p>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                @using (Html.BeginForm("DeleteAccount", "Manage", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>Sí, eliminar mi cuenta
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .section-badge {
+        display: inline-block;
+        background-color: rgba(250, 143, 35, 0.1);
+        color: #fa8f23;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 8px 18px;
+        border-radius: 50px;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+    }
+
+    .section-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: #212529;
+    }
+
+    .section-text {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 700px;
+        margin: 0 auto 30px auto;
+    }
+
+    .section-padding {
+        padding: 40px 0;
+    }
+
+    .btn-success, .btn-primary {
+        background-color: #fa8f23;
+        border-color: #fa8f23;
+        transition: all 0.3s ease;
+    }
+
+        .btn-success:hover, .btn-primary:hover {
+            background-color: #e57f13;
+            border-color: #e57f13;
+            transform: translateY(-2px);
+        }
+
+    /*.form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #fa8f23;
+    }*/
+
+    .form-control:focus {
+        border-color: #fa8f23;
+        box-shadow: 0 0 0 0.25rem rgba(250, 143, 35, 0.25);
+    }
+
+    @@media (max-width: 768px) {
+        .section-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        // Store original model values directly from Razor
+        const originalModel = {
+            Nombre: "@Model.Nombre",
+            Telefono: "@Model.Telefono",
+            Email: "@Model.Email"
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to form fields
+            document.getElementById('Nombre').addEventListener('input', checkModelChanges);
+            document.getElementById('Telefono').addEventListener('input', checkModelChanges);
+
+            // Initial check
+            checkModelChanges();
+        });
+
+        function checkModelChanges() {
+            // Get current values
+            const currentNombre = document.getElementById('Nombre').value;
+            const currentTelefono = document.getElementById('Telefono').value;
+
+            // Check if any value is different from original model
+            const hasChanges =
+                currentNombre !== originalModel.Nombre ||
+                currentTelefono !== originalModel.Telefono;
+
+            // Show/hide button based on changes
+            const btnGuardarCambios = document.getElementById('btnGuardarCambios');
+            if (hasChanges) {
+                btnGuardarCambios.classList.remove('d-none');
+                btnGuardarCambios.classList.add('animate__animated', 'animate__fadeIn');
+            } else {
+                btnGuardarCambios.classList.add('d-none');
+                btnGuardarCambios.classList.remove('animate__animated', 'animate__fadeIn');
+            }
+        }
+
+        // Handle delete account modal
+        function openDelete() {
+            var modal = new bootstrap.Modal(document.getElementById('deleteAccountModal'), { backdrop: false });
+            modal.show();
+        }
+    </script>
+}

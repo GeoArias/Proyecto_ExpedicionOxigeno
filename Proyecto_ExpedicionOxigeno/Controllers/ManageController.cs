@@ -321,6 +321,102 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             return result.Succeeded ? RedirectToAction("ManageLogins") : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
         }
 
+        //
+        // GET: /Manage/Profile
+        public ActionResult Profile()
+        {
+            var userId = User.Identity.GetUserId();
+            var user = UserManager.FindById(userId);
+            
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+            
+            var model = new ProfileViewModel
+            {
+                Nombre = user.Nombre,
+                Telefono = user.Telefono,
+                Email = user.Email
+            };
+            
+            return View(model);
+        }
+
+        //
+        // POST: /Manage/UpdateProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> UpdateProfile(ProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Profile", model);
+            }
+            
+            var userId = User.Identity.GetUserId();
+            var user = UserManager.FindById(userId);
+            
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+            
+            user.Nombre = model.Nombre;
+            user.Telefono = model.Telefono;
+            
+
+            // For now, only update name and phone
+            
+            var result = await UserManager.UpdateAsync(user);
+            
+            if (result.Succeeded)
+            {
+                TempData["Success"] = "Tu perfil ha sido actualizado correctamente.";
+                return RedirectToAction("Profile");
+            }
+            
+            AddErrors(result);
+            return View("Profile", model);
+        }
+
+        //
+        // POST: /Manage/DeleteAccount
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteAccount()
+        {
+            var userId = User.Identity.GetUserId();
+            var user = await UserManager.FindByIdAsync(userId);
+            
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+            
+            // Check if it's the primary administrator
+            if (user.Email.ToLower().Trim() == System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"]?.ToLower().Trim())
+            {
+                TempData["Error"] = "No se puede eliminar la cuenta de administrador primario.";
+                return RedirectToAction("Profile");
+            }
+            
+            // Delete user
+            var result = await UserManager.DeleteAsync(user);
+            
+            if (result.Succeeded)
+            {
+                // Sign out the user
+                AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+                TempData["Message"] = "Tu cuenta ha sido eliminada correctamente.";
+                return RedirectToAction("Index", "Home");
+            }
+            
+            // If we got this far, something failed
+            TempData["Error"] = "Error al eliminar la cuenta. " + string.Join(", ", result.Errors);
+            return RedirectToAction("Profile");
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && _userManager != null)

@@ -140,6 +140,14 @@
 
         .navbar-nav .dropdown:hover .dropdown-menu { display: block; margin-top: 0; }
 
+        /* Fix para alineación de iconos en dropdown */
+        .dropdown-item .fas,
+        .dropdown-item .fab {
+            width: 20px;
+            text-align: center;
+            margin-right: 8px;
+            display: inline-block;
+        }
         /* ===== Footer ===== */
         .footer-section {
             background: linear-gradient(to right, #0f0829, #1a1245); color: #fff; padding: 60px 0 20px;
@@ -276,6 +284,11 @@
                                 <i class="fas fa-user-circle fa-lg"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="@Url.Action("Profile", "Manage")">
+                                        <i class="fas fa-user-edit me-2"></i>Mi perfil
+                                    </a>
+                                </li>
                                 <li>
                                     <a class="dropdown-item" href="@Url.Action("MisReservas", "Reservas")">
                                         <i class="fas fa-calendar-check me-2"></i>Mis reservas
