@@ -23,9 +23,36 @@ namespace Proyecto_ExpedicionOxigeno.Helpers
         {
             try
             {
-                var reservaId = appointment["id"].ToString();
-                var servicioNombre = appointment["service"]["displayName"].ToString();
-                var fechaInicio = DateTime.Parse(appointment["start"]["dateTime"].ToString());
+                if (appointment == null)
+                    throw new ArgumentNullException(nameof(appointment), "El objeto appointment es null.");
+
+                var reservaId = appointment["id"]?.ToString();
+                var servicioNombre = appointment["service"]?["displayName"]?.ToString();
+
+                // Fallback: intenta con serviceName si displayName no existe
+                if (string.IsNullOrEmpty(servicioNombre))
+                    servicioNombre = appointment["serviceName"]?.ToString();
+
+                // Fallback: busca el nombre usando el serviceId si sigue sin existir
+                if (string.IsNullOrEmpty(servicioNombre) && appointment["serviceId"] != null)
+                {
+                    var serviceId = appointment["serviceId"].ToString();
+                    // Obtener el nombre del servicio desde la API de MS Bookings
+                    var servicioApi = await Proyecto_ExpedicionOxigeno.Controllers.MSBookings_Actions.Get_MSBookingsService(serviceId);
+                    if (servicioApi != null)
+                        servicioNombre = servicioApi.DisplayName;
+                }
+
+                var fechaInicioStr = appointment["start"]?["dateTime"]?.ToString();
+
+                if (string.IsNullOrEmpty(reservaId))
+                    throw new Exception("El campo 'id' de la reserva es null o vacío.");
+                if (string.IsNullOrEmpty(servicioNombre))
+                    throw new Exception("No se pudo determinar el nombre del servicio para la reserva.");
+                if (string.IsNullOrEmpty(fechaInicioStr))
+                    throw new Exception("El campo 'start.dateTime' de la reserva es null o vacío.");
+
+                var fechaInicio = DateTime.Parse(fechaInicioStr);
 
                 // Verificar si ya existe un QR para esta reserva
                 var qrExistente = await _context.CodigosQR
