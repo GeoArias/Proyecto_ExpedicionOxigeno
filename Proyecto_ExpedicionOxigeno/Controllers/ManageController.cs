@@ -400,7 +400,14 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 TempData["Error"] = "No se puede eliminar la cuenta de administrador primario.";
                 return RedirectToAction("Profile");
             }
-            
+
+            // Check if user has role "Usuario"
+            if (!UserManager.IsInRole(userId, "Usuario"))
+            {
+                TempData["Error"] = "Solo los usuarios regulares pueden eliminar su cuenta.";
+                return RedirectToAction("Profile");
+            }
+
             // Delete user
             var result = await UserManager.DeleteAsync(user);
             
