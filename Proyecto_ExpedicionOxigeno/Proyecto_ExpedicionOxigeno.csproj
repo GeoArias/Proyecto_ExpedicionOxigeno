@@ -484,6 +484,7 @@
     <Content Include="Views\Reservas\Editar.cshtml" />
     <Content Include="Views\Review\ReviewUser.cshtml" />
     <Content Include="Views\Manage\Profile.cshtml" />
+    <Content Include="Views\Reservas\VerReservas-TestQR-.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

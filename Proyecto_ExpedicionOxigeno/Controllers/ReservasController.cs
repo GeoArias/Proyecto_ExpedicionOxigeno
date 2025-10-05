@@ -327,6 +327,32 @@ foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
             }
         }
 
+        // GET: Reservas/VerReservas
+        public async Task<ActionResult> VerReservas()
+        {
+            //Si el usuario njo está autenticado, redirigir a la página de Inicio de Sesión
+            if (!User.Identity.IsAuthenticated)
+            {
+                TempData["Error"] = "Debes iniciar sesión para realizar reservas.";
+                return RedirectToAction("Login", "Account");
+            }
+            try
+            {
+                // Cargar todos los servicios disponibles
+                List<BookingService> services = await MSBookings_Actions.Get_MSBookingsServices();
+                ViewBag.Services = services;
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al cargar servicios: {ex.Message}";
+                return View();
+            }
+        }
+
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

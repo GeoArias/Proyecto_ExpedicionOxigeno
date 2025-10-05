@@ -125,6 +125,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             {
                 return new HttpUnauthorizedResult();
             }
+            
+
+
 
             var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
             ApplicationUser user = userManager.FindById(UserId);

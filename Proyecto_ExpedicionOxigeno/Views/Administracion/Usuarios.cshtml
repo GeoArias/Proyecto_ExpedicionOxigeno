@@ -41,89 +41,116 @@
             </div>
         }
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle shadow-sm bg-white rounded">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Correo electrónico</th>
-                        <th>Correo confirmado</th>
-                        <th>Roles</th>
-                        <th>Sellos acumulados</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model)
-                    {
-                        var roles = userManager.GetRoles(user.Id);
-                        // Obtener cantidad de sellos activos (no usados en pase)
-                        var sellos = db.Sellos.Where(s => s.UserId == user.Id && !s.UsadoEnPase).ToList();
+    <div class="table-responsive">
+        <div class="mb-3 d-flex justify-content-start">
+            <button class="btn btn-warning btn-sm d-none animate__animated animate__fadei" id="clearFilters" style="border-radius: 50px; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fas fa-eraser me-1"></i> Limpiar filtros
+            </button>
+        </div>
+        <table class="table table-bordered table-striped align-middle shadow-sm bg-white rounded" id="usuariosTable">
+            <thead class="table-dark">
+                <tr>
+                    <th>
+                        Nombre
+                        <div class="mt-2">
+                            <input type="text" class="form-control form-control-sm column-filter" data-column="nombre" placeholder="Filtrar por nombre...">
+                        </div>
+                    </th>
+                    <th>
+                        Correo electrónico
+                        <div class="mt-2">
+                            <input type="text" class="form-control form-control-sm column-filter" data-column="email" placeholder="Filtrar por correo...">
+                        </div>
+                    </th>
+                    <th>Correo confirmado</th>
+                    <th>
+                        Roles
+                        <div class="mt-2">
+                            <select class="form-select form-select-sm column-filter" data-column="roles">
+                                <option value="">Todos los roles</option>
+                                @foreach (var rol in ViewBag.Roles as List<string>)
+                                {
+                                    <option value="@rol">@rol</option>
+                                }
+                            </select>
+                        </div>
+                    </th>
+                    <th>Sellos acumulados</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    var roles = userManager.GetRoles(user.Id);
+                    // Obtener cantidad de sellos activos (no usados en pase)
+                    var sellos = db.Sellos.Where(s => s.UserId == user.Id && !s.UsadoEnPase).ToList();
 
-                        <tr>
-                            <td>
-                                <span class="fw-bold text-primary">@user.Nombre</span>
-                            </td>
-                            <td>
-                                <span>@user.Email</span>
-                            </td>
-                            <td>
-                                @if (user.EmailConfirmed)
+                    <tr>
+                        <td>
+                            <span class="fw-bold text-primary">@user.Nombre</span>
+                        </td>
+                        <td>
+                            <span>@user.Email</span>
+                        </td>
+                        <td>
+                            @if (user.EmailConfirmed)
+                            {
+                                <span class="badge bg-success">Sí</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">No</span>
+                            }
+                        </td>
+                        <td>
+                            <span>
+                                @string.Join(", ", roles)
+                                @if (esAdmin && System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim() != user.Email.ToString().ToLower().Trim())
                                 {
-                                    <span class="badge bg-success">Sí</span>
+                                    <button type="button"
+                                            class="btn btn-outline-warning btn-sm ms-2 edit-role-link align-middle"
+                                            title="Editar rol"
+                                            data-userid="@user.Id"
+                                            data-roles="@string.Join(",", roles)"
+                                            style="border-radius: 50px; min-width: 90px; transition: all 0.2s;">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </button>
                                 }
-                                else
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-success">@sellos.Count</span>
+                            @if (sellos.Count >= 5)
+                            {
+                                <form method="post" action="@Url.Action("CanjearSellos", "Administracion", new { userId = user.Id })" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-warning btn-sm ms-2 canjear-sellos-btn" onclick="return confirm('Esta acción consumirá 5 sellos de fidelidad inmediatamente. Solo debe ejecutarse cuando el usuario esté presente en el negocio, ¿desea proceder?');">
+                                        <i class="fas fa-gift"></i> Canjear
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                        <td>
+                            @if (esAdmin)
+                            {
+                                if (!(roles.Contains("Administrador")) && System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim() != user.Email.ToString().ToLower().Trim())
                                 {
-                                    <span class="badge bg-danger">No</span>
-                                }
-                            </td>
-                            <td>
-                                <span>
-                                    @string.Join(", ", roles)
-                                    @if (esAdmin && System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim() != user.Email.ToString().ToLower().Trim())
-                                    {
-                                        <button type="button"
-                                                class="btn btn-outline-primary btn-sm ms-2 edit-role-link align-middle"
-                                                title="Editar rol"
-                                                data-userid="@user.Id"
-                                                data-roles="@string.Join(",", roles)">
-                                            <i class="bi bi-pencil-square"></i> Editar
-                                        </button>
-                                    }
-                                </span>
-                            </td>
-                            <td>
-                                <span class="fw-bold text-success">@sellos.Count</span>
-                                @if (sellos.Count >= 5)
-                                {
-                                    <form method="post" action="@Url.Action("CanjearSellos", "Administracion", new { userId = user.Id })" class="d-inline">
+                                    <form method="post" action="@Url.Action("EliminarUsuario", "Administracion", new { id = user.Id })" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-warning btn-sm ms-2 canjear-sellos-btn" onclick="return confirm('Esta acción consumirá 5 sellos de fidelidad inmediatamente. Solo debe ejecutarse cuando el usuario esté presente en el negocio, ¿desea proceder?');">
-                                            <i class="fas fa-gift"></i> Canjear 
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">
+                                            <i class="fas fa-trash-alt"></i> Eliminar
                                         </button>
                                     </form>
                                 }
-                            </td>
-                            <td>
-                                @if (esAdmin)
-                                {
-                                    if (!(roles.Contains("Administrador")) && System.Configuration.ConfigurationManager.AppSettings["ida:MSFTBookingsAdministradorPrimario"].ToLower().Trim() != user.Email.ToString().ToLower().Trim())
-                                    {
-                                        <form method="post" action="@Url.Action("EliminarUsuario", "Administracion", new { id = user.Id })" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">
-                                                <i class="fas fa-trash-alt"></i> Eliminar
-                                            </button>
-                                        </form>
-                                    }
-                                }
+                            }
 
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
         <!-- Modal para editar rol de usuario -->
         <div class="modal fade" id="editarRolModal" tabindex="-1" aria-labelledby="editarRolModalLabel" aria-hidden="true">
@@ -151,10 +178,10 @@
                             </div>
                         </div>
                         <div class="modal-footer bg-light">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 50px; font-weight: 600;">
                                 <i class="bi bi-x-circle"></i> Cancelar
                             </button>
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-warning" style="border-radius: 50px; font-weight: 600;">
                                 <i class="bi bi-save"></i> Guardar cambios
                             </button>
                         </div>
@@ -218,6 +245,28 @@
             vertical-align: middle !important;
         }
 
+    .btn-warning {
+        background-color: #fa8f23;
+        border-color: #fa8f23;
+    }
+
+        .btn-warning:hover {
+            background-color: #e57f13;
+            border-color: #e57f13;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-warning {
+        color: #fa8f23;
+        border-color: #fa8f23;
+    }
+
+        .btn-outline-warning:hover {
+            background-color: #fa8f23;
+            color: white;
+            border-color: #fa8f23;
+            transform: translateY(-2px);
+        }
     .btn-outline-primary, .btn-outline-danger {
         border-radius: 50px;
         font-weight: 600;
@@ -239,6 +288,15 @@
 
     .modal-content {
         border-radius: 16px;
+    }
+
+    .column-filter {
+        width: 100%;
+        font-size: 0.85rem;
+    }
+
+    .hidden-row {
+        display: none;
     }
 
     @@media (max-width: 992px) {
@@ -275,6 +333,102 @@
                 var modal = new bootstrap.Modal(document.getElementById('editarRolModal'), { backdrop: false });
                 modal.show();
             });
+        });
+
+        // Filtrado por columnas
+        document.addEventListener('DOMContentLoaded', function () {
+            const clearFiltersBtn = document.getElementById('clearFilters');
+
+            // Filtrar tabla cuando se escribe en los campos de filtro de texto
+            document.querySelectorAll('.column-filter[type="text"]').forEach(function (input) {
+                input.addEventListener('keyup', function () {
+                    filterTable();
+                    updateClearButtonVisibility();
+                });
+            });
+
+            // Filtrar tabla cuando se cambia una selección en dropdown
+            document.querySelectorAll('select.column-filter').forEach(function (select) {
+                select.addEventListener('change', function () {
+                    filterTable();
+                    updateClearButtonVisibility();
+                });
+            });
+
+            // Limpiar todos los filtros
+            clearFiltersBtn.addEventListener('click', function () {
+                document.querySelectorAll('.column-filter[type="text"]').forEach(function (input) {
+                    input.value = '';
+                });
+                document.querySelectorAll('select.column-filter').forEach(function (select) {
+                    select.value = '';
+                });
+                filterTable();
+                updateClearButtonVisibility();
+            });
+
+            // Función para verificar si hay filtros aplicados y actualizar la visibilidad del botón
+            function updateClearButtonVisibility() {
+                let hasActiveFilters = false;
+
+                // Verificar campos de texto
+                document.querySelectorAll('.column-filter[type="text"]').forEach(function (input) {
+                    if (input.value.trim() !== '') {
+                        hasActiveFilters = true;
+                    }
+                });
+
+                // Verificar selects
+                document.querySelectorAll('select.column-filter').forEach(function (select) {
+                    if (select.value !== '') {
+                        hasActiveFilters = true;
+                    }
+                });
+
+                // Mostrar u ocultar el botón según si hay filtros
+                if (hasActiveFilters) {
+                    clearFiltersBtn.classList.remove('d-none');
+                } else {
+                    clearFiltersBtn.classList.add('d-none');
+                }
+            }
+
+            function filterTable() {
+                const nombreFilter = document.querySelector('.column-filter[data-column="nombre"]').value.toLowerCase();
+                const emailFilter = document.querySelector('.column-filter[data-column="email"]').value.toLowerCase();
+                const rolesFilter = document.querySelector('.column-filter[data-column="roles"]').value;
+
+                const rows = document.querySelectorAll('#usuariosTable tbody tr');
+
+                rows.forEach(function (row) {
+                    const nombre = row.cells[0].textContent.toLowerCase();
+                    const email = row.cells[1].textContent.toLowerCase();
+
+                    // Extraer solo el texto del rol sin incluir el botón
+                    const roleCell = row.cells[3];
+                    const roleText = roleCell.querySelector('span').textContent.trim();
+
+                    const nombreMatch = nombre.includes(nombreFilter);
+                    const emailMatch = email.includes(emailFilter);
+
+                    // Verificar si el rol exacto está en la lista de roles del usuario
+                    let rolesMatch = true;
+                    if (rolesFilter !== "") {
+                        // Dividir los roles del usuario (están separados por comas)
+                        const userRoles = roleText.split(',').map(r => r.trim());
+                        rolesMatch = userRoles.includes(rolesFilter);
+                    }
+
+                    if (nombreMatch && emailMatch && rolesMatch) {
+                        row.classList.remove('hidden-row');
+                    } else {
+                        row.classList.add('hidden-row');
+                    }
+                });
+            }
+
+            // Verificar al cargar la página si hay filtros aplicados
+            updateClearButtonVisibility();
         });
     </script>
     <!-- Si usas Bootstrap Icons, asegúrate de incluir su CDN en tu _Layout.cshtml -->

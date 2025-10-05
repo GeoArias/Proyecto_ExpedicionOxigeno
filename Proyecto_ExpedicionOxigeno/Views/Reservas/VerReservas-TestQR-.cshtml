@@ -1,0 +1,321 @@
+﻿@{
+    ViewBag.Title = "Ver Reservas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0"><i class="fas fa-calendar-check mr-2"></i>Ver Reservas</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Error:</strong> @TempData["Error"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <strong>¡Éxito!</strong> @TempData["Success"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Sección para el escáner QR -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0"><i class="fas fa-qrcode mr-2"></i>Escanear código QR</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Use la cámara para escanear el código QR de una reserva.</p>
+                                    <div class="text-center">
+                                        <button id="start-scanner" class="btn btn-primary mb-3">
+                                            <i class="fas fa-camera mr-2"></i>Iniciar Escáner
+                                        </button>
+                                        <button id="stop-scanner" class="btn btn-danger mb-3" style="display:none;">
+                                            <i class="fas fa-stop-circle mr-2"></i>Detener Escáner
+                                        </button>
+                                    </div>
+                                    <div id="reader" class="mb-3" style="width:100%"></div>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Asegúrese de conceder permisos de cámara cuando se le solicite.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0"><i class="fas fa-search mr-2"></i>Buscar Reserva</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="reservation-id"><i class="fas fa-key mr-2"></i>ID de Reserva</label>
+                                        <div class="input-group">
+                                            <input type="text" id="reservation-id" class="form-control" placeholder="Ingrese ID de reserva o escanee un código QR">
+                                            <div class="input-group-append">
+                                                <button id="search-button" class="btn btn-primary">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resultados de la búsqueda -->
+                    <div id="reservation-results" class="mt-4" style="display:none;">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-info-circle mr-2"></i>Detalles de la Reserva</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="reservation-details">
+                                    <!-- Aquí se cargarán los detalles de la reserva -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de error en la búsqueda -->
+                    <div id="reservation-error" class="mt-4 alert alert-danger" style="display:none;">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span id="error-message">No se pudo encontrar la reserva.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let html5QrcodeScanner = null;
+
+            // Iniciar el escáner
+            $('#start-scanner').on('click', function () {
+                $('#start-scanner').hide();
+                $('#stop-scanner').show();
+
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                };
+
+                html5QrcodeScanner = new Html5Qrcode("reader");
+                html5QrcodeScanner.start(
+                    { facingMode: "environment" },
+                    config,
+                    onScanSuccess,
+                    onScanFailure
+                );
+            });
+
+            // Detener el escáner
+            $('#stop-scanner').on('click', function () {
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.stop().then(() => {
+                        $('#start-scanner').show();
+                        $('#stop-scanner').hide();
+                    });
+                }
+            });
+
+            // Búsqueda manual con botón
+            $('#search-button').on('click', function () {
+                searchReservation();
+            });
+
+            // Búsqueda manual con Enter
+            $('#reservation-id').on('keypress', function (e) {
+                if (e.which === 13) {
+                    searchReservation();
+                }
+            });
+
+            // Función que se ejecuta cuando se escanea un código QR exitosamente
+            function onScanSuccess(decodedText, decodedResult) {
+                //Notificar con un pop-up que se escaneó!
+                alert("Código QR escaneado: " + decodedText);
+
+                // Detener el escáner después de un escaneo exitoso
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.stop().then(() => {
+                        $('#start-scanner').show();
+                        $('#stop-scanner').hide();
+
+                        // Llenar el campo de ID y buscar la reserva
+                        $('#reservation-id').val(decodedText);
+                        searchReservation();
+                    });
+                }
+            }
+
+            function onScanFailure(error) {
+                // Errores de escaneo pueden ser ignorados, solo mostrar en consola
+                console.warn(`Scan error: ${error}`);
+            }
+
+            // Función para buscar la reserva
+            function searchReservation() {
+                const reservationId = $('#reservation-id').val().trim();
+
+                if (!reservationId) {
+                    showError("Por favor ingrese un ID de reserva o escanee un código QR.");
+                    return;
+                }
+
+                // Mostrar spinner o indicador de carga
+                $('#reservation-details').html('<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="sr-only">Cargando...</span></div><p class="mt-2">Buscando reserva...</p></div>');
+                $('#reservation-results').show();
+                $('#reservation-error').hide();
+
+                // Llamada AJAX para buscar la reserva por ID
+                $.ajax({
+                    url: '@Url.Action("ObtenerDetallesReserva", "Reservas")',
+                    type: 'GET',
+                    data: { id: reservationId },
+                    success: function (data) {
+                        if (data && data.success) {
+                            displayReservationDetails(data.reservation);
+                        } else {
+                            showError(data.message || "No se pudo encontrar la reserva con ese ID.");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        showError("Error al buscar la reserva: " + error);
+                    }
+                });
+            }
+
+            // Mostrar detalles de la reserva
+            function displayReservationDetails(reservation) {
+                // Formatear fechas
+                const startDate = new Date(reservation.start.dateTime);
+                const endDate = new Date(reservation.end.dateTime);
+
+                const formattedStartDate = startDate.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                const formattedStartTime = startDate.toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const formattedEndTime = endDate.toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Construir HTML para los detalles
+                let html = `
+                    <div class="card mb-3 border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">${reservation.serviceName}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong><i class="far fa-calendar-alt mr-2"></i>Fecha:</strong> ${formattedStartDate}</p>
+                                    <p><strong><i class="far fa-clock mr-2"></i>Horario:</strong> ${formattedStartTime} - ${formattedEndTime}</p>
+                                    <p><strong><i class="far fa-user mr-2"></i>Cliente:</strong> ${reservation.customerName}</p>
+                                    <p><strong><i class="far fa-envelope mr-2"></i>Email:</strong> ${reservation.customerEmailAddress}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-mobile-alt mr-2"></i>Teléfono:</strong> ${reservation.customerPhone || 'No disponible'}</p>
+                                    <p><strong><i class="fas fa-user-tie mr-2"></i>Personal:</strong> ${reservation.staffMemberName || 'No asignado'}</p>
+                                    <p><strong><i class="fas fa-tag mr-2"></i>ID Reserva:</strong> ${reservation.id}</p>
+                                    <p><strong><i class="fas fa-info-circle mr-2"></i>Estado:</strong>
+                                        <span class="badge badge-${getStatusBadgeClass(reservation.status)}">${getStatusText(reservation.status)}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="text-right">
+                                <a href="mailto:${reservation.customerEmailAddress}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-envelope mr-1"></i>Enviar Email
+                                </a>
+                                <button class="btn btn-outline-success btn-sm" onclick="validarAsistencia('${reservation.id}')">
+                                    <i class="fas fa-check-circle mr-1"></i>Validar Asistencia
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+
+                $('#reservation-details').html(html);
+                $('#reservation-results').show();
+                $('#reservation-error').hide();
+            }
+
+            // Mostrar error
+            function showError(message) {
+                $('#error-message').text(message);
+                $('#reservation-error').show();
+                $('#reservation-results').hide();
+            }
+
+            // Obtener clase de badge según estado
+            function getStatusBadgeClass(status) {
+                switch (status) {
+                    case 'confirmed': return 'success';
+                    case 'canceled': return 'danger';
+                    case 'pending': return 'warning';
+                    default: return 'secondary';
+                }
+            }
+
+            // Obtener texto de estado en español
+            function getStatusText(status) {
+                switch (status) {
+                    case 'confirmed': return 'Confirmada';
+                    case 'canceled': return 'Cancelada';
+                    case 'pending': return 'Pendiente';
+                    default: return status;
+                }
+            }
+        });
+
+        // Función para validar asistencia (llamada desde el botón)
+        function validarAsistencia(reservationId) {
+            if (confirm('¿Confirmar asistencia para esta reserva? Esto generará un sello para el cliente.')) {
+                $.ajax({
+                    url: '@Url.Action("ValidarAsistencia", "Reservas")',
+                    type: 'POST',
+                    data: { id: reservationId },
+                    success: function (data) {
+                        if (data.success) {
+                            alert('Asistencia validada correctamente. Se ha generado un sello para el cliente.');
+                            // Actualizar la página o los detalles si es necesario
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Ha ocurrido un error al validar la asistencia');
+                    }
+                });
+            }
+        }
+    </script>
+}
