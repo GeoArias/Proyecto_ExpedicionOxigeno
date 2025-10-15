@@ -228,9 +228,19 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 {
                     Destination = user.Email,
                     Subject = "Expedición Oxígeno - Restablece tu contraseña",
-                    Body = $@"<!-- contenido del correo -->"
+                    Body = $@"<div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
+                <div style='text-align:center; margin-bottom:24px;'>
+                    <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
+                </div>
+                <h2 style='color: #2c3e50;'>Restablece tu contraseña</h2>
+                <p style='font-size: 16px; color: #333;'>Has solicitado restablecer tu contraseña. Hacé clic en el siguiente botón para crear una nueva:</p>
+                <div style='text-align: center; margin: 32px 0;'>
+                    <a href='{callbackUrl}' style='background: #27ae60; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 5px; font-size: 16px; display: inline-block;'>Restablecer contraseña</a>
+                </div>
+                <p style='font-size: 14px; color: #888;'>Si no solicitaste restablecer tu contraseña, podés ignorar este correo.</p>
+            </div>"
                 });
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
             return View(model);

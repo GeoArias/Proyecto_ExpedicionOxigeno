@@ -24,7 +24,7 @@ namespace Proyecto_ExpedicionOxigeno
             // Establecer el remitente desde Web.config
             var fromAddress = System.Configuration.ConfigurationManager.AppSettings["mailFrom"]
                               ?? System.Configuration.ConfigurationManager.AppSettings["mailSettings:from"]
-                              ?? "oxigeno.expedicion@gmail.com";
+                              ?? "noreply.expedicionoxigeno@gmail.com";
             mail.From = new MailAddress(fromAddress);
 
             using (var smtp = new SmtpClient())
@@ -36,9 +36,8 @@ namespace Proyecto_ExpedicionOxigeno
                 }
                 catch (Exception ex)
                 {
-                    // Escribir en la consola el error
                     Console.WriteLine($"Error al enviar el correo electrónico: {ex.Message}");
-                    throw; // Opcional: relanzar para depuración
+                    throw; 
                 }
             }
         }
