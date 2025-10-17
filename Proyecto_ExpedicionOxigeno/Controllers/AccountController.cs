@@ -186,7 +186,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
-                TempData["Error"] = "Error al crear cuenta, intenta de nuevo más tarde.";
+                TempData["Error"] = "Error al crear cuenta: "+ result;
             }
 
             return View(model);
