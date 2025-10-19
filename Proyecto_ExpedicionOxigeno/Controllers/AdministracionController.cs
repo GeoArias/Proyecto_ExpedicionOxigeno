@@ -272,7 +272,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 <div style='background: #e9f7ef; border-radius: 5px; padding: 16px; margin: 24px 0; color: #222;'>
                     {System.Net.WebUtility.HtmlEncode(Respuesta).Replace("\n", "<br/>")}
                 </div>
-                <p style='font-size: 14px; color: #888;'>Si tienes más dudas, no dudes en responder este correo.</p>
+                <p style='font-size: 14px; color: #888;'>Muchas gracias por preferirnos.</p>
                 <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;' />
                 <p style='font-size: 12px; color: #bbb;'>Expedición Oxígeno</p>
             </div>";
