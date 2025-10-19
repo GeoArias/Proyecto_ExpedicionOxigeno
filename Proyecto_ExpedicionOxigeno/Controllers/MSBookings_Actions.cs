@@ -148,7 +148,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError && retryCount < maxRetries)
                     {
                         retryCount++;
-                        await Task.Delay(500 * retryCount); // Exponential backoff
+                        await Task.Delay(500 * retryCount);
                         continue;
                     }
                     else

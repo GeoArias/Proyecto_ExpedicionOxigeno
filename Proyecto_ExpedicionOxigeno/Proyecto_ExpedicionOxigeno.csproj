@@ -307,7 +307,7 @@
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\MSBookings_Actions.cs" />
     <Compile Include="Controllers\ReservasController.cs" />
-    <Compile Include="Controllers\ReviewController.cs" />
+    <Compile Include="Controllers\ReviewsController.cs" />
     <Compile Include="Controllers\SelloController.cs" />
     <Compile Include="Controllers\ServiciosController.cs" />
     <Compile Include="Controllers\WebhookController.cs" />
@@ -499,14 +499,15 @@
     <Content Include="Views\Sello\Index.cshtml" />
     <Content Include="Views\Sello\EscanearQR.cshtml" />
     <Content Include="Views\BookingsAppointment\Index.cshtml" />
-    <Content Include="Views\Home\IndexVPrior.cshtml" />
     <Content Include="Views\Administracion\Index.cshtml" />
     <Content Include="Views\Servicios\Details.cshtml" />
     <Content Include="Views\Servicios\CambioHorario.cshtml" />
     <Content Include="Views\Reservas\Editar.cshtml" />
-    <Content Include="Views\Review\ReviewUser.cshtml" />
+    <Content Include="Views\Reviews\ReviewUser.cshtml" />
     <Content Include="Views\Manage\Profile.cshtml" />
     <Content Include="Views\Reservas\VerReservas-TestQR-.cshtml" />
+    <Content Include="Views\Reviews\New.cshtml" />
+    <Content Include="Views\Reviews\index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

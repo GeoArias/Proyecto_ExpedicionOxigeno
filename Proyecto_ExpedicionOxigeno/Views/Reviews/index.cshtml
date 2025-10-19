@@ -1,0 +1,507 @@
+﻿@{
+    ViewBag.Title = "Mis reseñas";
+    var pastAppointments = ViewBag.PastAppointments as List<Proyecto_ExpedicionOxigeno.Models.BookingAppointmentCustomed>;
+    var reviewedReservationIds = ViewBag.ReviewedReservationIds as List<Proyecto_ExpedicionOxigeno.Models.Sello>;
+    var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
+    var now = DateTime.Now;
+    var reviewedReservations = ViewBag.ReviewedReservationIds as List<Proyecto_ExpedicionOxigeno.Models.Sello>;
+}
+
+<main class="container py-4">
+    <section class="section-padding">
+        <div class="text-center mb-5">
+            <div class="section-badge">TUS EXPERIENCIAS</div>
+            <h2 class="section-title">Reseña tus visitas a Expedición Oxígeno</h2>
+            <p class="section-text">¡Comparte tu opinión sobre tus experiencias y gana sellos de fidelidad!</p>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.Error
+            </div>
+        }
+
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-info text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-info-circle me-2"></i>@ViewBag.Message
+            </div>
+        }
+
+        @if (TempData["Mensaje"] != null)
+        {
+            <div class="alert alert-success text-center mb-4 animate__animated animate__fadeInDown">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Mensaje"]
+            </div>
+        }
+
+        <!-- Contador de reservas -->
+        <div class="counter-stats mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="counter-box clickable" data-filter="todas" id="counterAll">
+                        <div class="counter-icon all">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="counter-content">
+                            <h4 class="counter-value" id="totalReservas">@(pastAppointments?.Count() ?? 0)</h4>
+                            <p class="counter-text">Total de Reservas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="counter-box clickable" data-filter="conResena" id="counterReviewed">
+                        <div class="counter-icon reviewed">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="counter-content">
+                            <h4 class="counter-value" id="reservasConResena">@(reviewedReservationIds?.Count() ?? 0)</h4>
+                            <p class="counter-text">Con Reseñas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="counter-box clickable" data-filter="sinResena" id="counterPending">
+                        <div class="counter-icon pending">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="counter-content">
+                            <h4 class="counter-value" id="reservasPendientes">
+                                @((pastAppointments?.Count() ?? 0) - (reviewedReservationIds?.Count() ?? 0))
+                            </h4>
+                            <p class="counter-text">Pendientes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 g-4" id="reservasContainer">
+            @if (pastAppointments != null && pastAppointments.Any())
+            {
+                foreach (var appointment in pastAppointments)
+                {
+                    var Review = reviewedReservations.Where(r => r.ReservaId == appointment.Id).FirstOrDefault();
+                    bool hasReview = Review != null;
+
+                    var isEditable = true;
+                    if (!hasReview)
+                    {
+                        isEditable = (now <= appointment.end.dateTime.AddDays(14));
+                    }
+                    var fecha = appointment.start != null && appointment.start.dateTime != null
+                        ? TimeZoneInfo.ConvertTimeFromUtc(appointment.start.dateTime, timeZone)
+                        : DateTime.MinValue;
+                    string cardClass = hasReview ? "has-review" : "no-review";
+                    string iconClass = hasReview ? "fa-check-circle" : "fa-star";
+                    string badgeClass = hasReview ? "bg-success" : "bg-warning";
+                    string badgeText = hasReview ? "Reseña completada" : "Reseña pendiente";
+
+
+
+
+                    <div class="col animate__animated animate__fadeIn reservation-card"
+                         data-has-review="@hasReview.ToString().ToLower()"
+                         data-date="@appointment.start.dateTime.ToString("yyyy-MM-dd")">
+                        <div class="service-card @cardClass">
+                            <span class="badge @badgeClass position-absolute top-0 end-0 m-3">
+                                @badgeText
+                            </span>
+                            <div class="service-icon">
+                                <i class="fas @iconClass"></i>
+                            </div>
+                            <h4 class="service-title">@appointment.ServiceName</h4>
+                            <div class="service-meta">
+                                <div class="service-duration">
+                                    <i class="far fa-calendar-alt"></i>
+                                    @appointment.start.dateTime.ToString("dd/MM/yyyy")
+                                </div>
+                                <div class="service-price">
+                                    <i class="far fa-clock"></i>
+                                    @appointment.start.dateTime.ToString("HH:mm")
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-auto">
+                                @if (hasReview)
+                                {
+                                    <span class="reservation-completed">
+                                        <i class="fas fa-check-circle me-2"></i>Reseña completada
+                                        @if (Review.FechaObtencion != null)
+                                        {
+                                            <small class="d-block mt-1">Obtenida el: @Review.FechaObtencion.ToString("dd/MM/yyyy")</small>
+                                        }
+                                    </span>
+                                }
+                                else
+                                {
+                                    if (!isEditable)
+                                    {
+                                        <a href="@Url.Action("New", "Review", new { reservaId = appointment.Id })"
+                                           class="btn btn-review animate__animated animate__pulse animate__infinite animate__slow">
+                                            <i class="fas fa-star me-2"></i>Dejar mi reseña
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="reservation-completed">
+                                            <i class="fas fa-exclamation-circle me-2"></i>Reseña no disponible
+                                        </span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else if (ViewBag.Message == null)
+            {
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>No hay reservas pasadas</h5>
+                        <p>No tienes reservas pasadas para dejar una reseña.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Mensaje de no resultados (inicialmente oculto) -->
+        <div id="noResultsMessage" class="col-12 text-center mt-4 d-none">
+            <div class="alert alert-info">
+                <i class="fas fa-search fa-2x mb-3"></i>
+                <h5>No hay reservas que coincidan con los filtros</h5>
+                <p>Intenta modificar los criterios de búsqueda.</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<style>
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+    /* Secciones generales */
+    .section-padding {
+        padding: 60px 0 40px 0;
+    }
+
+    .section-badge {
+        display: inline-block;
+        background-color: rgba(250, 143, 35, 0.1);
+        color: #fa8f23;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 8px 18px;
+        border-radius: 50px;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+    }
+
+    .section-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: #212529;
+    }
+
+    .section-text {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 700px;
+        margin: 0 auto 30px auto;
+    }
+
+    /* Contadores */
+    .counter-stats {
+        margin: 30px 0;
+    }
+
+    .counter-box {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .counter-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+    .counter-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+        .counter-icon.all {
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+        }
+
+        .counter-icon.reviewed {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .counter-icon.pending {
+            background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        }
+
+    .counter-content {
+        flex-grow: 1;
+    }
+
+    .counter-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+
+    .counter-text {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    /* Cards de servicios */
+    .service-card {
+        background-color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        padding: 30px 20px 20px 20px;
+        text-align: center;
+        position: relative;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .service-card.has-review {
+            border-left: 4px solid #28a745;
+        }
+
+        .service-card.no-review {
+            border-left: 4px solid #ffc107;
+        }
+
+    .service-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+        margin: 0 auto 18px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .service-card.has-review .service-icon {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .service-card.no-review .service-icon {
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+    }
+
+    .service-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+        color: #212529;
+    }
+
+    .service-meta {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 10px;
+        border-top: 1px solid #e9ecef;
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    .service-duration, .service-price {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        color: #495057;
+    }
+
+        .service-duration i, .service-price i {
+            margin-right: 5px;
+            color: #fa8f23;
+        }
+
+    .btn-service-reserve {
+        display: inline-block;
+        background: linear-gradient(135deg, #fa8f23 0%, #ff7e00 100%);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+        .btn-service-reserve:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(250,143,35,0.3);
+            color: white;
+        }
+
+    .btn-outline-success {
+        border-radius: 50px;
+        font-weight: 600;
+        padding: 12px 25px;
+        transition: all 0.3s ease;
+    }
+
+    @@media (max-width: 992px) {
+        .section-padding {
+            padding: 40px 0 20px 0;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+        }
+
+        .counter-box {
+            margin-bottom: 20px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .service-card {
+            padding: 20px 10px;
+        }
+
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+    }
+    /* Make counter boxes clickable */
+    .counter-box.clickable {
+        cursor: pointer;
+        position: relative;
+    }
+
+        .counter-box.clickable::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,255,255,0);
+            transition: background-color 0.2s;
+            border-radius: 15px;
+            z-index: 1;
+        }
+
+        .counter-box.clickable:hover::after {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+    .counter-box.active {
+        border: 2px solid #fa8f23;
+        transform: translateY(-5px);
+    }
+
+        .counter-box.active::before {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #fa8f23;
+        }
+
+    .counter-box.clickable * {
+        position: relative;
+        z-index: 2;
+    }
+</style>
+
+@section Scripts {
+    <script>document.addEventListener('DOMContentLoaded', function () {
+            // Elementos DOM
+            const reservasContainer = document.getElementById('reservasContainer');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            const reservasCards = document.querySelectorAll('.reservation-card');
+            const counterBoxes = document.querySelectorAll('.counter-box.clickable');
+
+            // Variables para almacenar el filtro activo
+            let filtroActivo = 'todas';
+
+            // Función para filtrar las reservas
+            function filtrarReservas() {
+                let contadorVisibles = 0;
+
+                // Actualizar estado visual de los contadores
+                counterBoxes.forEach(box => {
+                    box.classList.toggle('active', box.dataset.filter === filtroActivo);
+                });
+
+                reservasCards.forEach(card => {
+                    const hasReview = card.dataset.hasReview === 'true';
+
+                    // Aplicar filtro según estado
+                    let mostrar = true;
+                    if (filtroActivo === 'conResena' && !hasReview) {
+                        mostrar = false;
+                    } else if (filtroActivo === 'sinResena' && hasReview) {
+                        mostrar = false;
+                    }
+
+                    // Aplicar visibilidad
+                    card.classList.toggle('d-none', !mostrar);
+
+                    // Contar cuántas cards son visibles con el filtro actual
+                    if (mostrar) {
+                        contadorVisibles++;
+                    }
+                });
+
+                // Mostrar mensaje de no resultados si es necesario
+                noResultsMessage.classList.toggle('d-none', contadorVisibles > 0);
+            }
+
+            // Asignar eventos para los contadores clickables
+            counterBoxes.forEach(box => {
+                box.addEventListener('click', function () {
+                    filtroActivo = this.dataset.filter;
+                    filtrarReservas();
+                });
+            });
+
+            // Inicializar con el filtro de "todas"
+            filtrarReservas();
+            document.getElementById('counterAll').classList.add('active');
+        });</script>
+}

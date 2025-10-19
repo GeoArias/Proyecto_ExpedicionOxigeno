@@ -1,4 +1,5 @@
-﻿using Microsoft.Graph.Models;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.Graph.Models;
 using Proyecto_ExpedicionOxigeno.Models;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,12 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
             if (!string.IsNullOrEmpty(servicio))
             {
                 reviewsQuery = reviewsQuery.Where(r => r.Servicio == servicio);
+            }
+            
+            if (User.Identity.IsAuthenticated)
+            {
+                var userID = User.Identity.GetUserId();
+                ViewBag.User = db.Users.FirstOrDefault(u => u.Id == userID);
             }
 
             var reviews = reviewsQuery

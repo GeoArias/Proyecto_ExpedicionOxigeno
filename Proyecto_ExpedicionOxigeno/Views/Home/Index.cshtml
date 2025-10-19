@@ -183,7 +183,7 @@
                         {
                             iconClass = "fas fa-route";
                         }
-                        else if (servicio.DisplayName.Contains("Glider"))
+                        else
                         {
                             iconClass = "fas fa-wind";
                         }
@@ -325,9 +325,13 @@
                                 <label for="servicioFiltro" class="form-label">Tipo de servicio</label>
                                 <select id="servicioFiltro" name="servicio" class="form-select">
                                     <option value="">Todos</option>
-                                    <option value="Parque de Cuerdas">Parque de Cuerdas</option>
-                                    <option value="Pared de Escalada">Pared de Escalada</option>
-                                    <option value="Roll Glider">Roll Glider</option>
+                                    @if (ViewBag.Servicios != null)
+                                    {
+                                        foreach (var servicio in ViewBag.Servicios)
+                                        {
+                                            <option value="@servicio.DisplayName">@servicio.DisplayName</option>
+                                        }
+                                    }
                                 </select>
                             </div>
                             <div class="col-12 text-end">
@@ -503,19 +507,6 @@
                             <div class="contact-form-card">
                                 <h4><i class="fas fa-envelope me-2"></i>Envíanos un Mensaje</h4>
 
-                                @if (!Request.IsAuthenticated)
-                                {
-                                    <div class="login-required-message">
-                                        <i class="fas fa-lock mb-3"></i>
-                                        <h5>Inicia sesión para enviar un mensaje</h5>
-                                        <p>Nos encantaría responder a tus consultas</p>
-                                        <button type="button" class="btn btn-Primary-ExpOxi" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
-                                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar sesión
-                                        </button>
-                                    </div>
-                                }
-                                else
-                                {
                                     <form method="post" action="/Home/GuardarContacto">
                                         @Html.AntiForgeryToken()
 
@@ -527,11 +518,14 @@
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
                                                 <label for="Telefono" class="form-label">Teléfono</label>
-                                                <input type="tel" class="form-control" id="Telefono" name="Telefono" placeholder="Ej: 8888-8888">
+                                                <input type="tel" class="form-control" id="Telefono" name="Telefono"
+                                                       value="@(Request.IsAuthenticated ? (ViewBag.User.Telefono ?? "") : "")" placeholder="Ej: 8888-8888">
                                             </div>
+
                                             <div class="col-md-6 mb-3">
                                                 <label for="Email" class="form-label">Correo electrónico</label>
-                                                <input type="email" class="form-control" id="Email" name="Email" placeholder="correo@ejemplo.com">
+                                                <input type="email" class="form-control" id="Email" name="Email"
+                                                       value="@(Request.IsAuthenticated ? (ViewBag.User.Email ?? User.Identity.Name ?? "") : "")" placeholder="correo@ejemplo.com">
                                             </div>
                                         </div>
 
@@ -541,7 +535,7 @@
                                             </button>
                                         </div>
                                     </form>
-                                }
+                                
                             </div>
                         </div>
                     </div>

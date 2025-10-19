@@ -9,6 +9,7 @@ using Proyecto_ExpedicionOxigeno.Models;
 using Proyecto_ExpedicionOxigeno.Services;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -23,8 +24,10 @@ using ZXing.Common;
 
 namespace Proyecto_ExpedicionOxigeno.Controllers
 {
+    [Authorize]
     public class ReservasController : Controller
     {
+        private ApplicationDbContext db = new ApplicationDbContext();
         // GET: Reservas
         public async Task<ActionResult> Index()
         {
@@ -311,12 +314,19 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
                 var userAppointments = await MSBookings_Actions.GetAppointmentsByEmail(user.Email);
 
+                // Check which appointments already have reviews via Sellos
+                string userId = User.Identity.GetUserId(); // Extract user ID first
 
-                // Bloque temporal para depuración: imprime los Ids de reservas pasadas
-foreach (var a in userAppointments.Where(x => x.end?.dateTime < DateTime.Now))
-{
-    System.Diagnostics.Debug.WriteLine($"Reserva pasada: Id={a.Id}, Servicio={a.ServiceName}, End={a.end?.dateTime}");
-}
+                // Extract appointment IDs into a simple collection first
+                var appointmentIds = userAppointments.Select(a => a.Id).ToList();
+                
+                // Now use the simple collection in the database query
+                var ReviewedReservationIds = db.Sellos
+                    .Where(r => appointmentIds.Contains(r.ReservaId)).ToList();
+
+                // Add info to ViewBag
+                ViewBag.ReviewedReservationIds = ReviewedReservationIds;
+
 
                 return View(userAppointments);
             }
