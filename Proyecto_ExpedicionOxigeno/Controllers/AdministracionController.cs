@@ -250,45 +250,53 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
 
             using (var context = new Proyecto_ExpedicionOxigeno.Models.ApplicationDbContext())
             {
-                var consulta = context.Contactos.FirstOrDefault(c => c.Id == Id);
-                if (consulta == null)
+                try
                 {
-                    TempData["Mensaje"] = "Consulta no encontrada.";
-                    return RedirectToAction("Consultas");
+                    var consulta = context.Contactos.FirstOrDefault(c => c.Id == Id);
+                    if (consulta == null)
+                    {
+                        TempData["Mensaje"] = "Consulta no encontrada.";
+                        return RedirectToAction("Consultas");
+                    }
+
+                    // Enviar correo
+                    var emailService = new EmailService();
+                    string asunto = "Respuesta a tu consulta - Expedición Oxígeno";
+                    string cuerpo = $@"
+            <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
+                <div style='text-align:center; margin-bottom:24px;'>
+                    <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
+                </div>
+                <h2 style='color: #2c3e50;'>¡Gracias por contactarnos!</h2>
+                <p style='font-size: 16px; color: #333;'>Hemos recibido tu consulta y aquí tienes nuestra respuesta:</p>
+                <div style='background: #e9f7ef; border-radius: 5px; padding: 16px; margin: 24px 0; color: #222;'>
+                    {System.Net.WebUtility.HtmlEncode(Respuesta).Replace("\n", "<br/>")}
+                </div>
+                <p style='font-size: 14px; color: #888;'>Si tienes más dudas, no dudes en responder este correo.</p>
+                <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;' />
+                <p style='font-size: 12px; color: #bbb;'>Expedición Oxígeno</p>
+            </div>";
+
+                    // Await the asynchronous email sending operation
+                    await emailService.SendAsync(new Microsoft.AspNet.Identity.IdentityMessage
+                    {
+                        Destination = ParaEmail,
+                        Subject = asunto,
+                        Body = cuerpo
+                    });
+
+                    // Marcar como respondida
+                    consulta.Respondida = true;
+                    context.SaveChanges();
+
+                    TempData["Mensaje"] = "Respuesta enviada correctamente.";
                 }
-
-                // Marcar como respondida
-                consulta.Respondida = true;
-                context.SaveChanges();
-
-                // Enviar correo
-                var emailService = new EmailService();
-                string asunto = "Respuesta a tu consulta - Expedición Oxígeno";
-                string cuerpo = $@"
-        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fafafa;'>
-            <div style='text-align:center; margin-bottom:24px;'>
-                <img src='{logoUrl}' alt='Expedición Oxígeno' style='max-width:180px; height:auto;' />
-            </div>
-            <h2 style='color: #2c3e50;'>¡Gracias por contactarnos!</h2>
-            <p style='font-size: 16px; color: #333;'>Hemos recibido tu consulta y aquí tienes nuestra respuesta:</p>
-            <div style='background: #e9f7ef; border-radius: 5px; padding: 16px; margin: 24px 0; color: #222;'>
-                {System.Net.WebUtility.HtmlEncode(Respuesta).Replace("\n", "<br/>")}
-            </div>
-            <p style='font-size: 14px; color: #888;'>Si tienes más dudas, no dudes en responder este correo.</p>
-            <hr style='border: none; border-top: 1px solid #eee; margin: 24px 0;' />
-            <p style='font-size: 12px; color: #bbb;'>Expedición Oxígeno</p>
-        </div>";
-
-                // Await the asynchronous email sending operation
-                await emailService.SendAsync(new Microsoft.AspNet.Identity.IdentityMessage
+                catch(Exception ex)
                 {
-                    Destination = ParaEmail,
-                    Subject = asunto,
-                    Body = cuerpo
-                });
-
-                TempData["Mensaje"] = "Respuesta enviada correctamente.";
+                    TempData["Error"] = "Error al enviar respuesta: "+ex.Message;
+                }
                 return RedirectToAction("Consultas");
+
             }
         }
 

@@ -24,12 +24,45 @@
             </div>
         }
 
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- Filtros de consultas -->
+        <div class="filter-container mb-4 p-3 bg-white rounded shadow-sm animate__animated animate__fadeIn">
+            <div class="row align-items-center">
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <label for="fechaFilter" class="form-label fw-bold mb-1">
+                        <i class="fas fa-calendar-alt me-1"></i> Filtrar por fecha
+                    </label>
+                    <select id="fechaFilter" class="form-select">
+                        <option value="all">Siempre</option>
+                        <option value="month">Último mes</option>
+                        <option value="sixMonths">Últimos 6 meses</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <label for="respondidaFilter" class="form-label fw-bold mb-1">
+                        <i class="fas fa-check-circle me-1"></i> Estado de respuesta
+                    </label>
+                    <select id="respondidaFilter" class="form-select">
+                        <option value="all">Todas las consultas</option>
+                        <option value="true">Respondidas</option>
+                        <option value="false">Pendientes</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end justify-content-center justify-content-md-end">
+                    <button id="resetFilters" class="btn btn-outline-secondary">
+                        <i class="fas fa-sync-alt me-1"></i> Restablecer filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="consultasContainer">
             @if (Model != null && Model.Any())
             {
                 foreach (var c in Model)
                 {
-                    <div class="col">
+                    <div class="col consulta-card"
+                         data-fecha="@c.Fecha.ToString("yyyy-MM-dd")"
+                         data-respondida="@c.Respondida.ToString().ToLower()">
                         <div class="service-card animate__animated animate__fadeInUp">
                             <div class="service-icon" style="background: linear-gradient(135deg, #100b2c 0%, #fa8f23 100%);">
                                 <i class="fas fa-envelope-open-text"></i>
@@ -92,6 +125,13 @@
                     </div>
                 </div>
             }
+        </div>
+
+        <!-- Mensaje de no resultados -->
+        <div id="noResultsMessage" class="alert alert-info text-center mt-4 d-none animate__animated animate__fadeIn">
+            <i class="fas fa-search fa-2x mb-3"></i>
+            <h5>No se encontraron consultas con los filtros seleccionados</h5>
+            <p>Intenta modificar los filtros para ver más resultados.</p>
         </div>
     </section>
 </main>
@@ -166,6 +206,11 @@
         color: #6c757d;
         max-width: 700px;
         margin: 0 auto 30px auto;
+    }
+
+    .filter-container {
+        border-radius: 15px;
+        border-left: 4px solid #fa8f23;
     }
 
     .service-card {
@@ -284,6 +329,7 @@
 
 @section Scripts {
     <script>
+        // Funcionalidad para responder consultas
         document.querySelectorAll('.btn-responder').forEach(function (btn) {
             btn.addEventListener('click', function (event) {
                 var id = btn.getAttribute('data-id');
@@ -293,6 +339,78 @@
 
                 var modal = new bootstrap.Modal(document.getElementById('responderModal'), { backdrop: false });
                 modal.show();
+            });
+        });
+
+        // Funcionalidad de filtrado
+        document.addEventListener('DOMContentLoaded', function () {
+            const fechaFilter = document.getElementById('fechaFilter');
+            const respondidaFilter = document.getElementById('respondidaFilter');
+            const resetFiltersBtn = document.getElementById('resetFilters');
+            const consultasCards = document.querySelectorAll('.consulta-card');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+
+            // Función para aplicar filtros
+            function aplicarFiltros() {
+                const fechaSeleccionada = fechaFilter.value;
+                const respondidaSeleccionada = respondidaFilter.value;
+
+                let fechaLimite = null;
+                const hoy = new Date();
+
+                if (fechaSeleccionada === 'month') {
+                    fechaLimite = new Date();
+                    fechaLimite.setMonth(hoy.getMonth() - 1);
+                } else if (fechaSeleccionada === 'sixMonths') {
+                    fechaLimite = new Date();
+                    fechaLimite.setMonth(hoy.getMonth() - 6);
+                }
+
+                let resultadosVisibles = 0;
+
+                consultasCards.forEach(card => {
+                    const fechaConsulta = new Date(card.dataset.fecha);
+                    const respondida = card.dataset.respondida;
+
+                    let cumpleFecha = true;
+                    let cumpleRespondida = true;
+
+                    // Validar filtro de fecha
+                    if (fechaLimite !== null) {
+                        cumpleFecha = fechaConsulta >= fechaLimite;
+                    }
+
+                    // Validar filtro de estado
+                    if (respondidaSeleccionada !== 'all') {
+                        cumpleRespondida = respondida === respondidaSeleccionada;
+                    }
+
+                    // Mostrar u ocultar según filtros
+                    if (cumpleFecha && cumpleRespondida) {
+                        card.style.display = '';
+                        resultadosVisibles++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Mostrar mensaje si no hay resultados
+                if (resultadosVisibles === 0) {
+                    noResultsMessage.classList.remove('d-none');
+                } else {
+                    noResultsMessage.classList.add('d-none');
+                }
+            }
+
+            // Listeners para cambios en los filtros
+            fechaFilter.addEventListener('change', aplicarFiltros);
+            respondidaFilter.addEventListener('change', aplicarFiltros);
+
+            // Botón para resetear filtros
+            resetFiltersBtn.addEventListener('click', function () {
+                fechaFilter.value = 'all';
+                respondidaFilter.value = 'all';
+                aplicarFiltros();
             });
         });
     </script>
