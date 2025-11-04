@@ -186,7 +186,9 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
-                TempData["Error"] = "Error al crear cuenta: "+ result;
+
+                // Join all errors into a single readable string. Guard against null result.Errors.
+                TempData["Error"] = "Error al crear cuenta: " + string.Join(", ", result.Errors ?? System.Linq.Enumerable.Empty<string>());
             }
 
             return View(model);
