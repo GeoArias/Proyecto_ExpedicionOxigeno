@@ -388,7 +388,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                     TempData["Error"] = "Reserva no encontrada.";
                     return RedirectToAction("MisReservas");
                 }
-                if (reserva.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name)
+                if (reserva.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name.ToLower().Trim())
                 {
                     // El usuario no es el dueño de la reserva
                     TempData["Error"] = "No tienes permiso para cancelar esta reserva.";
@@ -714,7 +714,7 @@ namespace Proyecto_ExpedicionOxigeno.Controllers
                 TempData["Error"] = "Reserva no encontrada.";
                 return RedirectToAction("MisReservas");
             }
-            if (reserva.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name)
+            if (reserva.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name.ToLower().Trim())
             {
                 // El usuario no es el dueño de la reserva
                 TempData["Error"] = "No tienes permiso para modificar esta reserva.";
@@ -811,7 +811,7 @@ if (!fechaSeleccionada.HasValue)
                     return RedirectToAction("MisReservas");
                 }
                 
-                if (Previousappointment.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name)
+                if (Previousappointment.CustomerEmailAddress.ToLower().Trim() != User.Identity.Name.ToLower().Trim())
                 {
                     // El usuario no es el dueño de la reserva
                     TempData["Error"] = "No tienes permiso para modificar esta reserva.";
